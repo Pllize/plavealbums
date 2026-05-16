@@ -38,6 +38,7 @@ function seedDatabase(state) {
     { id: 'dcs1775566277516', name: 'Universal JP' },
     { id: 'dcs1776084976682', name: '위드뮤' },
     { id: 'dcs1776085087300', name: 'Youtube' },
+    { id: 'dcs1776402077701', name: '버프즈' },
   ];
 
   // ── 분류 (Category) ──
@@ -75,7 +76,7 @@ function seedDatabase(state) {
       offlineHours: '15:00 - 23:00', offlineAddress: '서대문구 연희로11가길 48-23',
       offlineNote: '모든 버전 구매시 A2T DRAW (십카페 럭드) 와 동일한 포카 중 랜덤 1종 증정\n럭드 포토카드중 친필사인 포토카드 랜덤 제공',
       offlineLuckyDraw: true, defDomShip: 0, defOvsShip: 0, defDeliveryDate: '',
-      url: 'https://caligopt2popup.oopy.io/', videocall: false, memo: '',
+      url: 'https://caligopt2popup.oopy.io/32d4cacd-15c9-80d4-91e3-e505275bb65c', videocall: false, memo: '',
     },
     {
       id: 'cs1774546314667', categoryId: catId,
@@ -88,9 +89,9 @@ function seedDatabase(state) {
       offlineStart: '2026-04-14', offlineEnd: '2026-04-19',
       offlineHours: '(화-목) 10:30 - 20:00 ; (금-일) 10:30 - 20:30',
       offlineAddress: '더현대서울 5F',
-      offlineNote: '모든 버전 구매시 더현대럭키드로우 포토카드 5종중 랜덤 증정',
+      offlineNote: 'https://caligopt2popup.oopy.io/32d4cacd-15c9-80e1-b7b5-d07592ac0481\n모든 버전 구매시 더현대럭키드로우 포토카드 5종중 랜덤 증정',
       offlineLuckyDraw: true, defDomShip: 0, defOvsShip: 0, defDeliveryDate: '',
-      url: '', videocall: false, memo: '',
+      url: 'https://caligopt2popup.oopy.io/32d4cacd-15c9-80e1-b7b5-d07592ac0481', videocall: false, memo: '',
     },
     {
       id: 's3', categoryId: catId,
@@ -130,7 +131,7 @@ function seedDatabase(state) {
       offlineHours: '11:00~10:00', offlineAddress: '',
       offlineNote: '무신사 온라인: ASTERUM 433-10 (십카페럭드)와 동일\n무신사 스토어 성수 (연무장길 83 1F) - 무신사 1차럭드와 동일\n무신사 스토어 명동 (명동길 13) - ASTERUM 433-10 (십카페럭드)와 동일',
       offlineLuckyDraw: false, defDomShip: 0, defOvsShip: 0, defDeliveryDate: '',
-      url: 'https://www.musinsa.com/search/goods?keyword=PLAVE+4th+Mini+Album+Caligo+Pt.2',
+      url: 'https://www.musinsa.com/search/goods?keyword=PLAVE+4th+Mini+Album+Caligo+Pt.2&gf=A&keywordType=keyword',
       videocall: false,
       memo: 'ID PASS 구매 시 미공포 (온오프동일)\n구매수량에 맞춰 1:1 랜덤증정',
     },
@@ -216,7 +217,7 @@ function seedDatabase(state) {
       purchaseStart: '2026-03-24T11:00', purchaseEnd: '2026-04-17T23:59', purchaseEndTxt: '',
       offlineStart: '', offlineEnd: '', offlineHours: '', offlineAddress: '', offlineNote: '',
       offlineLuckyDraw: false, defDomShip: 0, defOvsShip: 0, defDeliveryDate: '',
-      url: 'https://hello82.com/search?q=plave',
+      url: 'https://hello82.com/search?q=plave&options%5Bprefix%5D=last',
       videocall: false, memo: '"BITE" ver',
     },
     {
@@ -228,7 +229,7 @@ function seedDatabase(state) {
       purchaseStart: '2026-03-24T11:00', purchaseEnd: '2026-04-17T23:59', purchaseEndTxt: '',
       offlineStart: '', offlineEnd: '', offlineHours: '', offlineAddress: '', offlineNote: '',
       offlineLuckyDraw: false, defDomShip: 0, defOvsShip: 0, defDeliveryDate: '',
-      url: 'https://hello82.com/search?q=plave',
+      url: 'https://hello82.com/search?q=plave&options%5Bprefix%5D=last',
       videocall: false, memo: '"LOOKUP" ver (Pop-up exclusive)',
     },
     {
@@ -277,7 +278,7 @@ function seedDatabase(state) {
       round: null, isMusicStreamTeam: true,
       unpoAlbumKey: 'PHOTOBOOK', unpoSets: 2, unpoBack: false, sharedWith: null,
       priceMode: 'custom',
-      customPrices: { PHOTOBOOK: 22683, POCAALBUM: null, ID_PASS: null, INVENTORY: null },
+      customPrices: { PHOTOBOOK: 22683.6, POCAALBUM: null, ID_PASS: null, INVENTORY: null },
       purchaseStart: '2026-03-24T11:00', purchaseEnd: '2026-03-27T08:00',
       purchaseEndTxt: '특전 소진시까지',
       offlineStart: '', offlineEnd: '', offlineHours: '', offlineAddress: '', offlineNote: '',
@@ -414,11 +415,12 @@ function seedDatabase(state) {
       name: '뮤직플랜트 (영통)', distId: 'dcs1774663794920', country: 'KR',
       round: null, isMusicStreamTeam: false,
       unpoAlbumKey: 'INVENTORY', unpoSets: 1, unpoBack: false, sharedWith: null,
-      priceMode: 'country', customPrices: {},
+      priceMode: 'custom',
+      customPrices: { PHOTOBOOK: null, POCAALBUM: null, ID_PASS: null, INVENTORY: 17100 },
       purchaseStart: '2026-03-28T11:00', purchaseEnd: '2026-03-31T23:59', purchaseEndTxt: '',
       offlineStart: '', offlineEnd: '', offlineHours: '', offlineAddress: '', offlineNote: '',
       offlineLuckyDraw: false, defDomShip: 0, defOvsShip: 0, defDeliveryDate: '',
-      url: 'https://www.musicplant.co.kr/board/?db=gallery_1&no=1320',
+      url: 'https://www.musicplant.co.kr/board/?db=gallery_1&no=1320&mari_mode=view%40view&cate=17&page=1&search=&search_str=&temp=',
       videocall: true,
       memo: '응모 기간 (~3/31) 내 뮤직플랜트 온라인몰에서 Inventory 상품 구매고객중 50명 추첨하여 사인포카 증정\n영통: 2026년 4월 26일 / 시간 추후 안내',
     },
@@ -537,7 +539,7 @@ function seedDatabase(state) {
       offlineStart: '', offlineEnd: '', offlineHours: '', offlineAddress: '', offlineNote: '',
       offlineLuckyDraw: false, defDomShip: 0, defOvsShip: 0,
       defDeliveryDate: '2026-06-15',
-      url: 'https://09platform.com/product/',
+      url: 'https://09platform.com/product/%EA%B0%9C%EB%B3%84-%EC%98%81%ED%86%B5-%EC%9D%91%EB%AA%A8-%EB%B6%88%EA%B0%80-%EC%9D%BC%EB%B3%B8%EC%83%B5-%ED%8A%B9%EC%A0%84-%EC%9C%A0%EB%8B%88%EB%B2%84%EC%84%A4-%ED%94%8C%EB%A0%88%EC%9D%B4%EB%B8%8C-%EC%9D%8C%EC%9B%90%EC%B4%9D%EA%B3%B5%ED%8C%80-%ED%94%8C%EB%A0%88%EC%9D%B4%EB%B8%8C-plave-4th-mini-album-caligo-pt/1315/category/1/display/3/?icid=MAIN.product_listmain_2',
       videocall: false, memo: '',
     },
     {
@@ -592,7 +594,7 @@ function seedDatabase(state) {
       purchaseStart: '2026-04-14T11:00', purchaseEnd: '2026-04-20T23:00', purchaseEndTxt: '',
       offlineStart: '', offlineEnd: '', offlineHours: '', offlineAddress: '', offlineNote: '',
       offlineLuckyDraw: false, defDomShip: 0, defOvsShip: 0, defDeliveryDate: '',
-      url: 'https://vlastshop.com/product/',
+      url: "https://vlastshop.com/product/[DRIVING-TALK-EVENT]-PLAVE-4th-Mini-Album-/'Caligo-Pt.2/'-(POCAALBUM-Ver._5%EC%A2%85-%EC%A4%91-%EB%9E%9C%EB%8D%A4%EB%B0%9C%EC%86%A1)/305/category/55/display/1/",
       videocall: true, memo: '영통발표: 4/21 ; 드라이빙토크회: 5/31',
     },
     {

@@ -78,11 +78,11 @@
     </div>
   </div>
 
+  <!-- 공지사항 -->
+  <div id="dash-notices" style="margin-bottom:8px"></div>
+
   <!-- Stats -->
   <div class="stats-grid" id="dash-stats"></div>
-
-  <!-- 환율 -->
-  <div id="dash-rates" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
 
   <!-- 앨범별 집계 -->
   <div class="card">
@@ -369,6 +369,12 @@ function init() {
     const btn = document.getElementById('fab-top');
     if (btn) btn.classList.toggle('show', main.scrollTop > 300);
   }, { passive: true });
+
+  // Auto-sync from admin via BroadcastChannel
+  try {
+    const bc = new BroadcastChannel('albumapp_sync');
+    bc.onmessage = () => { reloadDB(); buildCatBar(); buildFilters(); render(); };
+  } catch(e) {}
 }
 
 function reloadDB() {
@@ -671,21 +677,22 @@ function renderDash() {
     ? `<table><thead><tr><th>판매처</th><th style="text-align:right">지출</th><th>상태</th></tr></thead><tbody>${storeRows}</tbody></table>`
     : '<div class="empty">지출 기록 없음</div>';
 
-  // Exchange rate chips
-  const ratesEl = document.getElementById('dash-rates');
-  if (ratesEl) {
-    const rates = DB.settings?.rates || {};
-    const rateChips = ['JPY','CNY','USD','TWD','OTHER'].filter(c => rates[c]).map(c => {
-      const r = rates[c];
-      const name = c === 'OTHER' ? (r.name || '기타') : c;
-      const manualBadge = r.manual ? ' <span style="font-size:9px;opacity:.6">수동</span>' : '';
-      const updDate = r.updAt ? new Date(r.updAt).toLocaleDateString('ko-KR', {month:'numeric',day:'numeric'}) : '';
-      return `<span style="background:var(--sur2);border:1px solid var(--bd);border-radius:6px;padding:3px 8px;font-size:11px;white-space:nowrap">
-        ${name} <span class="fw-600">1 = ₩${Number(r.rate).toLocaleString('ko-KR',{maximumFractionDigits:2})}</span>${manualBadge}${updDate ? ` <span style="opacity:.5">${updDate}</span>` : ''}
-      </span>`;
-    }).join('');
-    const ratesAt = DB.settings?.ratesAt;
-    ratesEl.innerHTML = rateChips + (ratesAt ? `<span style="font-size:11px;color:var(--tx3);padding:3px 4px">자동: ${new Date(ratesAt).toLocaleDateString('ko-KR')}</span>` : '');
+  // Notices
+  const noticesEl = document.getElementById('dash-notices');
+  if (noticesEl) {
+    const NOTICE_STYLE = { info: 'border-left:3px solid var(--info,#4ea8f7)', warn: 'border-left:3px solid var(--warn)', ok: 'border-left:3px solid var(--ok)' };
+    const activeNotices = (DB.notices || [])
+      .filter(n => n.visible)
+      .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || new Date(b.createdAt) - new Date(a.createdAt));
+    noticesEl.innerHTML = activeNotices.map(n => `
+      <div style="background:var(--sur2);border-radius:var(--r);padding:10px 14px;margin-bottom:6px;${NOTICE_STYLE[n.type] || ''}">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:${n.body ? 4 : 0}px">
+          ${n.pinned ? '<span>📌</span>' : ''}
+          <span class="fw-600" style="font-size:14px">${n.title}</span>
+        </div>
+        ${n.body ? `<div style="font-size:13px;color:var(--tx2);white-space:pre-wrap">${n.body}</div>` : ''}
+      </div>
+    `).join('');
   }
 
   // Delivery status

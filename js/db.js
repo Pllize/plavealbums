@@ -12,6 +12,7 @@ const _defaultState = () => ({
   stores: [],
   unpoCards: [],
   purchases: [],
+  notices: [],
   settings: {
     rates: {
       JPY: { rate: 9.4537, manual: false, updAt: null },
@@ -36,6 +37,9 @@ function dbLoad() {
     return null;
   }
 }
+
+let _bc = null;
+try { _bc = new BroadcastChannel('albumapp_sync'); } catch(e) {}
 
 function dbSave(state) {
   // Separate large image data to avoid quota issues
@@ -67,6 +71,7 @@ function dbSave(state) {
   try {
     localStorage.setItem(DB_KEY, JSON.stringify(lightState));
     localStorage.setItem(DB_KEY + '_imgs', JSON.stringify(imgData));
+    try { if (_bc) _bc.postMessage({ type: 'db-updated', ts: Date.now() }); } catch(e) {}
   } catch (e) {
     // Retry without purchases if quota exceeded
     try {

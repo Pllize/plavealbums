@@ -78,6 +78,7 @@
   <button class="nav-item" onclick="showPage('stores')" data-page="stores">🏪 판매처 관리</button>
   <button class="nav-item" onclick="showPage('distributors')" data-page="distributors">📦 배급사 관리</button>
   <button class="nav-item" onclick="showPage('unpo')" data-page="unpo">📸 미공포 관리</button>
+  <button class="nav-item" onclick="showPage('notices')" data-page="notices">📢 공지사항</button>
 
   <div class="nav-section">시스템</div>
   <button class="nav-item" onclick="showPage('settings')" data-page="settings">⚙ 설정</button>
@@ -205,6 +206,15 @@
   </div>
 </div>
 
+<!-- ─── NOTICES ─── -->
+<div class="page" id="page-notices">
+  <div class="page-header">
+    <div><div class="page-title">공지사항 관리</div><div class="page-sub">메인 페이지에 표시될 공지를 관리합니다</div></div>
+    <button class="btn btn-p" onclick="openNoticeModal()">+ 공지 추가</button>
+  </div>
+  <div id="notices-list"></div>
+</div>
+
 <!-- ─── EXPORT ─── -->
 <div class="page" id="page-export">
   <div class="page-header">
@@ -292,6 +302,36 @@
     <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeModal('modal-dist')">취소</button>
       <button class="btn btn-p" onclick="saveDist()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Notice Modal -->
+<div class="modal-bg" id="modal-notice">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-head"><h3 id="modal-notice-title">공지 추가</h3><button class="modal-close" onclick="closeModal('modal-notice')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row"><div><label>제목 *</label><input type="text" id="nc-title" placeholder="공지 제목"></div></div>
+      <div class="form-row"><div><label>내용</label><textarea id="nc-body" rows="4" placeholder="공지 내용을 입력하세요"></textarea></div></div>
+      <div class="form-row cols-3">
+        <div><label>유형</label>
+          <select id="nc-type">
+            <option value="info">ℹ 안내</option>
+            <option value="warn">⚠ 주의</option>
+            <option value="ok">✅ 완료</option>
+          </select>
+        </div>
+        <div><label>중요 공지</label>
+          <label class="form-check" style="margin-top:8px"><input type="checkbox" id="nc-pinned"><span>상단 고정</span></label>
+        </div>
+        <div><label>표시 여부</label>
+          <label class="form-check" style="margin-top:8px"><input type="checkbox" id="nc-visible" checked><span>표시</span></label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-notice')">취소</button>
+      <button class="btn btn-p" onclick="saveNotice()">저장</button>
     </div>
   </div>
 </div>
@@ -390,6 +430,7 @@ function renderPage() {
     stores: renderStores,
     distributors: renderDist,
     unpo: renderUnpo,
+    notices: renderNotices,
     settings: renderSettings,
     export: renderExport,
   };
@@ -1152,6 +1193,77 @@ function setTheme(t) {
   document.documentElement.setAttribute('data-theme', t);
   dbUpdateSettings({ theme: t });
   toast('테마 변경됨');
+}
+
+// ═══════════════════════════════════════════
+// NOTICES
+// ═══════════════════════════════════════════
+function renderNotices() {
+  const notices = (DB.notices || []).slice().sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || new Date(b.createdAt) - new Date(a.createdAt));
+  const TYPE_ICON = { info: 'ℹ', warn: '⚠', ok: '✅' };
+  const TYPE_CLS  = { info: 'badge-info', warn: 'badge-warn', ok: 'badge-ok' };
+
+  document.getElementById('notices-list').innerHTML = notices.length ? notices.map(n => `
+    <div class="card" style="margin-bottom:8px;opacity:${n.visible ? 1 : .45}">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+            ${n.pinned ? '<span style="font-size:13px">📌</span>' : ''}
+            <span class="fw-600">${n.title}</span>
+            <span class="badge ${TYPE_CLS[n.type] || 'badge-gray'}" style="font-size:10px">${TYPE_ICON[n.type] || ''}${n.type}</span>
+            ${!n.visible ? '<span class="badge badge-gray" style="font-size:10px">숨김</span>' : ''}
+          </div>
+          ${n.body ? `<div style="font-size:13px;color:var(--tx2);white-space:pre-wrap">${n.body}</div>` : ''}
+          <div style="font-size:11px;color:var(--tx3);margin-top:4px">${n.createdAt ? new Date(n.createdAt).toLocaleString('ko-KR') : ''}</div>
+        </div>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-ghost btn-xs" onclick="openNoticeModal('${n.id}')">편집</button>
+          <button class="btn btn-err btn-xs" onclick="deleteNotice('${n.id}')">삭제</button>
+        </div>
+      </div>
+    </div>
+  `).join('') : '<div class="empty">공지사항이 없습니다.</div>';
+}
+
+function openNoticeModal(id) {
+  ADM.editNoticeId = id || null;
+  const n = id ? (DB.notices || []).find(x => x.id === id) : null;
+  document.getElementById('modal-notice-title').textContent = id ? '공지 수정' : '공지 추가';
+  document.getElementById('nc-title').value = n?.title || '';
+  document.getElementById('nc-body').value = n?.body || '';
+  document.getElementById('nc-type').value = n?.type || 'info';
+  document.getElementById('nc-pinned').checked = n?.pinned || false;
+  document.getElementById('nc-visible').checked = n?.visible !== false;
+  openModal('modal-notice');
+}
+
+function saveNotice() {
+  const title = document.getElementById('nc-title').value.trim();
+  if (!title) { toast('제목을 입력하세요', 'warn'); return; }
+  const data = {
+    title,
+    body: document.getElementById('nc-body').value,
+    type: document.getElementById('nc-type').value,
+    pinned: document.getElementById('nc-pinned').checked,
+    visible: document.getElementById('nc-visible').checked,
+    createdAt: new Date().toISOString(),
+  };
+  if (ADM.editNoticeId) {
+    dbUpdateItem('notices', ADM.editNoticeId, data);
+    toast('공지 수정됨');
+  } else {
+    dbInsert('notices', data);
+    toast('공지 추가됨');
+  }
+  closeModal('modal-notice');
+  reloadDB(); renderNotices();
+}
+
+function deleteNotice(id) {
+  if (!confirm('이 공지를 삭제하시겠습니까?')) return;
+  dbDeleteItem('notices', id);
+  reloadDB(); renderNotices();
+  toast('삭제됨', 'warn');
 }
 
 // ═══════════════════════════════════════════
