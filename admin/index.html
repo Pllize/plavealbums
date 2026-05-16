@@ -204,6 +204,25 @@
       <button class="btn btn-ghost" onclick="setTheme('light')">☀️ 라이트</button>
     </div>
   </div>
+
+  <div class="card">
+    <div class="card-title">🔗 GitHub 동기화</div>
+    <div style="font-size:12px;color:var(--tx2);margin-bottom:12px">DB를 GitHub 저장소 파일로 push/pull합니다. 토큰은 repo 권한이 필요합니다.</div>
+    <div class="form-row cols-2">
+      <div><label>GitHub Token</label><input type="password" id="gh-token" placeholder="ghp_..."></div>
+      <div><label>Owner/Repo (예: Pllize/myalbums)</label><input type="text" id="gh-repo" placeholder="owner/repo"></div>
+    </div>
+    <div class="form-row cols-2">
+      <div><label>Branch</label><input type="text" id="gh-branch" placeholder="main" value="main"></div>
+      <div><label>파일 경로</label><input type="text" id="gh-filepath" placeholder="db/albumapp_v1.json"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      <button class="btn btn-ghost" onclick="saveGithubSettings()">설정 저장</button>
+      <button class="btn btn-info" onclick="pullFromGithub()">⬇ GitHub에서 불러오기</button>
+      <button class="btn btn-p" onclick="pushToGithub()">⬆ GitHub에 저장</button>
+    </div>
+    <div id="gh-status" style="font-size:12px;margin-top:8px;color:var(--tx2)"></div>
+  </div>
 </div>
 
 <!-- ─── NOTICES ─── -->
@@ -1023,9 +1042,16 @@ function setUnpoSets(storeId, albKey, sets) {
   renderUnpo();
 }
 
+const MEMBERS = ['예준', '노아', '밤비', '은호', '하민'];
+
 function addUnpoSet(storeId, albKey) {
+  const store = (DB.stores || []).find(s => s.id === storeId);
+  const cards = MEMBERS.map(name => ({ owned: false, note: name, img: null }));
+  if (store?.unpoBack) {
+    MEMBERS.forEach(name => cards.push({ owned: false, note: name + ' (뒷)', img: null }));
+  }
   const sets = getUnpoSets(storeId, albKey);
-  setUnpoSets(storeId, albKey, [...sets, { memo: '', cards: [] }]);
+  setUnpoSets(storeId, albKey, [...sets, { memo: '', cards }]);
 }
 
 function removeUnpoSet(storeId, albKey, si) {
@@ -1122,6 +1148,7 @@ function renderSettings() {
   document.getElementById('rate-rows').innerHTML = autoRows + otherRow;
   const ratesAt = DB.settings?.ratesAt;
   document.getElementById('rate-updated').textContent = ratesAt ? '마지막 자동업데이트: ' + new Date(ratesAt).toLocaleString('ko-KR') : '';
+  renderGithubSettings();
 }
 
 function saveRates() {
@@ -1291,6 +1318,91 @@ function doImport() {
     document.getElementById('import-box').value = '';
   } else {
     toast('잘못된 JSON 형식입니다', 'err');
+  }
+}
+
+// ═══════════════════════════════════════════
+// GITHUB SYNC
+// ═══════════════════════════════════════════
+function renderGithubSettings() {
+  const gh = DB.settings?.github || {};
+  const t = document.getElementById('gh-token');
+  const r = document.getElementById('gh-repo');
+  const b = document.getElementById('gh-branch');
+  const f = document.getElementById('gh-filepath');
+  if (t) t.value = gh.token || '';
+  if (r) r.value = gh.owner && gh.repo ? gh.owner + '/' + gh.repo : '';
+  if (b) b.value = gh.branch || 'main';
+  if (f) f.value = gh.filePath || 'db/albumapp_v1.json';
+}
+
+function saveGithubSettings() {
+  const repoVal = document.getElementById('gh-repo')?.value.trim();
+  const parts = repoVal ? repoVal.split('/') : [];
+  const gh = {
+    token: document.getElementById('gh-token')?.value.trim() || '',
+    owner: parts[0] || '',
+    repo: parts[1] || '',
+    branch: document.getElementById('gh-branch')?.value.trim() || 'main',
+    filePath: document.getElementById('gh-filepath')?.value.trim() || 'db/albumapp_v1.json',
+    sha: DB.settings?.github?.sha || '',
+  };
+  dbUpdateSettings({ github: gh });
+  reloadDB();
+  document.getElementById('gh-status').textContent = '설정 저장됨 ✓';
+  toast('GitHub 설정 저장됨');
+}
+
+async function pullFromGithub() {
+  const gh = DB.settings?.github || {};
+  if (!gh.token || !gh.owner || !gh.repo) { toast('GitHub 설정을 먼저 저장하세요', 'warn'); return; }
+  document.getElementById('gh-status').textContent = '불러오는 중...';
+  const url = `https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${gh.filePath}?ref=${gh.branch || 'main'}`;
+  try {
+    const r = await fetch(url, { headers: { Authorization: `token ${gh.token}`, Accept: 'application/vnd.github.v3+json' } });
+    if (!r.ok) throw new Error((await r.text()).slice(0, 200));
+    const d = await r.json();
+    const json = decodeURIComponent(escape(atob(d.content.replace(/\n/g, ''))));
+    const parsed = JSON.parse(json);
+    dbUpdateSettings({ github: { ...gh, sha: d.sha } });
+    dbImportJSON(JSON.stringify(parsed));
+    reloadDB(); buildCatFilters(); renderPage();
+    document.getElementById('gh-status').textContent = '불러오기 완료 ✓ (' + new Date().toLocaleTimeString('ko-KR') + ')';
+    toast('GitHub에서 불러오기 완료');
+  } catch(e) {
+    document.getElementById('gh-status').textContent = '실패: ' + e.message;
+    toast('불러오기 실패: ' + e.message, 'err');
+  }
+}
+
+async function pushToGithub() {
+  const gh = DB.settings?.github || {};
+  if (!gh.token || !gh.owner || !gh.repo) { toast('GitHub 설정을 먼저 저장하세요', 'warn'); return; }
+  document.getElementById('gh-status').textContent = '저장 중...';
+  const json = dbExportJSON();
+  const content = btoa(unescape(encodeURIComponent(json)));
+  const url = `https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${gh.filePath}`;
+  const body = {
+    message: 'chore: update albumapp db ' + new Date().toISOString().slice(0, 16),
+    content,
+    branch: gh.branch || 'main',
+  };
+  if (gh.sha) body.sha = gh.sha;
+  try {
+    const r = await fetch(url, {
+      method: 'PUT',
+      headers: { Authorization: `token ${gh.token}`, 'Content-Type': 'application/json', Accept: 'application/vnd.github.v3+json' },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) throw new Error((await r.text()).slice(0, 200));
+    const d = await r.json();
+    dbUpdateSettings({ github: { ...gh, sha: d.content.sha } });
+    reloadDB();
+    document.getElementById('gh-status').textContent = '저장 완료 ✓ (' + new Date().toLocaleTimeString('ko-KR') + ')';
+    toast('GitHub에 저장 완료 ✓');
+  } catch(e) {
+    document.getElementById('gh-status').textContent = '실패: ' + e.message;
+    toast('저장 실패: ' + e.message, 'err');
   }
 }
 

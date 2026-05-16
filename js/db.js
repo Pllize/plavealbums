@@ -24,6 +24,7 @@ const _defaultState = () => ({
     ratesAt: null,
     theme: 'dark',
     adminPw: '0312',
+    github: {},
   },
 });
 
