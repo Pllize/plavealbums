@@ -49,8 +49,7 @@ button { cursor: pointer; font-family: inherit; }
 
 /* ── Layout ── */
 .app-layout {
-  display: grid;
-  grid-template-columns: var(--nav-w) 1fr;
+  display: block;
   min-height: 100vh;
 }
 .sidebar {
