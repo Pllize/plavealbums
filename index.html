@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>앨범 구매관리</title>
+<link rel="stylesheet" href="css/app.css">
+<style>
+/* ── inline overrides ── */
+.purch-items-table td { padding: 5px 8px; font-size: 12px; }
+.purch-items-table th { padding: 5px 8px; font-size: 11px; }
+.store-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; }
+.store-detail-row { display: flex; flex-direction: column; gap: 2px; }
+.store-detail-label { font-size: 11px; color: var(--tx3); }
+.store-detail-val { color: var(--tx); }
+.cal-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.cal-nav-title { font-size: 16px; font-weight: 700; flex: 1; text-align: center; }
+.cal-day-panel { background: var(--sur2); border-radius: var(--r); padding: 14px; margin-top: 12px; }
+.price-row { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--bd); }
+.price-row:last-child { border: none; }
+.total-price-row { font-weight: 700; font-size: 15px; padding-top: 8px; }
+.section-divider { font-size: 11px; color: var(--tx3); letter-spacing: .06em; text-transform: uppercase; padding: 12px 0 6px; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<div class="app-layout">
+<!-- ── Sidebar ── -->
+<nav class="sidebar" id="sidebar">
+  <div class="logo">📀 앨범 구매관리<span id="cat-label">로딩중...</span></div>
+
+  <div class="nav-section">메뉴</div>
+  <button class="nav-item active" onclick="nav('dash')" data-tab="dash">
+    <i class="nav-icon">◈</i> 대시보드
+  </button>
+  <button class="nav-item" onclick="nav('purch')" data-tab="purch">
+    <i class="nav-icon">🛍</i> 구매 기록
+  </button>
+  <button class="nav-item" onclick="nav('stores')" data-tab="stores">
+    <i class="nav-icon">🏪</i> 판매처 정보
+  </button>
+  <button class="nav-item" onclick="nav('unpo')" data-tab="unpo">
+    <i class="nav-icon">📸</i> 미공포
+  </button>
+  <button class="nav-item" onclick="nav('cal')" data-tab="cal">
+    <i class="nav-icon">📅</i> 캘린더
+  </button>
+
+  <div class="nav-section" style="margin-top:auto">기타</div>
+  <button class="nav-item" onclick="toggleTheme()">
+    <i class="nav-icon" id="theme-icon">🌙</i> <span id="theme-label">다크모드</span>
+  </button>
+  <a class="nav-item" href="admin/">
+    <i class="nav-icon">⚙</i> 관리자
+  </a>
+</nav>
+
+<!-- ── Main ── -->
+<main class="main-content" id="main">
+
+<!-- ─ 분류 선택 ─ -->
+<div id="cat-bar" class="cat-selector" style="margin-bottom:12px"></div>
+
+<!-- ════════════════════════════════════════
+  DASHBOARD
+════════════════════════════════════════ -->
+<div class="page active" id="page-dash">
+  <div class="page-header">
+    <div>
+      <div class="page-title" id="dash-title">대시보드</div>
+      <div class="page-sub" id="dash-sub">구매 현황 요약</div>
+    </div>
+    <div class="flex gap-8">
+      <button class="btn btn-ghost btn-sm" onclick="addPurchModal()">+ 구매 추가</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid" id="dash-stats"></div>
+
+  <!-- 앨범별 집계 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">📦 앨범별 구매 현황</div>
+      <button class="btn btn-ghost btn-sm" onclick="S.showProxy=!S.showProxy;render()">
+        대리구매 <span id="proxy-toggle-txt">표시</span>
+      </button>
+    </div>
+    <div id="dash-album-table"></div>
+  </div>
+
+  <!-- 구매처별 지출 -->
+  <div class="card">
+    <div class="card-header"><div class="card-title">💳 판매처별 지출</div></div>
+    <div id="dash-store-spend"></div>
+  </div>
+
+  <!-- 배송 현황 -->
+  <div class="card">
+    <div class="card-header"><div class="card-title">📦 배송 현황</div></div>
+    <div id="dash-delivery"></div>
+  </div>
+
+  <!-- 미구매 처 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">📋 미구매 판매처</div>
+      <button class="btn btn-ghost btn-sm" onclick="S.hideExpired=!S.hideExpired;render()">
+        <span id="hide-exp-txt">마감 숨김</span>
+      </button>
+    </div>
+    <div id="dash-unpurchased"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+  PURCHASE
+════════════════════════════════════════ -->
+<div class="page" id="page-purch">
+  <div class="page-header">
+    <div>
+      <div class="page-title">구매 기록</div>
+      <div class="page-sub">내 구매 내역과 배송 현황</div>
+    </div>
+    <button class="btn btn-p" onclick="addPurchModal()">+ 구매 추가</button>
+  </div>
+
+  <div class="filter-bar">
+    <input type="text" id="purch-search" placeholder="판매처, 메모 검색..." oninput="render()">
+    <select id="purch-status-filter" onchange="render()">
+      <option value="">전체 상태</option>
+      <option value="planned">계획</option>
+      <option value="waiting">대기중</option>
+      <option value="ordered">주문완료</option>
+      <option value="preparing">발송준비</option>
+      <option value="shipped">배송중</option>
+      <option value="delivered">수령완료</option>
+      <option value="cancelled">취소</option>
+    </select>
+    <select id="purch-cat-filter" onchange="render()">
+      <option value="">전체 분류</option>
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="S.purchSort=S.purchSort==='date'?'total':'date';render()">
+      정렬: <span id="purch-sort-txt">날짜</span>
+    </button>
+  </div>
+
+  <div id="purch-total-bar" style="margin-bottom:12px"></div>
+  <div id="purch-list"></div>
+</div>
+
+<!-- ════════════════════════════════════════
+  STORES
+════════════════════════════════════════ -->
+<div class="page" id="page-stores">
+  <div class="page-header">
+    <div>
+      <div class="page-title">판매처 정보</div>
+      <div class="page-sub">판매처별 미공포 및 구매 정보</div>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <input type="text" id="store-search" placeholder="판매처 이름 검색..." oninput="render()">
+    <select id="store-country-filter" onchange="render()">
+      <option value="">전체 국가</option>
+      <option value="KR">국내</option>
+      <option value="JP">일본</option>
+      <option value="CN">중국</option>
+      <option value="US">미국</option>
+      <option value="TW">대만</option>
+    </select>
+    <select id="store-alb-filter" onchange="render()">
+      <option value="">전체 앨범</option>
+    </select>
+    <label class="form-check" style="white-space:nowrap">
+      <input type="checkbox" id="store-show-ended" onchange="render()">
+      <span style="font-size:12px">마감 포함</span>
+    </label>
+    <label class="form-check" style="white-space:nowrap">
+      <input type="checkbox" id="store-music-only" onchange="render()">
+      <span style="font-size:12px">음총만</span>
+    </label>
+  </div>
+
+  <!-- Album type tabs -->
+  <div class="alb-selector" id="stores-alb-tabs"></div>
+
+  <div id="stores-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px"></div>
+</div>
+
+<!-- ════════════════════════════════════════
+  UNPO
+════════════════════════════════════════ -->
+<div class="page" id="page-unpo">
+  <div class="page-header">
+    <div>
+      <div class="page-title">미공포 (미공개 포토카드)</div>
+      <div class="page-sub">판매처별 미공개 포토카드 보유 현황</div>
+    </div>
+  </div>
+
+  <div class="alb-selector" id="unpo-alb-tabs"></div>
+
+  <div class="filter-bar" style="margin-top:-8px">
+    <input type="text" id="unpo-search" placeholder="판매처 검색..." oninput="render()">
+    <label class="form-check">
+      <input type="checkbox" id="unpo-owned-only" onchange="render()">
+      <span style="font-size:12px">보유만</span>
+    </label>
+  </div>
+
+  <div id="unpo-content"></div>
+</div>
+
+<!-- ════════════════════════════════════════
+  CALENDAR
+════════════════════════════════════════ -->
+<div class="page" id="page-cal">
+  <div class="page-header">
+    <div>
+      <div class="page-title">캘린더</div>
+      <div class="page-sub">발매일 기준 일정 정리</div>
+    </div>
+    <div class="flex gap-8">
+      <label class="form-check"><input type="checkbox" id="cal-show-pur" checked onchange="render()"><span style="font-size:12px">구매기간</span></label>
+      <label class="form-check"><input type="checkbox" id="cal-show-off" checked onchange="render()"><span style="font-size:12px">오프라인</span></label>
+      <label class="form-check"><input type="checkbox" id="cal-show-del" checked onchange="render()"><span style="font-size:12px">배송예정</span></label>
+    </div>
+  </div>
+
+  <div class="cal-nav">
+    <button class="btn btn-ghost btn-sm" onclick="calPrev()">‹</button>
+    <div class="cal-nav-title" id="cal-month-title"></div>
+    <button class="btn btn-ghost btn-sm" onclick="calNext()">›</button>
+    <button class="btn btn-ghost btn-sm" onclick="calToday()">오늘</button>
+  </div>
+
+  <div class="cal-grid" id="cal-header-row"></div>
+  <div class="cal-grid" id="cal-body" style="margin-top:4px"></div>
+
+  <div id="cal-day-detail"></div>
+</div>
+
+</main>
+</div>
+
+<!-- ═══════════════════════════════════════════
+  MODALS
+═══════════════════════════════════════════ -->
+
+<!-- Purchase Modal -->
+<div class="modal-bg" id="modal-purch">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h3 id="modal-purch-title">구매 추가</h3>
+      <button class="modal-close" onclick="closeModal('modal-purch')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-purch-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-purch')">취소</button>
+      <button class="btn btn-p" onclick="savePurch()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Store Detail Modal -->
+<div class="modal-bg" id="modal-store">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h3 id="modal-store-title">판매처 상세</h3>
+      <button class="modal-close" onclick="closeModal('modal-store')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-store-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-store')">닫기</button>
+      <button class="btn btn-p" onclick="addPurchFromStore()">이 판매처로 구매추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- Unpo Detail Modal -->
+<div class="modal-bg" id="modal-unpo">
+  <div class="modal modal-xl">
+    <div class="modal-head">
+      <h3 id="modal-unpo-title">미공포 상세</h3>
+      <button class="modal-close" onclick="closeModal('modal-unpo')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-unpo-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-unpo')">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- FAB -->
+<div class="fab" id="fab" style="display:none">
+  <button class="fab-btn fab-btn-p" onclick="addPurchModal()" title="구매 추가">+</button>
+  <button class="fab-btn fab-top" id="fab-top" onclick="document.getElementById('main').scrollTo({top:0,behavior:'smooth'})" title="맨 위로">↑</button>
+</div>
+
+<script src="js/db.js"></script>
+<script src="js/seed.js"></script>
+<script>
+// ═══════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════
+const COUNTRIES = {
+  KR: { lb: '한국', cur: 'KRW', ovs: false, flag: '🇰🇷' },
+  JP: { lb: '일본', cur: 'JPY', ovs: true,  flag: '🇯🇵' },
+  CN: { lb: '중국', cur: 'CNY', ovs: true,  flag: '🇨🇳' },
+  US: { lb: '미국', cur: 'USD', ovs: true,  flag: '🇺🇸' },
+  TW: { lb: '대만', cur: 'TWD', ovs: true,  flag: '🇹🇼' },
+};
+
+const STATUS_MAP = {
+  planned:   { lb: '계획',    cls: 'st-planned' },
+  waiting:   { lb: '대기중',  cls: 'st-waiting' },
+  ordered:   { lb: '주문완료',cls: 'st-ordered' },
+  preparing: { lb: '발송준비',cls: 'st-preparing' },
+  shipped:   { lb: '배송중',  cls: 'st-shipped' },
+  delivered: { lb: '수령완료',cls: 'st-delivered' },
+  cancelled: { lb: '취소',    cls: 'st-cancelled' },
+};
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let DB = {};
+let S = {
+  tab: 'dash',
+  catId: null,    // active category
+  albKey: null,   // active album type filter
+  unpoAlbKey: null,
+  calYear: new Date().getFullYear(),
+  calMonth: new Date().getMonth(),
+  calDay: null,
+  showProxy: false,
+  hideExpired: true,
+  purchSort: 'date',
+  editPurchId: null,
+  editStoreId: null,
+  storeFromId: null,
+};
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+function init() {
+  DB = dbInit(seedDatabase);
+  // Set default category
+  if (DB.categories.length > 0) {
+    S.catId = DB.categories[0].id;
+  }
+  applyTheme();
+  buildCatBar();
+  buildFilters();
+  render();
+
+  // Scroll listener for FAB top
+  const main = document.getElementById('main');
+  main.addEventListener('scroll', () => {
+    const btn = document.getElementById('fab-top');
+    if (btn) btn.classList.toggle('show', main.scrollTop > 300);
+  }, { passive: true });
+}
+
+function reloadDB() {
+  DB = dbGet();
+}
+
+// ═══════════════════════════════════════════
+// THEME
+// ═══════════════════════════════════════════
+function toggleTheme() {
+  const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('theme-icon').textContent = t === 'dark' ? '🌙' : '☀️';
+  document.getElementById('theme-label').textContent = t === 'dark' ? '다크모드' : '라이트모드';
+  dbUpdateSettings({ theme: t });
+}
+
+function applyTheme() {
+  const t = DB.settings?.theme || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('theme-icon').textContent = t === 'dark' ? '🌙' : '☀️';
+  document.getElementById('theme-label').textContent = t === 'dark' ? '다크모드' : '라이트모드';
+}
+
+// ═══════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════
+function nav(tab) {
+  S.tab = tab;
+  document.querySelectorAll('[data-tab]').forEach(el =>
+    el.classList.toggle('active', el.dataset.tab === tab));
+  document.querySelectorAll('.page').forEach(el =>
+    el.classList.toggle('active', el.id === 'page-' + tab));
+  document.getElementById('fab').style.display = tab === 'purch' ? 'flex' : 'none';
+  render();
+}
+
+function render() {
+  reloadDB();
+  const fns = { dash: renderDash, purch: renderPurch, stores: renderStores, unpo: renderUnpo, cal: renderCal };
+  (fns[S.tab] || renderDash)();
+}
+
+// ═══════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════
+function rate(cur) {
+  if (cur === 'KRW') return 1;
+  return DB.settings?.rates?.[cur]?.rate || 1;
+}
+function toKRW(amt, cur) { return Math.round(amt * rate(cur)); }
+function fKRW(n) {
+  if (!n && n !== 0) return '—';
+  return Math.round(n).toLocaleString('ko-KR') + '원';
+}
+function fDate(dt, time = false) {
+  if (!dt) return '';
+  try {
+    const d = new Date(dt);
+    const opts = time
+      ? { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }
+      : { month: '2-digit', day: '2-digit' };
+    return d.toLocaleDateString('ko-KR', opts);
+  } catch (e) { return dt; }
+}
+function fDateShort(dt) {
+  if (!dt) return '';
+  const d = new Date(dt);
+  return (d.getMonth() + 1) + '/' + d.getDate();
+}
+function isExpired(store) {
+  if (!store.purchaseEnd) return false;
+  return new Date(store.purchaseEnd) < new Date();
+}
+function isOvs(store) { return COUNTRIES[store.country]?.ovs || false; }
+function getStoreCur(store) { return COUNTRIES[store.country]?.cur || 'KRW'; }
+
+function storePrice(store, albKey) {
+  if (store.priceMode === 'custom') {
+    if (store.customPrices && albKey in store.customPrices)
+      return store.customPrices[albKey]; // null = 미판매
+    return null;
+  }
+  // country mode: find album type's country price
+  const alb = DB.albumTypes?.find(a => a.key === albKey && a.categoryId === store.categoryId);
+  if (!alb) return null;
+  const cur = getStoreCur(store);
+  const country = store.country;
+  return alb.countryPrices?.[country] ?? null;
+}
+
+function calcPurchTotal(p) {
+  const store = DB.stores?.find(s => s.id === p.storeId);
+  if (!store) return 0;
+  const cur = getStoreCur(store);
+  const discount = p.discount || 0;
+  if (isOvs(store)) {
+    let fAmt = p.foreignTotal || 0;
+    if (!fAmt) {
+      fAmt = (p.items || []).reduce((sum, it) => {
+        const pr = it.unitPrice > 0 ? it.unitPrice : (storePrice(store, it.albKey) || 0);
+        return sum + pr * (it.qty || 0);
+      }, 0);
+    }
+    const base = p.directKrw > 0 ? p.directKrw : Math.round(fAmt * rate(cur));
+    return Math.max(0, base + (p.intlShip || 0) + (p.fwdFee || 0) + (p.customs || 0) + (p.domShip || 0) - discount);
+  } else {
+    const items = (p.items || []).reduce((sum, it) => {
+      const pr = it.unitPrice > 0 ? it.unitPrice : (storePrice(store, it.albKey) || 0);
+      return sum + pr * (it.qty || 0);
+    }, 0);
+    return Math.max(0, items + (p.domShip || 0) - discount);
+  }
+}
+
+function calcProxyTotal(p) {
+  if (p.proxyKrw > 0) return p.proxyKrw;
+  const totalQty = (p.items || []).reduce((s, it) => s + (it.qty || 0), 0);
+  if (!totalQty) return 0;
+  const proxyQty = (p.items || []).reduce((s, it) => s + (it.proxyQty || 0), 0);
+  if (!proxyQty) return 0;
+  return Math.round(calcPurchTotal(p) * proxyQty / totalQty);
+}
+
+function stBadge(st) {
+  const s = STATUS_MAP[st] || STATUS_MAP['waiting'];
+  return `<span class="badge ${s.cls}">${s.lb}</span>`;
+}
+
+function distName(distId) {
+  return DB.distributors?.find(d => d.id === distId)?.name || '';
+}
+
+function catStores(catId) {
+  return (DB.stores || []).filter(s => s.categoryId === (catId || S.catId));
+}
+
+function getCatAlbums(catId) {
+  return (DB.albumTypes || []).filter(a => a.categoryId === (catId || S.catId))
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+function getCat(catId) {
+  return (DB.categories || []).find(c => c.id === (catId || S.catId));
+}
+
+function storeName(storeId) {
+  const s = DB.stores?.find(x => x.id === storeId);
+  return s ? s.name : '알 수 없는 판매처';
+}
+
+// ═══════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════
+let _toastTimer;
+function toast(msg, type = 'ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + type;
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.className = '', 2800);
+}
+
+// ═══════════════════════════════════════════
+// CATEGORY BAR
+// ═══════════════════════════════════════════
+function buildCatBar() {
+  const el = document.getElementById('cat-bar');
+  el.innerHTML = DB.categories.map(c =>
+    `<button class="cat-chip${c.id === S.catId ? ' active' : ''}" onclick="selectCat('${c.id}')">
+      ${c.name} <span style="font-size:11px;opacity:.6">${c.artist}</span>
+    </button>`
+  ).join('');
+
+  const cat = getCat();
+  if (cat) {
+    document.getElementById('cat-label').textContent = cat.name + ' · ' + cat.artist;
+  }
+}
+
+function selectCat(id) {
+  S.catId = id;
+  S.albKey = null;
+  S.unpoAlbKey = null;
+  buildCatBar();
+  buildFilters();
+  render();
+}
+
+function buildFilters() {
+  // Store album filter
+  const albFilter = document.getElementById('store-alb-filter');
+  const albums = getCatAlbums();
+  const albOpts = '<option value="">전체 앨범</option>' +
+    albums.map(a => `<option value="${a.key}">${a.name}</option>`).join('');
+  if (albFilter) albFilter.innerHTML = albOpts;
+
+  // Purchase cat filter
+  const purchCatFilter = document.getElementById('purch-cat-filter');
+  if (purchCatFilter) {
+    purchCatFilter.innerHTML = '<option value="">전체 분류</option>' +
+      DB.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  }
+}
+
+// ═══════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════
+function renderDash() {
+  const cat = getCat();
+  if (!cat) { document.getElementById('dash-stats').innerHTML = '<div class="empty">분류가 없습니다. 관리자에서 추가하세요.</div>'; return; }
+
+  document.getElementById('dash-title').textContent = cat.name + ' 대시보드';
+  document.getElementById('dash-sub').textContent = cat.artist + ' · 발매일: ' + (cat.releaseDate ? fDate(cat.releaseDate) : '미정');
+
+  const stores = catStores();
+  const albums = getCatAlbums();
+  const purches = (DB.purchases || []).filter(p => {
+    const st = DB.stores?.find(s => s.id === p.storeId);
+    return st?.categoryId === S.catId;
+  });
+
+  const totalSpend = purches.reduce((s, p) => s + calcPurchTotal(p), 0);
+  const mySpend = totalSpend - purches.reduce((s, p) => s + calcProxyTotal(p), 0);
+  const deliveredCount = purches.filter(p => p.status === 'delivered').length;
+  const shippedCount = purches.filter(p => ['shipped', 'preparing'].includes(p.status)).length;
+  const orderedCount = purches.filter(p => p.status === 'ordered').length;
+
+  // Days to release
+  const daysToRelease = cat.releaseDate
+    ? Math.ceil((new Date(cat.releaseDate) - new Date()) / 86400000)
+    : null;
+
+  document.getElementById('dash-stats').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-num">${purches.length}</div>
+      <div class="stat-label">총 구매 기록</div>
+      <div class="stat-sub">${stores.length}개 판매처 중</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">${fKRW(totalSpend)}</div>
+      <div class="stat-label">총 지출</div>
+      <div class="stat-sub">내 지출: ${fKRW(mySpend)}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num ok">${deliveredCount}</div>
+      <div class="stat-label">수령완료</div>
+      <div class="stat-sub">배송중: ${shippedCount} / 주문: ${orderedCount}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num ${daysToRelease === null ? '' : daysToRelease <= 0 ? 'ok' : daysToRelease <= 7 ? 'warn' : ''}">${
+        daysToRelease === null ? '?' : daysToRelease <= 0 ? '발매됨' : 'D-' + daysToRelease
+      }</div>
+      <div class="stat-label">발매까지</div>
+      <div class="stat-sub">${cat.releaseDate ? fDate(cat.releaseDate) : '미정'}</div>
+    </div>
+  `;
+
+  // Album table
+  const albCounts = {};
+  const albProxy = {};
+  albums.forEach(a => { albCounts[a.key] = 0; albProxy[a.key] = 0; });
+  purches.forEach(p => {
+    (p.items || []).forEach(it => {
+      albCounts[it.albKey] = (albCounts[it.albKey] || 0) + (it.qty || 0);
+      albProxy[it.albKey] = (albProxy[it.albKey] || 0) + (it.proxyQty || 0);
+    });
+  });
+
+  const albRows = albums.map(a => `
+    <tr>
+      <td><span class="fw-600">${a.name}</span></td>
+      <td>${albCounts[a.key] || 0}장</td>
+      ${S.showProxy ? `<td>${albProxy[a.key] || 0}장 <span class="text-muted2">(대리)</span></td>` : ''}
+      <td>${albCounts[a.key] > 0 ? '<span class="badge badge-ok">구매</span>' : '<span class="badge badge-gray">미구매</span>'}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('dash-album-table').innerHTML = `
+    <table><thead><tr>
+      <th>앨범</th><th>수량</th>${S.showProxy ? '<th>대리구매</th>' : ''}<th>상태</th>
+    </tr></thead><tbody>${albRows || '<tr><td colspan="4" class="empty">구매 기록 없음</td></tr>'}</tbody></table>
+  `;
+  document.getElementById('proxy-toggle-txt').textContent = S.showProxy ? '숨김' : '표시';
+
+  // Store spend
+  const storeSpend = {};
+  purches.forEach(p => { storeSpend[p.storeId] = (storeSpend[p.storeId] || 0) + calcPurchTotal(p); });
+  const storeRows = Object.entries(storeSpend)
+    .sort((a, b) => b[1] - a[1])
+    .map(([sid, amt]) => `
+      <tr>
+        <td>${storeName(sid)}</td>
+        <td style="text-align:right">${fKRW(amt)}</td>
+        <td>${stBadge(purches.find(p => p.storeId === sid)?.status || 'waiting')}</td>
+      </tr>
+    `).join('');
+
+  document.getElementById('dash-store-spend').innerHTML = storeRows
+    ? `<table><thead><tr><th>판매처</th><th style="text-align:right">지출</th><th>상태</th></tr></thead><tbody>${storeRows}</tbody></table>`
+    : '<div class="empty">지출 기록 없음</div>';
+
+  // Delivery status
+  const byStatus = {};
+  purches.forEach(p => {
+    const st = p.status || 'waiting';
+    if (!byStatus[st]) byStatus[st] = [];
+    byStatus[st].push(p);
+  });
+  const delivRows = Object.entries(STATUS_MAP).map(([k, v]) => {
+    const count = (byStatus[k] || []).length;
+    if (!count) return '';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd)">
+      <span class="badge ${v.cls}">${v.lb}</span>
+      <span class="fw-600">${count}건</span>
+      <span class="text-muted text-sm">${(byStatus[k] || []).map(p => storeName(p.storeId)).join(', ')}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('dash-delivery').innerHTML = delivRows || '<div class="empty">구매 기록 없음</div>';
+
+  // Unpurchased
+  const purchasedStoreIds = new Set(purches.map(p => p.storeId));
+  const unpurchased = stores
+    .filter(s => !purchasedStoreIds.has(s.id))
+    .filter(s => !S.hideExpired || !isExpired(s));
+  document.getElementById('hide-exp-txt').textContent = S.hideExpired ? '마감 포함' : '마감 숨김';
+  document.getElementById('dash-unpurchased').innerHTML = unpurchased.length
+    ? `<table><thead><tr><th>판매처</th><th>미공포</th><th>구매기간</th><th>영통</th></tr></thead><tbody>
+        ${unpurchased.map(s => `
+          <tr>
+            <td><span class="fw-600">${s.name}</span>${s.isMusicStreamTeam ? ' <span class="music-tag">🎵음총</span>' : ''}</td>
+            <td>${s.unpoAlbumKey ? `<span class="badge badge-pk">${s.unpoAlbumKey}</span>` : '<span class="text-muted2">-</span>'}</td>
+            <td class="text-sm">${fDate(s.purchaseStart, true)} ~ ${s.purchaseEnd ? fDate(s.purchaseEnd, true) : (s.purchaseEndTxt || '미정')}</td>
+            <td>${s.videocall ? '📞' : ''}</td>
+          </tr>
+        `).join('')}
+      </tbody></table>`
+    : '<div class="empty">미구매 판매처 없음</div>';
+}
+
+// ═══════════════════════════════════════════
+// PURCHASE LIST
+// ═══════════════════════════════════════════
+function renderPurch() {
+  const search = document.getElementById('purch-search')?.value.toLowerCase() || '';
+  const statusF = document.getElementById('purch-status-filter')?.value || '';
+  const catF = document.getElementById('purch-cat-filter')?.value || '';
+
+  let purches = DB.purchases || [];
+
+  if (catF) {
+    purches = purches.filter(p => {
+      const st = DB.stores?.find(s => s.id === p.storeId);
+      return st?.categoryId === catF;
+    });
+  } else if (S.catId) {
+    purches = purches.filter(p => {
+      const st = DB.stores?.find(s => s.id === p.storeId);
+      return st?.categoryId === S.catId;
+    });
+  }
+
+  if (statusF) purches = purches.filter(p => p.status === statusF);
+  if (search) purches = purches.filter(p =>
+    storeName(p.storeId).toLowerCase().includes(search) ||
+    (p.memo || '').toLowerCase().includes(search) ||
+    (p.orderNumber || '').toLowerCase().includes(search)
+  );
+
+  purches = [...purches].sort((a, b) => {
+    if (S.purchSort === 'total') return calcPurchTotal(b) - calcPurchTotal(a);
+    return new Date(b.orderDate || b.createdAt || 0) - new Date(a.orderDate || a.createdAt || 0);
+  });
+
+  document.getElementById('purch-sort-txt').textContent = S.purchSort === 'date' ? '날짜' : '금액';
+
+  const total = purches.reduce((s, p) => s + calcPurchTotal(p), 0);
+  const myTotal = total - purches.reduce((s, p) => s + calcProxyTotal(p), 0);
+  document.getElementById('purch-total-bar').innerHTML = purches.length
+    ? `<div class="flex gap-12" style="padding:8px 12px;background:var(--sur);border:1px solid var(--bd);border-radius:var(--r-sm)">
+        <span class="text-muted text-sm">${purches.length}건</span>
+        <span class="text-sm fw-600">총 ${fKRW(total)}</span>
+        <span class="text-sm text-muted">내 지출 ${fKRW(myTotal)}</span>
+      </div>` : '';
+
+  document.getElementById('purch-list').innerHTML = purches.length
+    ? purches.map(p => renderPurchCard(p)).join('')
+    : '<div class="empty">구매 기록이 없습니다.<br><br><button class="btn btn-p" onclick="addPurchModal()">+ 구매 추가</button></div>';
+}
+
+function renderPurchCard(p) {
+  const store = DB.stores?.find(s => s.id === p.storeId);
+  const cat = store ? getCat(store.categoryId) : null;
+  const total = calcPurchTotal(p);
+  const proxyTotal = calcProxyTotal(p);
+  const myTotal = total - proxyTotal;
+  const ovs = store ? isOvs(store) : false;
+  const cur = store ? getStoreCur(store) : 'KRW';
+
+  const STATUS_STEPS = ['planned', 'waiting', 'ordered', 'preparing', 'shipped', 'delivered'];
+  const stepIdx = STATUS_STEPS.indexOf(p.status || 'waiting');
+
+  const itemsHtml = (p.items || []).map(it => {
+    const alb = DB.albumTypes?.find(a => a.key === it.albKey);
+    const pr = it.unitPrice > 0 ? it.unitPrice : (store ? storePrice(store, it.albKey) : 0);
+    return `<tr>
+      <td>${alb?.name || it.albKey}</td>
+      <td>${it.qty || 0}장</td>
+      <td>${pr ? (ovs ? (COUNTRIES[store.country]?.cur?.slice(0,2) || '') + Number(pr).toLocaleString() : fKRW(pr * (it.qty || 0))) : '—'}</td>
+      ${it.proxyQty ? `<td class="text-warn">${it.proxyQty}장 대리</td>` : '<td>-</td>'}
+    </tr>`;
+  }).join('');
+
+  const delivSteps = p.status === 'cancelled' ? '' : `
+    <div class="delivery-steps" style="margin:10px 0">
+      ${STATUS_STEPS.slice(1).map((st, i) => {
+        const done = stepIdx > i + 1;
+        const current = stepIdx === i + 1;
+        return `<div class="delivery-step ${done ? 'done' : current ? 'current' : ''}">
+          <div class="delivery-dot"></div>
+          <div class="delivery-label">${STATUS_MAP[st].lb}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+
+  return `<div class="purch-card">
+    <div class="purch-card-header">
+      <div>
+        <div class="purch-store-name">${store?.name || '?'} ${store?.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : ''}</div>
+        <div class="purch-meta">
+          ${cat ? cat.name + ' · ' : ''}
+          ${p.orderDate ? fDate(p.orderDate) : '날짜미입력'}
+          ${p.orderNumber ? `· <span class="mono text-xs">${p.orderNumber}</span>` : ''}
+        </div>
+      </div>
+      <div class="flex gap-8 flex-1" style="justify-content:flex-end;align-items:flex-start">
+        ${stBadge(p.status || 'waiting')}
+        <div>
+          <div class="price-total">${fKRW(total)}</div>
+          ${proxyTotal ? `<div class="text-xs text-muted">내 지출: ${fKRW(myTotal)}</div>` : ''}
+        </div>
+        <button class="btn btn-ghost btn-xs" onclick="editPurch('${p.id}')">편집</button>
+        <button class="btn btn-err btn-xs" onclick="deletePurch('${p.id}')">삭제</button>
+      </div>
+    </div>
+
+    ${delivSteps}
+
+    <table class="purch-items-table" style="width:100%;border-collapse:collapse;margin-bottom:8px">
+      <thead><tr style="background:var(--sur2)">
+        <th style="padding:5px 8px;font-size:11px;text-align:left">앨범</th>
+        <th style="padding:5px 8px;font-size:11px;text-align:left">수량</th>
+        <th style="padding:5px 8px;font-size:11px;text-align:left">금액</th>
+        <th style="padding:5px 8px;font-size:11px;text-align:left">대리구매</th>
+      </tr></thead>
+      <tbody>${itemsHtml}</tbody>
+    </table>
+
+    ${(p.domShip || p.intlShip || p.fwdFee || p.customs || p.discount) ? `
+      <div style="font-size:12px;color:var(--tx2);display:flex;gap:12px;flex-wrap:wrap">
+        ${p.domShip ? `<span>국내배송 +${fKRW(p.domShip)}</span>` : ''}
+        ${p.intlShip ? `<span>국제배송 +${fKRW(p.intlShip)}</span>` : ''}
+        ${p.fwdFee ? `<span>포워딩 +${fKRW(p.fwdFee)}</span>` : ''}
+        ${p.customs ? `<span>관세 +${fKRW(p.customs)}</span>` : ''}
+        ${p.discount ? `<span class="text-ok">할인 -${fKRW(p.discount)}</span>` : ''}
+      </div>
+    ` : ''}
+
+    ${p.trackingNumber ? `
+      <div style="margin-top:8px;font-size:12px">
+        📦 ${p.carrier || '택배'}: <code>${p.trackingNumber}</code>
+        ${p.shippedAt ? ` · 발송 ${fDate(p.shippedAt)}` : ''}
+        ${p.deliveredAt ? ` · 수령 ${fDate(p.deliveredAt)}` : ''}
+      </div>
+    ` : ''}
+
+    ${p.memo ? `<div style="margin-top:8px;font-size:12px;color:var(--tx2);white-space:pre-wrap">${p.memo}</div>` : ''}
+
+    <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+      ${['ordered','preparing','shipped','delivered'].map(st =>
+        `<button class="btn btn-ghost btn-xs" style="${(p.status||'waiting')===st?'border-color:var(--pk2);color:var(--pk)':''}" onclick="setPurchStatus('${p.id}','${st}')">${STATUS_MAP[st].lb}</button>`
+      ).join('')}
+    </div>
+  </div>`;
+}
+
+function setPurchStatus(id, status) {
+  const patch = { status };
+  if (status === 'delivered') patch.deliveredAt = patch.deliveredAt || new Date().toISOString().slice(0,10);
+  if (status === 'shipped') patch.shippedAt = patch.shippedAt || new Date().toISOString().slice(0,10);
+  dbUpdateItem('purchases', id, patch);
+  render();
+  toast('상태 업데이트: ' + STATUS_MAP[status].lb);
+}
+
+function deletePurch(id) {
+  if (!confirm('삭제하시겠습니까?')) return;
+  dbDeleteItem('purchases', id);
+  render();
+  toast('삭제되었습니다.', 'warn');
+}
+
+// ═══════════════════════════════════════════
+// PURCHASE MODAL
+// ═══════════════════════════════════════════
+function addPurchModal(storeId) {
+  S.editPurchId = null;
+  S.storeFromId = storeId || null;
+  buildPurchModal(null);
+  openModal('modal-purch');
+}
+
+function editPurch(id) {
+  S.editPurchId = id;
+  const p = (DB.purchases || []).find(x => x.id === id);
+  buildPurchModal(p);
+  openModal('modal-purch');
+}
+
+function addPurchFromStore() {
+  closeModal('modal-store');
+  addPurchModal(S.editStoreId);
+}
+
+function buildPurchModal(p) {
+  const isEdit = !!p;
+  document.getElementById('modal-purch-title').textContent = isEdit ? '구매 수정' : '구매 추가';
+
+  const stores = catStores();
+  const albums = getCatAlbums();
+  const selectedStoreId = p?.storeId || S.storeFromId || '';
+  const selectedStore = DB.stores?.find(s => s.id === selectedStoreId);
+  const ovs = selectedStore ? isOvs(selectedStore) : false;
+
+  const existingItems = p?.items || albums.map(a => ({ albKey: a.key, qty: 0, unitPrice: 0, proxyQty: 0 }));
+
+  const itemRows = albums.map(a => {
+    const item = existingItems.find(it => it.albKey === a.key) || { qty: 0, unitPrice: 0, proxyQty: 0 };
+    const price = selectedStore ? storePrice(selectedStore, a.key) : null;
+    return `<tr>
+      <td style="padding:6px 8px;font-size:13px">${a.name}</td>
+      <td style="padding:6px 4px"><input type="number" min="0" value="${item.qty || 0}" style="width:60px" id="item-qty-${a.key}" onchange="updatePurchItemPrice('${a.key}')"></td>
+      <td style="padding:6px 4px"><input type="number" min="0" value="${item.unitPrice > 0 ? item.unitPrice : (price || '')}" placeholder="${price || '가격입력'}" style="width:90px" id="item-price-${a.key}"></td>
+      <td style="padding:6px 4px"><input type="number" min="0" value="${item.proxyQty || 0}" style="width:60px" id="item-proxy-${a.key}"></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('modal-purch-body').innerHTML = `
+    <div class="form-row cols-2">
+      <div>
+        <label>판매처 *</label>
+        <select id="mp-store" onchange="updatePurchPrices()">
+          <option value="">선택하세요</option>
+          ${stores.map(s => `<option value="${s.id}" ${s.id === selectedStoreId ? 'selected' : ''}>${s.name}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label>주문일</label>
+        <input type="date" id="mp-date" value="${p?.orderDate || new Date().toISOString().slice(0,10)}">
+      </div>
+    </div>
+
+    <div class="form-row cols-2">
+      <div>
+        <label>주문번호</label>
+        <input type="text" id="mp-ordno" placeholder="주문번호" value="${p?.orderNumber || ''}">
+      </div>
+      <div>
+        <label>상태</label>
+        <select id="mp-status">
+          ${Object.entries(STATUS_MAP).map(([k,v]) => `<option value="${k}" ${(p?.status||'waiting')===k?'selected':''}>${v.lb}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+
+    <div class="section-divider">앨범 수량 및 가격</div>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:12px">
+      <thead><tr style="background:var(--sur2)">
+        <th style="padding:6px 8px;font-size:11px;text-align:left">앨범</th>
+        <th style="padding:6px 8px;font-size:11px;text-align:left">수량</th>
+        <th style="padding:6px 8px;font-size:11px;text-align:left">단가(${ovs ? getStoreCur(selectedStore) : '₩'})</th>
+        <th style="padding:6px 8px;font-size:11px;text-align:left">대리구매수량</th>
+      </tr></thead>
+      <tbody id="mp-items">${itemRows}</tbody>
+    </table>
+
+    <div class="section-divider">배송 및 추가비용</div>
+    <div class="form-row cols-3">
+      <div><label>국내배송비 (₩)</label><input type="number" min="0" id="mp-domship" value="${p?.domShip || 0}"></div>
+      ${ovs ? `
+        <div><label>국제배송비 (₩)</label><input type="number" min="0" id="mp-intlship" value="${p?.intlShip || 0}"></div>
+        <div><label>포워딩 수수료 (₩)</label><input type="number" min="0" id="mp-fwdfee" value="${p?.fwdFee || 0}"></div>
+      ` : '<div></div><div></div>'}
+    </div>
+    <div class="form-row cols-3">
+      ${ovs ? `<div><label>관세 (₩)</label><input type="number" min="0" id="mp-customs" value="${p?.customs || 0}"></div>` : '<div></div>'}
+      <div><label>할인 (₩)</label><input type="number" min="0" id="mp-discount" value="${p?.discount || 0}"></div>
+      ${ovs ? `<div><label>직접입력 KRW (0=자동)</label><input type="number" min="0" id="mp-directkrw" value="${p?.directKrw || 0}"></div>` : '<div></div>'}
+    </div>
+    ${ovs ? `
+      <div class="form-row">
+        <div><label>외화 총액 (${getStoreCur(selectedStore) || 'foreign'}, 0=자동)</label>
+          <input type="number" min="0" id="mp-foreign" value="${p?.foreignTotal || 0}"></div>
+      </div>
+    ` : ''}
+    ${isEdit && (p?.proxyKrw > 0) ? `
+      <div class="form-row">
+        <div><label>대리구매 비용 직접입력 (₩, 0=자동계산)</label>
+          <input type="number" min="0" id="mp-proxykrw" value="${p?.proxyKrw || 0}"></div>
+      </div>
+    ` : ''}
+
+    <div class="section-divider">배송 추적</div>
+    <div class="form-row cols-3">
+      <div><label>택배사</label><input type="text" id="mp-carrier" placeholder="CJ대한통운, EMS..." value="${p?.carrier || ''}"></div>
+      <div><label>운송장번호</label><input type="text" id="mp-tracking" placeholder="운송장번호" value="${p?.trackingNumber || ''}"></div>
+      <div><label>발송예정일</label><input type="date" id="mp-shipdate" value="${p?.shippedAt || ''}"></div>
+    </div>
+    <div class="form-row cols-2">
+      <div><label>수령일</label><input type="date" id="mp-delivdate" value="${p?.deliveredAt || ''}"></div>
+    </div>
+
+    <div class="form-row">
+      <div><label>메모</label><textarea id="mp-memo" rows="2">${p?.memo || ''}</textarea></div>
+    </div>
+  `;
+}
+
+function updatePurchPrices() {
+  const storeId = document.getElementById('mp-store')?.value;
+  const store = DB.stores?.find(s => s.id === storeId);
+  if (!store) return;
+  const albums = getCatAlbums();
+  albums.forEach(a => {
+    const pr = storePrice(store, a.key);
+    const input = document.getElementById('item-price-' + a.key);
+    if (input && !input.value) input.placeholder = pr ? pr.toString() : '가격입력';
+    if (input && !input._userEdited && pr) input.value = pr;
+  });
+}
+
+function updatePurchItemPrice(albKey) { /* price auto-fill handled in build */ }
+
+function savePurch() {
+  const storeId = document.getElementById('mp-store')?.value;
+  if (!storeId) { toast('판매처를 선택하세요.', 'warn'); return; }
+
+  const store = DB.stores?.find(s => s.id === storeId);
+  const albums = getCatAlbums();
+
+  const items = albums.map(a => ({
+    albKey: a.key,
+    qty: parseInt(document.getElementById('item-qty-' + a.key)?.value || '0'),
+    unitPrice: parseFloat(document.getElementById('item-price-' + a.key)?.value || '0'),
+    proxyQty: parseInt(document.getElementById('item-proxy-' + a.key)?.value || '0'),
+  })).filter(it => it.qty > 0);
+
+  const purch = {
+    storeId,
+    items,
+    orderDate: document.getElementById('mp-date')?.value || '',
+    orderNumber: document.getElementById('mp-ordno')?.value || '',
+    status: document.getElementById('mp-status')?.value || 'waiting',
+    domShip: parseFloat(document.getElementById('mp-domship')?.value || '0'),
+    intlShip: parseFloat(document.getElementById('mp-intlship')?.value || '0'),
+    fwdFee: parseFloat(document.getElementById('mp-fwdfee')?.value || '0'),
+    customs: parseFloat(document.getElementById('mp-customs')?.value || '0'),
+    discount: parseFloat(document.getElementById('mp-discount')?.value || '0'),
+    directKrw: parseFloat(document.getElementById('mp-directkrw')?.value || '0'),
+    foreignTotal: parseFloat(document.getElementById('mp-foreign')?.value || '0'),
+    proxyKrw: parseFloat(document.getElementById('mp-proxykrw')?.value || '0'),
+    carrier: document.getElementById('mp-carrier')?.value || '',
+    trackingNumber: document.getElementById('mp-tracking')?.value || '',
+    shippedAt: document.getElementById('mp-shipdate')?.value || '',
+    deliveredAt: document.getElementById('mp-delivdate')?.value || '',
+    memo: document.getElementById('mp-memo')?.value || '',
+    createdAt: new Date().toISOString(),
+  };
+
+  if (S.editPurchId) {
+    dbUpdateItem('purchases', S.editPurchId, purch);
+    toast('구매 기록 수정됨');
+  } else {
+    dbInsert('purchases', purch);
+    toast('구매 기록 추가됨');
+  }
+  closeModal('modal-purch');
+  render();
+}
+
+// ═══════════════════════════════════════════
+// STORES
+// ═══════════════════════════════════════════
+function renderStores() {
+  const albums = getCatAlbums();
+  const search = document.getElementById('store-search')?.value.toLowerCase() || '';
+  const countryF = document.getElementById('store-country-filter')?.value || '';
+  const albF = document.getElementById('store-alb-filter')?.value || S.albKey || '';
+  const showEnded = document.getElementById('store-show-ended')?.checked || false;
+  const musicOnly = document.getElementById('store-music-only')?.checked || false;
+
+  // Album tabs
+  const tabsEl = document.getElementById('stores-alb-tabs');
+  if (tabsEl) {
+    tabsEl.innerHTML = `<button class="alb-chip${!albF ? ' active' : ''}" onclick="S.albKey='';render()">전체</button>` +
+      albums.map(a => `<button class="alb-chip${albF===a.key ? ' active' : ''}" onclick="S.albKey='${a.key}';render()">${a.name}</button>`).join('');
+  }
+
+  let stores = catStores();
+  if (search) stores = stores.filter(s => s.name.toLowerCase().includes(search));
+  if (countryF) stores = stores.filter(s => s.country === countryF);
+  if (albF) stores = stores.filter(s => s.unpoAlbumKey === albF || (s.priceMode === 'country') || (s.customPrices && albF in s.customPrices && s.customPrices[albF] !== null));
+  if (!showEnded) stores = stores.filter(s => !isExpired(s));
+  if (musicOnly) stores = stores.filter(s => s.isMusicStreamTeam);
+
+  const grid = document.getElementById('stores-grid');
+  grid.innerHTML = stores.length
+    ? stores.map(s => renderStoreCard(s)).join('')
+    : '<div class="empty" style="grid-column:1/-1">조건에 맞는 판매처가 없습니다</div>';
+}
+
+function renderStoreCard(s) {
+  const dist = distName(s.distId);
+  const country = COUNTRIES[s.country];
+  const expired = isExpired(s);
+  const albums = getCatAlbums(s.categoryId);
+
+  const priceRows = albums.map(a => {
+    const pr = storePrice(s, a.key);
+    if (pr === null) return '';
+    const cur = getStoreCur(s);
+    const prKRW = isOvs(s) ? toKRW(pr, cur) : pr;
+    return `<div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0">
+      <span class="text-muted">${a.name}</span>
+      <span class="fw-600">${isOvs(s) ? `${cur} ${Number(pr).toLocaleString()} (${fKRW(prKRW)})` : fKRW(pr)}</span>
+    </div>`;
+  }).filter(Boolean).join('');
+
+  return `<div class="card" style="margin-bottom:0;${expired ? 'opacity:.55' : ''}cursor:pointer" onclick="showStoreDetail('${s.id}')">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px">
+      <div>
+        <div class="fw-600">${s.name}${expired ? ' <span class="badge badge-gray" style="font-size:10px">마감</span>' : ''}</div>
+        <div class="text-sm text-muted">${dist ? dist + ' · ' : ''}${country?.flag || ''} ${country?.lb || s.country}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        ${s.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : ''}
+        ${s.round ? `<span class="badge badge-info">${s.round}차</span>` : ''}
+        ${s.unpoAlbumKey ? `<span class="badge badge-pk" style="font-size:10px">미공포</span>` : ''}
+        ${s.videocall ? '<span title="영통" style="font-size:14px">📞</span>' : ''}
+      </div>
+    </div>
+
+    <div style="margin-bottom:8px">${priceRows}</div>
+
+    <div style="font-size:11px;color:var(--tx3)">
+      ${s.purchaseStart ? '구매: ' + fDate(s.purchaseStart, true) + ' ~ ' + (s.purchaseEnd ? fDate(s.purchaseEnd, true) : (s.purchaseEndTxt || '미정')) : ''}
+    </div>
+    ${s.offlineStart ? `<div style="font-size:11px;color:var(--warn)">🏪 오프라인: ${fDate(s.offlineStart)} ~ ${fDate(s.offlineEnd)}</div>` : ''}
+  </div>`;
+}
+
+function showStoreDetail(storeId) {
+  S.editStoreId = storeId;
+  const s = DB.stores?.find(x => x.id === storeId);
+  if (!s) return;
+  const dist = distName(s.distId);
+  const country = COUNTRIES[s.country];
+  const albums = getCatAlbums(s.categoryId);
+
+  const priceTable = `<table style="width:100%;border-collapse:collapse;font-size:13px">
+    <thead><tr style="background:var(--sur2)">
+      <th style="padding:6px 8px;text-align:left">앨범</th>
+      <th style="padding:6px 8px;text-align:right">가격</th>
+      <th style="padding:6px 8px;text-align:right">원화환산</th>
+    </tr></thead>
+    <tbody>
+      ${albums.map(a => {
+        const pr = storePrice(s, a.key);
+        const cur = getStoreCur(s);
+        const prKRW = pr !== null ? (isOvs(s) ? toKRW(pr, cur) : pr) : null;
+        return `<tr>
+          <td style="padding:6px 8px">${a.name}</td>
+          <td style="padding:6px 8px;text-align:right">${pr !== null ? (isOvs(s) ? cur + ' ' + Number(pr).toLocaleString() : fKRW(pr)) : '미판매'}</td>
+          <td style="padding:6px 8px;text-align:right">${prKRW !== null ? fKRW(prKRW) : '—'}</td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table>`;
+
+  document.getElementById('modal-store-title').textContent = s.name;
+  document.getElementById('modal-store-body').innerHTML = `
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+      ${s.isMusicStreamTeam ? '<span class="badge badge-music">🎵 음원총공팀 연계</span>' : ''}
+      ${s.round ? `<span class="badge badge-info">${s.round}차</span>` : ''}
+      <span class="badge badge-gray">${country?.flag || ''} ${country?.lb || s.country}</span>
+      ${dist ? `<span class="badge badge-gray">${dist}</span>` : ''}
+      ${s.videocall ? '<span class="badge badge-pk">📞 영통</span>' : ''}
+      ${s.unpoAlbumKey ? `<span class="badge badge-pk">미공포: ${s.unpoAlbumKey}</span>` : ''}
+    </div>
+
+    <div class="section-divider">가격표</div>
+    ${priceTable}
+
+    <div class="section-divider">구매 정보</div>
+    <div class="store-detail-grid">
+      <div class="store-detail-row"><div class="store-detail-label">구매 시작</div><div class="store-detail-val">${s.purchaseStart ? fDate(s.purchaseStart, true) : '—'}</div></div>
+      <div class="store-detail-row"><div class="store-detail-label">구매 종료</div><div class="store-detail-val">${s.purchaseEnd ? fDate(s.purchaseEnd, true) : (s.purchaseEndTxt || '미정')}</div></div>
+      <div class="store-detail-row"><div class="store-detail-label">국내배송비</div><div class="store-detail-val">${s.defDomShip > 0 ? fKRW(s.defDomShip) : '무료'}</div></div>
+      <div class="store-detail-row"><div class="store-detail-label">배송예정일</div><div class="store-detail-val">${s.defDeliveryDate ? fDate(s.defDeliveryDate) : '미정'}</div></div>
+    </div>
+
+    ${s.offlineStart ? `
+      <div class="section-divider">오프라인 행사</div>
+      <div class="store-detail-grid">
+        <div class="store-detail-row"><div class="store-detail-label">오프라인 기간</div><div class="store-detail-val">${fDate(s.offlineStart)} ~ ${fDate(s.offlineEnd)}</div></div>
+        <div class="store-detail-row"><div class="store-detail-label">운영시간</div><div class="store-detail-val">${s.offlineHours || '—'}</div></div>
+      </div>
+      ${s.offlineAddress ? `<div style="font-size:12px;color:var(--tx2);margin-top:6px">📍 ${s.offlineAddress}</div>` : ''}
+      ${s.offlineNote ? `<div style="font-size:12px;color:var(--tx2);margin-top:6px;white-space:pre-wrap">${s.offlineNote}</div>` : ''}
+    ` : ''}
+
+    ${s.memo ? `
+      <div class="section-divider">메모</div>
+      <div style="font-size:13px;color:var(--tx2);white-space:pre-wrap">${s.memo}</div>
+    ` : ''}
+
+    ${s.url ? `
+      <div style="margin-top:16px">
+        <a href="${s.url}" target="_blank" class="btn btn-ghost btn-sm">🔗 구매 링크 열기</a>
+      </div>
+    ` : ''}
+  `;
+
+  openModal('modal-store');
+}
+
+// ═══════════════════════════════════════════
+// UNPO
+// ═══════════════════════════════════════════
+function renderUnpo() {
+  const albums = getCatAlbums();
+  const albKey = S.unpoAlbKey || (albums[0]?.key || '');
+  const search = document.getElementById('unpo-search')?.value.toLowerCase() || '';
+  const ownedOnly = document.getElementById('unpo-owned-only')?.checked || false;
+
+  // Album tabs
+  const tabsEl = document.getElementById('unpo-alb-tabs');
+  if (tabsEl) {
+    tabsEl.innerHTML = albums.map(a =>
+      `<button class="alb-chip${albKey===a.key ? ' active' : ''}" onclick="S.unpoAlbKey='${a.key}';render()">${a.name}</button>`
+    ).join('');
+    if (!S.unpoAlbKey && albums.length) S.unpoAlbKey = albums[0].key;
+  }
+
+  // Get stores with unpo for this album key
+  const stores = catStores().filter(s => s.unpoAlbumKey === albKey);
+
+  const html = stores.filter(s => !search || s.name.toLowerCase().includes(search)).map(s => {
+    const unpo = dbGetUnpoCards(s.id, albKey);
+    if (!unpo || !unpo.sets?.length) {
+      return `<div class="card" style="margin-bottom:12px">
+        <div class="card-header">
+          <div class="fw-600">${s.name} <span class="text-muted text-sm">미공포 없음</span></div>
+        </div>
+      </div>`;
+    }
+
+    const setsHtml = unpo.sets.map((set, si) => {
+      const cards = set.cards || [];
+      const ownedCount = cards.filter(c => c.owned).length;
+      const cardsHtml = cards.map((c, ci) => {
+        if (ownedOnly && !c.owned) return '';
+        return `<div class="unpo-card-wrap">
+          <div class="unpo-card${c.owned ? ' owned' : ''}" onclick="toggleUnpoOwned('${s.id}','${albKey}',${si},${ci})">
+            ${c.img ? `<img src="${c.img}" loading="lazy">` : '<div class="no-img">📷<br>미등록</div>'}
+            ${c.owned ? '<div class="unpo-owned-badge">보유</div>' : ''}
+          </div>
+          ${c.note ? `<div style="font-size:10px;color:var(--tx3);text-align:center">${c.note}</div>` : ''}
+        </div>`;
+      }).filter(Boolean).join('');
+
+      if (!cardsHtml) return '';
+      return `<div style="margin-bottom:12px">
+        ${set.memo ? `<div style="font-size:12px;color:var(--tx2);margin-bottom:6px">${set.memo}</div>` : ''}
+        <div style="font-size:11px;color:var(--tx3);margin-bottom:6px">${ownedCount}/${cards.length} 보유</div>
+        <div class="unpo-grid${cards.length > 5 ? ' six' : ''}">${cardsHtml}</div>
+      </div>`;
+    }).filter(Boolean).join('');
+
+    const totalCards = unpo.sets.reduce((s, set) => s + (set.cards?.length || 0), 0);
+    const ownedCards = unpo.sets.reduce((s, set) => s + (set.cards?.filter(c => c.owned).length || 0), 0);
+
+    return `<div class="card" style="margin-bottom:12px">
+      <div class="card-header">
+        <div class="fw-600">${s.name}</div>
+        <span class="badge ${ownedCards === totalCards && totalCards > 0 ? 'badge-ok' : 'badge-gray'}">${ownedCards}/${totalCards}</span>
+      </div>
+      ${setsHtml || '<div class="empty">카드 정보 없음</div>'}
+    </div>`;
+  }).join('');
+
+  document.getElementById('unpo-content').innerHTML = html || '<div class="empty">미공포 정보가 없습니다.<br>관리자에서 등록하세요.</div>';
+}
+
+function toggleUnpoOwned(storeId, albKey, si, ci) {
+  const s = dbGet();
+  const ucIdx = (s.unpoCards || []).findIndex(uc => uc.storeId === storeId && uc.albumTypeId === albKey);
+  if (ucIdx < 0) return;
+  const newUnpo = JSON.parse(JSON.stringify(s.unpoCards));
+  const card = newUnpo[ucIdx]?.sets?.[si]?.cards?.[ci];
+  if (card) {
+    card.owned = !card.owned;
+    dbUpdate(st => ({ ...st, unpoCards: newUnpo }));
+    DB = dbGet();
+    render();
+  }
+}
+
+// ═══════════════════════════════════════════
+// CALENDAR
+// ═══════════════════════════════════════════
+function renderCal() {
+  const y = S.calYear, m = S.calMonth;
+  const today = new Date();
+  const monthNames = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  document.getElementById('cal-month-title').textContent = y + '년 ' + monthNames[m];
+
+  const showPur = document.getElementById('cal-show-pur')?.checked !== false;
+  const showOff = document.getElementById('cal-show-off')?.checked !== false;
+  const showDel = document.getElementById('cal-show-del')?.checked !== false;
+
+  // Days header
+  const days = ['일','월','화','수','목','금','토'];
+  document.getElementById('cal-header-row').innerHTML = days.map(d =>
+    `<div class="cal-header-cell">${d}</div>`
+  ).join('');
+
+  // Build events map
+  const events = {}; // date string -> [{type, label, color}]
+  const addEvent = (dateStr, ev) => {
+    if (!events[dateStr]) events[dateStr] = [];
+    events[dateStr].push(ev);
+  };
+
+  const cat = getCat();
+
+  // Release date
+  if (cat?.releaseDate) {
+    addEvent(cat.releaseDate, { type: 'release', label: '🎵 발매일: ' + cat.name });
+  }
+
+  const stores = catStores();
+  stores.forEach(s => {
+    if (showPur) {
+      if (s.purchaseStart) addEvent(s.purchaseStart.slice(0,10), { type: 'purchase', label: '🛒 시작: ' + s.name });
+      if (s.purchaseEnd) addEvent(s.purchaseEnd.slice(0,10), { type: 'purchase', label: '🛒 마감: ' + s.name });
+    }
+    if (showOff) {
+      if (s.offlineStart) addEvent(s.offlineStart.slice(0,10), { type: 'offline', label: '🏪 오프: ' + s.name });
+      if (s.offlineEnd && s.offlineEnd !== s.offlineStart) addEvent(s.offlineEnd.slice(0,10), { type: 'offline', label: '🏪 오프끝: ' + s.name });
+    }
+  });
+
+  if (showDel) {
+    const purches = (DB.purchases || []).filter(p => {
+      const st = DB.stores?.find(s => s.id === p.storeId);
+      return st?.categoryId === S.catId;
+    });
+    purches.forEach(p => {
+      const store = DB.stores?.find(s => s.id === p.storeId);
+      const delivDate = p.deliveredAt || store?.defDeliveryDate;
+      if (delivDate) addEvent(delivDate.slice(0,10), { type: 'delivery', label: '📦 ' + storeName(p.storeId) });
+    });
+  }
+
+  // Build calendar grid
+  const firstDay = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const daysInPrev = new Date(y, m, 0).getDate();
+
+  let cells = '';
+  let totalCells = 42;
+  for (let i = 0; i < totalCells; i++) {
+    let day, isOther = false, dateStr;
+    if (i < firstDay) {
+      day = daysInPrev - firstDay + i + 1;
+      isOther = true;
+      dateStr = new Date(y, m - 1, day).toISOString().slice(0, 10);
+    } else if (i - firstDay >= daysInMonth) {
+      day = i - firstDay - daysInMonth + 1;
+      isOther = true;
+      dateStr = new Date(y, m + 1, day).toISOString().slice(0, 10);
+    } else {
+      day = i - firstDay + 1;
+      dateStr = new Date(y, m, day).toISOString().slice(0, 10);
+    }
+
+    const isToday = dateStr === today.toISOString().slice(0, 10);
+    const isSelected = dateStr === S.calDay;
+    const evs = (events[dateStr] || []).slice(0, 3);
+
+    cells += `<div class="cal-cell${isOther ? ' other-month' : ''}${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}"
+      onclick="calSelectDay('${dateStr}')">
+      <div class="cal-day-num">${day}</div>
+      ${evs.map(ev => `<div class="cal-event ${ev.type}">${ev.label}</div>`).join('')}
+      ${(events[dateStr] || []).length > 3 ? `<div style="font-size:9px;color:var(--tx3)">+${(events[dateStr]||[]).length-3}</div>` : ''}
+    </div>`;
+  }
+  document.getElementById('cal-body').innerHTML = cells;
+
+  // Day detail
+  if (S.calDay && events[S.calDay]) {
+    const dayEvents = events[S.calDay];
+    document.getElementById('cal-day-detail').innerHTML = `
+      <div class="cal-day-panel">
+        <div class="fw-600" style="margin-bottom:8px">${S.calDay} 일정 (${dayEvents.length}건)</div>
+        ${dayEvents.map(ev => `<div class="cal-event ${ev.type}" style="font-size:12px;margin-bottom:4px">${ev.label}</div>`).join('')}
+      </div>`;
+  } else {
+    document.getElementById('cal-day-detail').innerHTML = '';
+  }
+}
+
+function calSelectDay(dateStr) { S.calDay = S.calDay === dateStr ? null : dateStr; render(); }
+function calPrev() { if (S.calMonth === 0) { S.calMonth = 11; S.calYear--; } else S.calMonth--; render(); }
+function calNext() { if (S.calMonth === 11) { S.calMonth = 0; S.calYear++; } else S.calMonth++; render(); }
+function calToday() { S.calYear = new Date().getFullYear(); S.calMonth = new Date().getMonth(); S.calDay = new Date().toISOString().slice(0,10); render(); }
+
+// ═══════════════════════════════════════════
+// MODAL HELPERS
+// ═══════════════════════════════════════════
+function openModal(id) { document.getElementById(id)?.classList.add('open'); }
+function closeModal(id) { document.getElementById(id)?.classList.remove('open'); }
+
+// Close on backdrop click
+document.querySelectorAll('.modal-bg').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) closeModal(el.id); });
+});
+
+// Keyboard close
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-bg.open').forEach(el => closeModal(el.id));
+});
+
+// ═══════════════════════════════════════════
+// START
+// ═══════════════════════════════════════════
+init();
+</script>
+</body>
+</html>

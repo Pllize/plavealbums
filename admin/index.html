@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>앨범 관리자</title>
+<link rel="stylesheet" href="../css/app.css">
+<style>
+:root { --nav-w: 220px; }
+.export-box {
+  background: var(--sur2); border: 1px solid var(--bd); border-radius: var(--r-sm);
+  padding: 12px; font: 12px/1.6 'Menlo','Monaco',monospace; color: var(--tx2);
+  white-space: pre; overflow: auto; max-height: 260px;
+}
+.unpo-set-wrap { background: var(--sur2); border: 1px solid var(--bd); border-radius: var(--r-sm); padding: 12px; margin-bottom: 10px; }
+.unpo-set-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.unpo-grid-admin { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.unpo-card-admin {
+  position: relative; aspect-ratio: 3/4; border-radius: 4px; overflow: hidden;
+  border: 1px solid var(--bd2); background: var(--sur); cursor: pointer; transition: border-color .15s;
+}
+.unpo-card-admin:hover { border-color: var(--pk); }
+.unpo-card-admin img { width: 100%; height: 100%; object-fit: cover; }
+.unpo-card-admin .no-img-hint { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--tx3); font-size: 9px; gap: 3px; }
+.unpo-upload-overlay { position: absolute; inset: 0; background: rgba(192,132,252,.2); display: none; align-items: center; justify-content: center; font-size: 18px; }
+.unpo-card-admin:hover .unpo-upload-overlay { display: flex; }
+.unpo-file-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.note-badge { position: absolute; top: 2px; right: 2px; background: rgba(192,132,252,.85); color: #fff; font-size: 9px; padding: 1px 3px; border-radius: 2px; }
+#lock-screen {
+  position: fixed; inset: 0; background: var(--bg); z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+}
+.lock-box {
+  background: var(--sur); border: 1px solid var(--bd2); border-radius: var(--r);
+  padding: 40px 36px; width: 320px; text-align: center;
+}
+.lock-icon { font-size: 40px; margin-bottom: 16px; }
+.lock-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+.lock-sub { font-size: 13px; color: var(--tx3); margin-bottom: 20px; }
+.lock-box input {
+  font-size: 20px; text-align: center; letter-spacing: .3em; margin-bottom: 10px;
+}
+.lock-err { font-size: 12px; color: var(--err); min-height: 16px; margin-bottom: 10px; }
+.lock-box input.shake { animation: shake .3s ease; border-color: var(--err) !important; }
+</style>
+</head>
+<body>
+
+<!-- Lock screen -->
+<div id="lock-screen">
+  <div class="lock-box">
+    <div class="lock-icon">🔒</div>
+    <div class="lock-title">관리자</div>
+    <div class="lock-sub">비밀번호를 입력하세요</div>
+    <input type="password" id="pw-input" placeholder="••••" maxlength="12"
+      onkeydown="if(event.key==='Enter')checkPw()"
+      oninput="this.classList.remove('shake');document.getElementById('pw-err').textContent=''">
+    <div class="lock-err" id="pw-err"></div>
+    <button class="btn btn-p" style="width:100%" onclick="checkPw()">입력</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<div class="app-layout" id="app" style="display:none">
+<!-- ── Sidebar ── -->
+<nav class="sidebar">
+  <div class="logo">⚙ Admin<span>앨범 구매관리</span></div>
+
+  <div class="nav-section">현황</div>
+  <button class="nav-item active" onclick="showPage('dashboard')" data-page="dashboard">◈ 대시보드</button>
+
+  <div class="nav-section">데이터</div>
+  <button class="nav-item" onclick="showPage('categories')" data-page="categories">🗂 분류 관리</button>
+  <button class="nav-item" onclick="showPage('albums')" data-page="albums">💿 앨범 관리</button>
+  <button class="nav-item" onclick="showPage('stores')" data-page="stores">🏪 판매처 관리</button>
+  <button class="nav-item" onclick="showPage('distributors')" data-page="distributors">📦 배급사 관리</button>
+  <button class="nav-item" onclick="showPage('unpo')" data-page="unpo">📸 미공포 관리</button>
+
+  <div class="nav-section">시스템</div>
+  <button class="nav-item" onclick="showPage('settings')" data-page="settings">⚙ 설정</button>
+  <button class="nav-item" onclick="showPage('export')" data-page="export">⬇ 내보내기</button>
+
+  <div style="margin-top:auto"></div>
+  <a class="nav-item" href="../" style="margin-top:16px">← 메인으로</a>
+</nav>
+
+<!-- ── Main ── -->
+<main class="main-content" id="main">
+
+<!-- ─── DASHBOARD ─── -->
+<div class="page active" id="page-dashboard">
+  <div class="page-header">
+    <div><div class="page-title">대시보드</div><div class="page-sub">데이터 현황 요약</div></div>
+  </div>
+  <div class="stats-grid" id="adm-stats"></div>
+  <div id="adm-unpo-summary"></div>
+</div>
+
+<!-- ─── CATEGORIES ─── -->
+<div class="page" id="page-categories">
+  <div class="page-header">
+    <div><div class="page-title">분류 관리</div><div class="page-sub">발매 분류 추가·수정·삭제 (예: Caligo Pt.2)</div></div>
+    <button class="btn btn-p" onclick="openCatModal()">+ 분류 추가</button>
+  </div>
+  <div class="card"><table id="cat-table">
+    <thead><tr><th>분류명</th><th>아티스트</th><th>발매일</th><th>앨범수</th><th>판매처수</th><th></th></tr></thead>
+    <tbody id="cat-tbody"></tbody>
+  </table></div>
+</div>
+
+<!-- ─── ALBUMS ─── -->
+<div class="page" id="page-albums">
+  <div class="page-header">
+    <div><div class="page-title">앨범 관리</div><div class="page-sub">분류 내 앨범 종류 (포토북, 포카앨범 등)</div></div>
+    <button class="btn btn-p" onclick="openAlbModal()">+ 앨범 추가</button>
+  </div>
+  <div class="filter-bar" style="margin-bottom:16px">
+    <select id="alb-cat-filter" onchange="renderAlbums()">
+      <option value="">전체 분류</option>
+    </select>
+  </div>
+  <div class="card"><table id="alb-table">
+    <thead><tr><th>분류</th><th>앨범명</th><th>키</th><th>국내가격</th><th>순서</th><th></th></tr></thead>
+    <tbody id="alb-tbody"></tbody>
+  </table></div>
+</div>
+
+<!-- ─── STORES ─── -->
+<div class="page" id="page-stores">
+  <div class="page-header">
+    <div><div class="page-title">판매처 관리</div><div class="page-sub">판매처 추가·수정·삭제</div></div>
+    <button class="btn btn-p" onclick="openStoreModal()">+ 판매처 추가</button>
+  </div>
+  <div class="filter-bar">
+    <select id="store-cat-filter" onchange="renderStores()">
+      <option value="">전체 분류</option>
+    </select>
+    <input type="text" id="store-search" placeholder="이름 검색..." oninput="renderStores()" style="max-width:200px">
+  </div>
+  <div class="card table-wrap"><table id="stores-table">
+    <thead><tr><th>판매처명</th><th>분류</th><th>배급사</th><th>국가</th><th>차수</th><th>음총</th><th>구매기간</th><th></th></tr></thead>
+    <tbody id="stores-tbody"></tbody>
+  </table></div>
+</div>
+
+<!-- ─── DISTRIBUTORS ─── -->
+<div class="page" id="page-distributors">
+  <div class="page-header">
+    <div><div class="page-title">배급사 관리</div><div class="page-sub">배급사 추가·수정·삭제</div></div>
+    <button class="btn btn-p" onclick="openDistModal()">+ 배급사 추가</button>
+  </div>
+  <div class="card"><table id="dist-table">
+    <thead><tr><th>배급사명</th><th>ID</th><th>연결된 판매처</th><th></th></tr></thead>
+    <tbody id="dist-tbody"></tbody>
+  </table></div>
+</div>
+
+<!-- ─── UNPO ─── -->
+<div class="page" id="page-unpo">
+  <div class="page-header">
+    <div><div class="page-title">미공포 관리</div><div class="page-sub">판매처별 미공개 포토카드 등록</div></div>
+  </div>
+  <div class="filter-bar">
+    <select id="unpo-cat-filter" onchange="renderUnpo()"><option value="">전체 분류</option></select>
+    <select id="unpo-alb-filter" onchange="renderUnpo()"><option value="">전체 앨범</option></select>
+    <input type="text" id="unpo-search" placeholder="판매처 검색..." oninput="renderUnpo()" style="max-width:180px">
+  </div>
+  <div id="unpo-content"></div>
+</div>
+
+<!-- ─── SETTINGS ─── -->
+<div class="page" id="page-settings">
+  <div class="page-header">
+    <div><div class="page-title">설정</div><div class="page-sub">환율, 비밀번호, 기타 설정</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💱 환율 설정</div>
+    <div id="rate-rows"></div>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <button class="btn btn-info" onclick="fetchRates()">🔄 자동 업데이트</button>
+      <button class="btn btn-p btn-sm" onclick="saveRates()">저장</button>
+    </div>
+    <div class="text-xs text-muted" id="rate-updated" style="margin-top:8px"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔒 비밀번호 변경</div>
+    <div class="form-row cols-2">
+      <div><label>새 비밀번호</label><input type="password" id="new-pw1" placeholder="새 비밀번호"></div>
+      <div><label>확인</label><input type="password" id="new-pw2" placeholder="비밀번호 확인"></div>
+    </div>
+    <button class="btn btn-p btn-sm" onclick="changePw()">비밀번호 변경</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🎨 테마</div>
+    <div class="flex gap-8">
+      <button class="btn btn-ghost" onclick="setTheme('dark')">🌙 다크</button>
+      <button class="btn btn-ghost" onclick="setTheme('light')">☀️ 라이트</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── EXPORT ─── -->
+<div class="page" id="page-export">
+  <div class="page-header">
+    <div><div class="page-title">내보내기 / 가져오기</div><div class="page-sub">데이터 백업 및 복원</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⬇ JSON 내보내기</div>
+    <div class="flex gap-8" style="margin-bottom:12px">
+      <button class="btn btn-p" onclick="doExport()">전체 데이터 내보내기</button>
+      <button class="btn btn-ghost" onclick="copyExport()">클립보드 복사</button>
+    </div>
+    <div class="export-box" id="export-box">내보내기 버튼을 클릭하세요</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⬆ JSON 가져오기</div>
+    <div style="margin-bottom:8px;font-size:13px;color:var(--warn)">⚠ 기존 데이터가 모두 덮어씌워집니다!</div>
+    <textarea id="import-box" rows="6" placeholder="JSON 데이터를 붙여넣으세요..."></textarea>
+    <div style="margin-top:10px">
+      <button class="btn btn-err" onclick="doImport()">가져오기 (덮어쓰기)</button>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- ═══════ MODALS ═══════ -->
+
+<!-- Category Modal -->
+<div class="modal-bg" id="modal-cat">
+  <div class="modal">
+    <div class="modal-head"><h3 id="modal-cat-title">분류 추가</h3><button class="modal-close" onclick="closeModal('modal-cat')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row cols-2">
+        <div><label>분류명 *</label><input type="text" id="mc-name" placeholder="예: Caligo Pt.2"></div>
+        <div><label>아티스트</label><input type="text" id="mc-artist" placeholder="예: PLAVE"></div>
+      </div>
+      <div class="form-row cols-2">
+        <div><label>발매일</label><input type="date" id="mc-release"></div>
+        <div><label>설명</label><input type="text" id="mc-desc" placeholder="예: 4th Mini Album"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-cat')">취소</button>
+      <button class="btn btn-p" onclick="saveCat()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Album Modal -->
+<div class="modal-bg" id="modal-alb">
+  <div class="modal">
+    <div class="modal-head"><h3 id="modal-alb-title">앨범 추가</h3><button class="modal-close" onclick="closeModal('modal-alb')">✕</button></div>
+    <div class="modal-body" id="modal-alb-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-alb')">취소</button>
+      <button class="btn btn-p" onclick="saveAlb()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Store Modal -->
+<div class="modal-bg" id="modal-store">
+  <div class="modal modal-xl">
+    <div class="modal-head"><h3 id="modal-store-title">판매처 추가</h3><button class="modal-close" onclick="closeModal('modal-store')">✕</button></div>
+    <div class="modal-body" id="modal-store-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-store')">취소</button>
+      <button class="btn btn-p" onclick="saveStore()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Distributor Modal -->
+<div class="modal-bg" id="modal-dist">
+  <div class="modal">
+    <div class="modal-head"><h3 id="modal-dist-title">배급사 추가</h3><button class="modal-close" onclick="closeModal('modal-dist')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div><label>배급사명 *</label><input type="text" id="md-name" placeholder="배급사 이름"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-dist')">취소</button>
+      <button class="btn btn-p" onclick="saveDist()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Unpo Card Note Modal -->
+<div class="modal-bg" id="modal-unpo-note">
+  <div class="modal">
+    <div class="modal-head"><h3>카드 메모</h3><button class="modal-close" onclick="closeModal('modal-unpo-note')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row"><div><label>카드 메모</label><textarea id="unpo-note-input" rows="3"></textarea></div></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-unpo-note')">취소</button>
+      <button class="btn btn-p" onclick="saveUnpoNote()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/db.js"></script>
+<script src="../js/seed.js"></script>
+<script>
+// ═══════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════
+const COUNTRIES = {
+  KR: { lb: '한국', cur: 'KRW', ovs: false, flag: '🇰🇷' },
+  JP: { lb: '일본', cur: 'JPY', ovs: true,  flag: '🇯🇵' },
+  CN: { lb: '중국', cur: 'CNY', ovs: true,  flag: '🇨🇳' },
+  US: { lb: '미국', cur: 'USD', ovs: true,  flag: '🇺🇸' },
+  TW: { lb: '대만', cur: 'TWD', ovs: true,  flag: '🇹🇼' },
+};
+
+const DEF_PW = '1234';
+
+// ═══════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════
+function checkPw() {
+  const val = document.getElementById('pw-input').value;
+  const stored = dbGet().settings?.adminPw || DEF_PW;
+  if (val === stored) {
+    document.getElementById('lock-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'grid';
+    initAdmin();
+  } else {
+    const inp = document.getElementById('pw-input');
+    inp.classList.add('shake');
+    document.getElementById('pw-err').textContent = '비밀번호가 틀렸습니다';
+    inp.value = '';
+  }
+}
+
+document.getElementById('pw-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkPw();
+});
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let DB = {};
+let ADM = {
+  editCatId: null,
+  editAlbId: null,
+  editStoreId: null,
+  editDistId: null,
+  unpoStoreId: null,
+  unpoAlbKey: null,
+  unpoNoteCtx: null,
+  page: 'dashboard',
+};
+
+function initAdmin() {
+  DB = dbInit(seedDatabase);
+  buildCatFilters();
+  renderPage();
+}
+
+function reloadDB() { DB = dbGet(); }
+
+// ═══════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════
+function showPage(page) {
+  ADM.page = page;
+  document.querySelectorAll('.page').forEach(el => el.classList.toggle('active', el.id === 'page-' + page));
+  document.querySelectorAll('[data-page]').forEach(el => el.classList.toggle('active', el.dataset.page === page));
+  renderPage();
+}
+
+function renderPage() {
+  reloadDB();
+  const map = {
+    dashboard: renderDashboard,
+    categories: renderCategories,
+    albums: renderAlbums,
+    stores: renderStores,
+    distributors: renderDist,
+    unpo: renderUnpo,
+    settings: renderSettings,
+    export: renderExport,
+  };
+  (map[ADM.page] || renderDashboard)();
+}
+
+function buildCatFilters() {
+  reloadDB();
+  const cats = DB.categories || [];
+  const opts = '<option value="">전체 분류</option>' + cats.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  ['alb-cat-filter','store-cat-filter','unpo-cat-filter'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = opts;
+  });
+  buildUnpoAlbFilter();
+}
+
+function buildUnpoAlbFilter() {
+  const catF = document.getElementById('unpo-cat-filter')?.value || '';
+  const albs = (DB.albumTypes || []).filter(a => !catF || a.categoryId === catF);
+  const el = document.getElementById('unpo-alb-filter');
+  if (el) el.innerHTML = '<option value="">전체 앨범</option>' + albs.map(a => `<option value="${a.key}">${a.name}</option>`).join('');
+}
+
+// ═══════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════
+function fKRW(n) { return n == null ? '—' : Math.round(n).toLocaleString() + '원'; }
+function fDate(dt) { if (!dt) return ''; try { return new Date(dt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' }); } catch(e) { return dt; } }
+function fDateFull(dt) { if (!dt) return ''; try { return new Date(dt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch(e) { return dt; } }
+function catName(catId) { return (DB.categories || []).find(c => c.id === catId)?.name || '?'; }
+function distName(distId) { return (DB.distributors || []).find(d => d.id === distId)?.name || '—'; }
+function isExpired(store) { return store.purchaseEnd && new Date(store.purchaseEnd) < new Date(); }
+
+let _toastT;
+function toast(msg, type = 'ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'show ' + type;
+  clearTimeout(_toastT); _toastT = setTimeout(() => el.className = '', 2800);
+}
+
+function openModal(id) { document.getElementById(id)?.classList.add('open'); }
+function closeModal(id) { document.getElementById(id)?.classList.remove('open'); }
+document.querySelectorAll('.modal-bg').forEach(el => el.addEventListener('click', e => { if (e.target === el) closeModal(el.id); }));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal-bg.open').forEach(el => closeModal(el.id)); });
+
+// ═══════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════
+function renderDashboard() {
+  const cats = DB.categories || [];
+  const albs = DB.albumTypes || [];
+  const stores = DB.stores || [];
+  const dists = DB.distributors || [];
+  const purches = DB.purchases || [];
+  const unpoEntries = DB.unpoCards || [];
+
+  document.getElementById('adm-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${cats.length}</div><div class="stat-label">분류</div></div>
+    <div class="stat-card"><div class="stat-num">${albs.length}</div><div class="stat-label">앨범 종류</div></div>
+    <div class="stat-card"><div class="stat-num">${stores.length}</div><div class="stat-label">판매처</div></div>
+    <div class="stat-card"><div class="stat-num">${dists.length}</div><div class="stat-label">배급사</div></div>
+    <div class="stat-card"><div class="stat-num">${purches.length}</div><div class="stat-label">구매 기록</div></div>
+    <div class="stat-card"><div class="stat-num">${unpoEntries.length}</div><div class="stat-label">미공포 등록 판매처</div></div>
+  `;
+
+  // Unpo summary
+  const totalCards = unpoEntries.reduce((s, uc) => s + uc.sets.reduce((ss, set) => ss + (set.cards?.length || 0), 0), 0);
+  const ownedCards = unpoEntries.reduce((s, uc) => s + uc.sets.reduce((ss, set) => ss + (set.cards?.filter(c => c.owned).length || 0), 0), 0);
+  const withImg = unpoEntries.reduce((s, uc) => s + uc.sets.reduce((ss, set) => ss + (set.cards?.filter(c => c.img).length || 0), 0), 0);
+
+  document.getElementById('adm-unpo-summary').innerHTML = `
+    <div class="card">
+      <div class="card-title">📸 미공포 현황</div>
+      <div class="stats-grid" style="margin-bottom:0">
+        <div class="stat-card"><div class="stat-num">${totalCards}</div><div class="stat-label">총 카드 수</div></div>
+        <div class="stat-card"><div class="stat-num">${withImg}</div><div class="stat-label">이미지 등록</div></div>
+        <div class="stat-card"><div class="stat-num ok">${ownedCards}</div><div class="stat-label">보유</div></div>
+        <div class="stat-card"><div class="stat-num warn">${totalCards - withImg}</div><div class="stat-label">이미지 미등록</div></div>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════
+// CATEGORIES
+// ═══════════════════════════════════════════
+function renderCategories() {
+  const cats = DB.categories || [];
+  document.getElementById('cat-tbody').innerHTML = cats.map(c => {
+    const albCount = (DB.albumTypes || []).filter(a => a.categoryId === c.id).length;
+    const storeCount = (DB.stores || []).filter(s => s.categoryId === c.id).length;
+    return `<tr>
+      <td><span class="fw-600">${c.name}</span></td>
+      <td>${c.artist || '—'}</td>
+      <td>${c.releaseDate ? fDate(c.releaseDate) : '—'}</td>
+      <td>${albCount}</td>
+      <td>${storeCount}</td>
+      <td class="flex gap-4">
+        <button class="btn btn-ghost btn-xs" onclick="openCatModal('${c.id}')">편집</button>
+        <button class="btn btn-err btn-xs" onclick="deleteCat('${c.id}')">삭제</button>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" class="empty">분류 없음</td></tr>';
+}
+
+function openCatModal(id) {
+  ADM.editCatId = id || null;
+  const c = id ? (DB.categories || []).find(x => x.id === id) : null;
+  document.getElementById('modal-cat-title').textContent = id ? '분류 수정' : '분류 추가';
+  document.getElementById('mc-name').value = c?.name || '';
+  document.getElementById('mc-artist').value = c?.artist || '';
+  document.getElementById('mc-release').value = c?.releaseDate || '';
+  document.getElementById('mc-desc').value = c?.description || '';
+  openModal('modal-cat');
+}
+
+function saveCat() {
+  const name = document.getElementById('mc-name').value.trim();
+  if (!name) { toast('분류명을 입력하세요', 'warn'); return; }
+  const data = {
+    name,
+    artist: document.getElementById('mc-artist').value.trim(),
+    releaseDate: document.getElementById('mc-release').value,
+    description: document.getElementById('mc-desc').value.trim(),
+    sortOrder: Date.now(),
+  };
+  if (ADM.editCatId) {
+    dbUpdateItem('categories', ADM.editCatId, data);
+    toast('분류 수정됨');
+  } else {
+    dbInsert('categories', { ...data, createdAt: new Date().toISOString() });
+    toast('분류 추가됨');
+  }
+  closeModal('modal-cat');
+  reloadDB(); buildCatFilters(); renderCategories();
+}
+
+function deleteCat(id) {
+  const albCount = (DB.albumTypes || []).filter(a => a.categoryId === id).length;
+  const storeCount = (DB.stores || []).filter(s => s.categoryId === id).length;
+  if (!confirm(`이 분류를 삭제하시겠습니까?\n연결된 앨범 ${albCount}개, 판매처 ${storeCount}개도 함께 삭제됩니다.`)) return;
+  dbDeleteItem('categories', id);
+  dbUpdate(s => ({ ...s, albumTypes: (s.albumTypes||[]).filter(a => a.categoryId !== id), stores: (s.stores||[]).filter(st => st.categoryId !== id) }));
+  reloadDB(); buildCatFilters(); renderCategories();
+  toast('분류 삭제됨', 'warn');
+}
+
+// ═══════════════════════════════════════════
+// ALBUMS
+// ═══════════════════════════════════════════
+function renderAlbums() {
+  const catF = document.getElementById('alb-cat-filter')?.value || '';
+  const albs = (DB.albumTypes || []).filter(a => !catF || a.categoryId === catF).sort((a,b) => a.sortOrder - b.sortOrder);
+  document.getElementById('alb-tbody').innerHTML = albs.map(a => `<tr>
+    <td>${catName(a.categoryId)}</td>
+    <td><span class="fw-600">${a.name}</span></td>
+    <td><code>${a.key}</code></td>
+    <td>${a.countryPrices?.KR ? fKRW(a.countryPrices.KR) : '—'}</td>
+    <td>${a.sortOrder || 0}</td>
+    <td class="flex gap-4">
+      <button class="btn btn-ghost btn-xs" onclick="openAlbModal('${a.id}')">편집</button>
+      <button class="btn btn-err btn-xs" onclick="deleteAlb('${a.id}')">삭제</button>
+    </td>
+  </tr>`).join('') || '<tr><td colspan="6" class="empty">앨범 없음</td></tr>';
+}
+
+function openAlbModal(id) {
+  ADM.editAlbId = id || null;
+  const a = id ? (DB.albumTypes || []).find(x => x.id === id) : null;
+  const cats = DB.categories || [];
+  document.getElementById('modal-alb-title').textContent = id ? '앨범 수정' : '앨범 추가';
+  document.getElementById('modal-alb-body').innerHTML = `
+    <div class="form-row cols-2">
+      <div><label>분류 *</label>
+        <select id="ma-cat">
+          ${cats.map(c => `<option value="${c.id}" ${c.id === (a?.categoryId || cats[0]?.id) ? 'selected' : ''}>${c.name}</option>`).join('')}
+        </select>
+      </div>
+      <div><label>순서</label><input type="number" id="ma-sort" value="${a?.sortOrder || 1}" min="1"></div>
+    </div>
+    <div class="form-row cols-2">
+      <div><label>앨범명 *</label><input type="text" id="ma-name" value="${a?.name || ''}" placeholder="포토북"></div>
+      <div><label>키 (영문) *</label><input type="text" id="ma-key" value="${a?.key || ''}" placeholder="PHOTOBOOK"></div>
+    </div>
+    <div style="font-size:12px;color:var(--tx2);margin-bottom:10px">국가별 정가 (판매처 priceMode=country 시 기준가)</div>
+    <div class="form-row cols-3">
+      <div><label>한국 (₩)</label><input type="number" id="ma-kr" value="${a?.countryPrices?.KR || ''}"></div>
+      <div><label>일본 (¥)</label><input type="number" id="ma-jp" value="${a?.countryPrices?.JP || ''}"></div>
+      <div><label>중국 (元)</label><input type="number" id="ma-cn" value="${a?.countryPrices?.CN || ''}"></div>
+    </div>
+    <div class="form-row cols-2">
+      <div><label>미국 ($)</label><input type="number" id="ma-us" value="${a?.countryPrices?.US || ''}"></div>
+      <div><label>대만 (NT$)</label><input type="number" id="ma-tw" value="${a?.countryPrices?.TW || ''}"></div>
+    </div>
+  `;
+  openModal('modal-alb');
+}
+
+function saveAlb() {
+  const name = document.getElementById('ma-name').value.trim();
+  const key = document.getElementById('ma-key').value.trim().toUpperCase().replace(/\s+/g, '_');
+  if (!name || !key) { toast('앨범명과 키를 입력하세요', 'warn'); return; }
+  const data = {
+    categoryId: document.getElementById('ma-cat').value,
+    name,
+    key,
+    sortOrder: parseInt(document.getElementById('ma-sort').value || '1'),
+    countryPrices: {
+      KR: parseFloat(document.getElementById('ma-kr').value) || 0,
+      JP: parseFloat(document.getElementById('ma-jp').value) || 0,
+      CN: parseFloat(document.getElementById('ma-cn').value) || 0,
+      US: parseFloat(document.getElementById('ma-us').value) || 0,
+      TW: parseFloat(document.getElementById('ma-tw').value) || 0,
+    },
+  };
+  if (ADM.editAlbId) { dbUpdateItem('albumTypes', ADM.editAlbId, data); toast('앨범 수정됨'); }
+  else { dbInsert('albumTypes', data); toast('앨범 추가됨'); }
+  closeModal('modal-alb');
+  reloadDB(); buildCatFilters(); renderAlbums();
+}
+
+function deleteAlb(id) {
+  if (!confirm('이 앨범을 삭제하시겠습니까?')) return;
+  dbDeleteItem('albumTypes', id);
+  reloadDB(); renderAlbums();
+  toast('앨범 삭제됨', 'warn');
+}
+
+// ═══════════════════════════════════════════
+// STORES
+// ═══════════════════════════════════════════
+function renderStores() {
+  const catF = document.getElementById('store-cat-filter')?.value || '';
+  const search = document.getElementById('store-search')?.value.toLowerCase() || '';
+  const stores = (DB.stores || []).filter(s => (!catF || s.categoryId === catF) && (!search || s.name.toLowerCase().includes(search)));
+
+  document.getElementById('stores-tbody').innerHTML = stores.map(s => `<tr>
+    <td>
+      <div class="fw-600">${s.name}${s.isMusicStreamTeam ? ' <span class="music-tag">🎵</span>' : ''}</div>
+      <div class="text-xs text-muted">${s.unpoAlbumKey ? '미공포: ' + s.unpoAlbumKey : ''}</div>
+    </td>
+    <td>${catName(s.categoryId)}</td>
+    <td>${distName(s.distId)}</td>
+    <td>${COUNTRIES[s.country]?.flag || ''} ${s.country}</td>
+    <td>${s.round ? s.round + '차' : '—'}</td>
+    <td>${s.isMusicStreamTeam ? '<span class="badge badge-music">음총</span>' : ''}</td>
+    <td class="text-xs">${s.purchaseStart ? fDateFull(s.purchaseStart) + ' ~' : ''}${isExpired(s) ? ' <span class="badge badge-gray">마감</span>' : ''}</td>
+    <td class="flex gap-4">
+      <button class="btn btn-ghost btn-xs" onclick="openStoreModal('${s.id}')">편집</button>
+      <button class="btn btn-err btn-xs" onclick="deleteStore('${s.id}')">삭제</button>
+    </td>
+  </tr>`).join('') || '<tr><td colspan="8" class="empty">판매처 없음</td></tr>';
+}
+
+function openStoreModal(id) {
+  ADM.editStoreId = id || null;
+  const s = id ? (DB.stores || []).find(x => x.id === id) : null;
+  const cats = DB.categories || [];
+  const dists = DB.distributors || [];
+  const catId = s?.categoryId || cats[0]?.id || '';
+  const albs = (DB.albumTypes || []).filter(a => a.categoryId === catId);
+
+  document.getElementById('modal-store-title').textContent = id ? '판매처 수정' : '판매처 추가';
+
+  // Build custom prices rows
+  const customPrices = s?.customPrices || {};
+  const priceRows = albs.map(a => `
+    <div><label>${a.name} 가격 (null=미판매)</label>
+      <input type="text" id="sp-price-${a.key}" value="${customPrices[a.key] !== undefined ? (customPrices[a.key] === null ? '' : customPrices[a.key]) : ''}" placeholder="null이면 미판매, 빈칸=국가가격 적용">
+    </div>
+  `).join('');
+
+  document.getElementById('modal-store-body').innerHTML = `
+    <div class="form-row cols-2">
+      <div><label>분류 *</label>
+        <select id="sp-cat" onchange="rebuildStorePrices(this.value)">
+          ${cats.map(c => `<option value="${c.id}" ${c.id === catId ? 'selected' : ''}>${c.name}</option>`).join('')}
+        </select>
+      </div>
+      <div><label>배급사</label>
+        <select id="sp-dist">
+          <option value="">없음</option>
+          ${dists.map(d => `<option value="${d.id}" ${d.id === (s?.distId || '') ? 'selected' : ''}>${d.name}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="form-row cols-2">
+      <div><label>판매처명 *</label><input type="text" id="sp-name" value="${s?.name || ''}"></div>
+      <div><label>국가</label>
+        <select id="sp-country">
+          ${Object.entries(COUNTRIES).map(([k,v]) => `<option value="${k}" ${(s?.country||'KR')===k?'selected':''}>${v.flag} ${v.lb}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="form-row cols-3">
+      <div><label>차수 (1차=1, 없으면 빈칸)</label><input type="number" min="1" id="sp-round" value="${s?.round || ''}"></div>
+      <div><label>음원총공팀 연계</label>
+        <label class="form-check" style="margin-top:8px"><input type="checkbox" id="sp-music" ${s?.isMusicStreamTeam ? 'checked' : ''}><span>음총 연계</span></label>
+      </div>
+      <div><label>영통 여부</label>
+        <label class="form-check" style="margin-top:8px"><input type="checkbox" id="sp-videocall" ${s?.videocall ? 'checked' : ''}><span>영통</span></label>
+      </div>
+    </div>
+
+    <div class="form-row cols-2">
+      <div><label>미공포 제공 앨범 키</label>
+        <select id="sp-unpo">
+          <option value="">없음</option>
+          ${albs.map(a => `<option value="${a.key}" ${a.key === (s?.unpoAlbumKey||'') ? 'selected' : ''}>${a.name}</option>`).join('')}
+        </select>
+      </div>
+      <div><label>가격 모드</label>
+        <select id="sp-pricemode" onchange="document.getElementById('sp-custom-prices').style.display=this.value==='custom'?'block':'none'">
+          <option value="country" ${(s?.priceMode||'country')==='country'?'selected':''}>국가 정가</option>
+          <option value="custom" ${s?.priceMode==='custom'?'selected':''}>커스텀 가격</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="sp-custom-prices" style="display:${s?.priceMode==='custom'?'block':'none'}">
+      <div style="font-size:12px;color:var(--tx2);margin-bottom:8px">커스텀 가격 (빈칸=국가가격, null입력=미판매)</div>
+      <div class="form-row cols-2" id="sp-prices-grid">${priceRows}</div>
+    </div>
+
+    <hr class="divider">
+    <div class="form-row cols-2">
+      <div><label>구매 시작</label><input type="datetime-local" id="sp-pstart" value="${s?.purchaseStart || ''}"></div>
+      <div><label>구매 종료</label><input type="datetime-local" id="sp-pend" value="${s?.purchaseEnd || ''}"></div>
+    </div>
+    <div class="form-row cols-2">
+      <div><label>종료 텍스트 (빈칸 아닐 때)</label><input type="text" id="sp-pendtxt" value="${s?.purchaseEndTxt || ''}" placeholder="특전 소진시까지"></div>
+      <div><label>배송 예정일</label><input type="date" id="sp-delivdate" value="${s?.defDeliveryDate || ''}"></div>
+    </div>
+    <div class="form-row cols-2">
+      <div><label>국내배송비 (₩)</label><input type="number" id="sp-domship" value="${s?.defDomShip || 0}"></div>
+      <div><label>국제배송비 (₩)</label><input type="number" id="sp-ovsship" value="${s?.defOvsShip || 0}"></div>
+    </div>
+
+    <hr class="divider">
+    <div class="form-row cols-2">
+      <div><label>오프라인 시작</label><input type="date" id="sp-offstart" value="${s?.offlineStart || ''}"></div>
+      <div><label>오프라인 종료</label><input type="date" id="sp-offend" value="${s?.offlineEnd || ''}"></div>
+    </div>
+    <div class="form-row cols-2">
+      <div><label>운영시간</label><input type="text" id="sp-offhours" value="${s?.offlineHours || ''}"></div>
+      <div><label>주소</label><input type="text" id="sp-offaddr" value="${s?.offlineAddress || ''}"></div>
+    </div>
+    <div class="form-row">
+      <div><label>오프라인 메모</label><textarea id="sp-offnote">${s?.offlineNote || ''}</textarea></div>
+    </div>
+    <div class="form-row cols-2">
+      <div><label>럭키드로우</label><label class="form-check"><input type="checkbox" id="sp-lucky" ${s?.offlineLuckyDraw ? 'checked':''}><span>럭키드로우</span></label></div>
+    </div>
+
+    <hr class="divider">
+    <div class="form-row"><div><label>구매 URL</label><input type="url" id="sp-url" value="${s?.url || ''}"></div></div>
+    <div class="form-row"><div><label>메모</label><textarea id="sp-memo">${s?.memo || ''}</textarea></div></div>
+  `;
+  openModal('modal-store');
+}
+
+function rebuildStorePrices(catId) {
+  const albs = (DB.albumTypes || []).filter(a => a.categoryId === catId);
+  const grid = document.getElementById('sp-prices-grid');
+  if (!grid) return;
+  grid.innerHTML = albs.map(a => `
+    <div><label>${a.name} 가격</label>
+      <input type="text" id="sp-price-${a.key}" placeholder="빈칸=국가가격, null=미판매">
+    </div>
+  `).join('');
+  const unpoSel = document.getElementById('sp-unpo');
+  if (unpoSel) unpoSel.innerHTML = '<option value="">없음</option>' + albs.map(a => `<option value="${a.key}">${a.name}</option>`).join('');
+}
+
+function saveStore() {
+  const name = document.getElementById('sp-name').value.trim();
+  if (!name) { toast('판매처명을 입력하세요', 'warn'); return; }
+  const catId = document.getElementById('sp-cat').value;
+  const priceMode = document.getElementById('sp-pricemode').value;
+  const albs = (DB.albumTypes || []).filter(a => a.categoryId === catId);
+
+  const customPrices = {};
+  if (priceMode === 'custom') {
+    albs.forEach(a => {
+      const val = document.getElementById('sp-price-' + a.key)?.value?.trim();
+      if (val === '' || val === undefined) customPrices[a.key] = null; // 미판매
+      else customPrices[a.key] = parseFloat(val) || null;
+    });
+  }
+
+  const data = {
+    categoryId: catId,
+    name,
+    distId: document.getElementById('sp-dist').value || '',
+    country: document.getElementById('sp-country').value,
+    round: parseInt(document.getElementById('sp-round').value) || null,
+    isMusicStreamTeam: document.getElementById('sp-music').checked,
+    videocall: document.getElementById('sp-videocall').checked,
+    unpoAlbumKey: document.getElementById('sp-unpo').value || '',
+    priceMode,
+    customPrices: priceMode === 'custom' ? customPrices : {},
+    purchaseStart: document.getElementById('sp-pstart').value,
+    purchaseEnd: document.getElementById('sp-pend').value,
+    purchaseEndTxt: document.getElementById('sp-pendtxt').value,
+    defDeliveryDate: document.getElementById('sp-delivdate').value,
+    defDomShip: parseFloat(document.getElementById('sp-domship').value) || 0,
+    defOvsShip: parseFloat(document.getElementById('sp-ovsship').value) || 0,
+    offlineStart: document.getElementById('sp-offstart').value,
+    offlineEnd: document.getElementById('sp-offend').value,
+    offlineHours: document.getElementById('sp-offhours').value,
+    offlineAddress: document.getElementById('sp-offaddr').value,
+    offlineNote: document.getElementById('sp-offnote').value,
+    offlineLuckyDraw: document.getElementById('sp-lucky').checked,
+    url: document.getElementById('sp-url').value,
+    memo: document.getElementById('sp-memo').value,
+  };
+
+  if (ADM.editStoreId) { dbUpdateItem('stores', ADM.editStoreId, data); toast('판매처 수정됨'); }
+  else { dbInsert('stores', data); toast('판매처 추가됨'); }
+  closeModal('modal-store');
+  reloadDB(); renderStores();
+}
+
+function deleteStore(id) {
+  if (!confirm('이 판매처를 삭제하시겠습니까?')) return;
+  dbDeleteItem('stores', id);
+  reloadDB(); renderStores();
+  toast('삭제됨', 'warn');
+}
+
+// ═══════════════════════════════════════════
+// DISTRIBUTORS
+// ═══════════════════════════════════════════
+function renderDist() {
+  const dists = DB.distributors || [];
+  document.getElementById('dist-tbody').innerHTML = dists.map(d => {
+    const linked = (DB.stores || []).filter(s => s.distId === d.id).length;
+    return `<tr>
+      <td class="fw-600">${d.name}</td>
+      <td><code>${d.id}</code></td>
+      <td>${linked}개</td>
+      <td class="flex gap-4">
+        <button class="btn btn-ghost btn-xs" onclick="openDistModal('${d.id}')">편집</button>
+        <button class="btn btn-err btn-xs" onclick="deleteDist('${d.id}')">삭제</button>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="4" class="empty">배급사 없음</td></tr>';
+}
+
+function openDistModal(id) {
+  ADM.editDistId = id || null;
+  const d = id ? (DB.distributors || []).find(x => x.id === id) : null;
+  document.getElementById('modal-dist-title').textContent = id ? '배급사 수정' : '배급사 추가';
+  document.getElementById('md-name').value = d?.name || '';
+  openModal('modal-dist');
+}
+
+function saveDist() {
+  const name = document.getElementById('md-name').value.trim();
+  if (!name) { toast('배급사명을 입력하세요', 'warn'); return; }
+  if (ADM.editDistId) { dbUpdateItem('distributors', ADM.editDistId, { name }); toast('배급사 수정됨'); }
+  else { dbInsert('distributors', { name }); toast('배급사 추가됨'); }
+  closeModal('modal-dist');
+  reloadDB(); renderDist();
+}
+
+function deleteDist(id) {
+  const linked = (DB.stores || []).filter(s => s.distId === id).length;
+  if (!confirm(`이 배급사를 삭제하시겠습니까?\n연결된 판매처 ${linked}개의 배급사 정보가 제거됩니다.`)) return;
+  dbDeleteItem('distributors', id);
+  dbUpdate(s => ({ ...s, stores: (s.stores||[]).map(st => st.distId === id ? { ...st, distId: '' } : st) }));
+  reloadDB(); renderDist();
+  toast('삭제됨', 'warn');
+}
+
+// ═══════════════════════════════════════════
+// UNPO
+// ═══════════════════════════════════════════
+function renderUnpo() {
+  const catF = document.getElementById('unpo-cat-filter')?.value || '';
+  const albF = document.getElementById('unpo-alb-filter')?.value || '';
+  const search = document.getElementById('unpo-search')?.value.toLowerCase() || '';
+
+  buildUnpoAlbFilter();
+
+  let stores = (DB.stores || []).filter(s => {
+    if (catF && s.categoryId !== catF) return false;
+    if (albF && s.unpoAlbumKey !== albF) return false;
+    if (search && !s.name.toLowerCase().includes(search)) return false;
+    return s.unpoAlbumKey; // only stores with unpo configured
+  });
+
+  const html = stores.map(s => {
+    const existing = (DB.unpoCards || []).find(uc => uc.storeId === s.id && uc.albumTypeId === s.unpoAlbumKey);
+    const sets = existing?.sets || [];
+    const totalCards = sets.reduce((sum, set) => sum + (set.cards?.length || 0), 0);
+    const withImg = sets.reduce((sum, set) => sum + (set.cards?.filter(c => c.img).length || 0), 0);
+    const owned = sets.reduce((sum, set) => sum + (set.cards?.filter(c => c.owned).length || 0), 0);
+
+    return `<div class="card" style="margin-bottom:12px">
+      <div class="card-header">
+        <div>
+          <span class="fw-600">${s.name}</span>
+          <span class="badge badge-pk" style="margin-left:6px">${s.unpoAlbumKey}</span>
+        </div>
+        <div class="flex gap-8">
+          <span class="text-xs text-muted">${totalCards}장 · 이미지 ${withImg}/${totalCards} · 보유 ${owned}</span>
+          <button class="btn btn-ghost btn-sm" onclick="addUnpoSet('${s.id}','${s.unpoAlbumKey}')">+ 세트 추가</button>
+        </div>
+      </div>
+      <div id="unpo-sets-${s.id}">
+        ${sets.map((set, si) => renderUnpoSet(s, si, set)).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('unpo-content').innerHTML = html || '<div class="empty">미공포가 등록된 판매처가 없습니다.</div>';
+}
+
+function renderUnpoSet(store, si, set) {
+  const storeId = store.id;
+  const albKey = store.unpoAlbumKey;
+  const cards = set.cards || [];
+
+  const cardsHtml = cards.map((c, ci) => `
+    <div style="display:flex;flex-direction:column;gap:3px">
+      <div class="unpo-card-admin" style="position:relative">
+        ${c.img ? `<img src="${c.img}" loading="lazy">` : '<div class="no-img-hint">📷<br>업로드</div>'}
+        <div class="unpo-upload-overlay">📤</div>
+        <input type="file" accept="image/*" class="unpo-file-input"
+          onchange="uploadUnpoCard(event,'${storeId}','${albKey}',${si},${ci})">
+        ${c.note ? `<div class="note-badge">${c.note.slice(0,6)}</div>` : ''}
+      </div>
+      <div style="display:flex;gap:2px">
+        <button class="btn btn-ghost btn-xs" style="flex:1" onclick="editUnpoNote('${storeId}','${albKey}',${si},${ci})" title="메모">✏</button>
+        <button class="btn btn-ghost btn-xs" style="flex:1;${c.owned ? 'color:var(--ok);border-color:var(--ok)' : ''}" onclick="toggleUnpoOwned('${storeId}','${albKey}',${si},${ci})" title="보유">${c.owned ? '✓' : '○'}</button>
+        <button class="btn btn-err btn-xs" style="flex:1" onclick="removeUnpoCard('${storeId}','${albKey}',${si},${ci})" title="삭제">✕</button>
+      </div>
+    </div>
+  `).join('');
+
+  return `<div class="unpo-set-wrap">
+    <div class="unpo-set-head">
+      <div class="flex gap-8">
+        <span class="text-sm fw-600">세트 ${si + 1}</span>
+        <input type="text" value="${set.memo || ''}" placeholder="세트 설명 (예: Bite ver)" style="width:200px;height:28px;padding:4px 8px;font-size:12px"
+          onchange="updateUnpoSetMemo('${storeId}','${albKey}',${si},this.value)">
+      </div>
+      <div class="flex gap-4">
+        <button class="btn btn-ghost btn-sm" onclick="addUnpoCard('${storeId}','${albKey}',${si})">+ 카드</button>
+        <button class="btn btn-err btn-xs" onclick="removeUnpoSet('${storeId}','${albKey}',${si})">세트 삭제</button>
+      </div>
+    </div>
+    <div class="unpo-grid-admin" id="unpo-grid-${storeId}-${si}">${cardsHtml}</div>
+    <div style="margin-top:8px">
+      <button class="btn btn-ghost btn-sm" onclick="addUnpoCardFromUrl('${storeId}','${albKey}',${si})">+ URL로 이미지 추가</button>
+    </div>
+  </div>`;
+}
+
+function getUnpoSets(storeId, albKey) {
+  const s = dbGet();
+  const uc = (s.unpoCards || []).find(uc => uc.storeId === storeId && uc.albumTypeId === albKey);
+  return uc?.sets || [];
+}
+
+function setUnpoSets(storeId, albKey, sets) {
+  dbSaveUnpoCards(storeId, albKey, sets);
+  reloadDB();
+  renderUnpo();
+}
+
+function addUnpoSet(storeId, albKey) {
+  const sets = getUnpoSets(storeId, albKey);
+  setUnpoSets(storeId, albKey, [...sets, { memo: '', cards: [] }]);
+}
+
+function removeUnpoSet(storeId, albKey, si) {
+  if (!confirm('이 세트를 삭제하시겠습니까?')) return;
+  const sets = getUnpoSets(storeId, albKey);
+  sets.splice(si, 1);
+  setUnpoSets(storeId, albKey, [...sets]);
+}
+
+function addUnpoCard(storeId, albKey, si) {
+  const sets = JSON.parse(JSON.stringify(getUnpoSets(storeId, albKey)));
+  if (!sets[si]) sets[si] = { memo: '', cards: [] };
+  sets[si].cards.push({ img: null, note: '', owned: false });
+  setUnpoSets(storeId, albKey, sets);
+}
+
+function addUnpoCardFromUrl(storeId, albKey, si) {
+  const url = prompt('이미지 URL을 입력하세요:');
+  if (!url) return;
+  const sets = JSON.parse(JSON.stringify(getUnpoSets(storeId, albKey)));
+  if (!sets[si]) sets[si] = { memo: '', cards: [] };
+  sets[si].cards.push({ img: url, note: '', owned: false });
+  setUnpoSets(storeId, albKey, sets);
+}
+
+function removeUnpoCard(storeId, albKey, si, ci) {
+  const sets = JSON.parse(JSON.stringify(getUnpoSets(storeId, albKey)));
+  sets[si]?.cards?.splice(ci, 1);
+  setUnpoSets(storeId, albKey, sets);
+}
+
+function updateUnpoSetMemo(storeId, albKey, si, memo) {
+  const sets = JSON.parse(JSON.stringify(getUnpoSets(storeId, albKey)));
+  if (sets[si]) sets[si].memo = memo;
+  setUnpoSets(storeId, albKey, sets);
+}
+
+function toggleUnpoOwned(storeId, albKey, si, ci) {
+  const sets = JSON.parse(JSON.stringify(getUnpoSets(storeId, albKey)));
+  if (sets[si]?.cards?.[ci]) sets[si].cards[ci].owned = !sets[si].cards[ci].owned;
+  setUnpoSets(storeId, albKey, sets);
+}
+
+function uploadUnpoCard(event, storeId, albKey, si, ci) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const sets = JSON.parse(JSON.stringify(getUnpoSets(storeId, albKey)));
+    if (sets[si]?.cards?.[ci]) sets[si].cards[ci].img = e.target.result;
+    setUnpoSets(storeId, albKey, sets);
+    toast('이미지 업로드됨');
+  };
+  reader.readAsDataURL(file);
+}
+
+function editUnpoNote(storeId, albKey, si, ci) {
+  ADM.unpoNoteCtx = { storeId, albKey, si, ci };
+  const sets = getUnpoSets(storeId, albKey);
+  document.getElementById('unpo-note-input').value = sets[si]?.cards?.[ci]?.note || '';
+  openModal('modal-unpo-note');
+}
+
+function saveUnpoNote() {
+  const { storeId, albKey, si, ci } = ADM.unpoNoteCtx;
+  const note = document.getElementById('unpo-note-input').value;
+  const sets = JSON.parse(JSON.stringify(getUnpoSets(storeId, albKey)));
+  if (sets[si]?.cards?.[ci]) sets[si].cards[ci].note = note;
+  setUnpoSets(storeId, albKey, sets);
+  closeModal('modal-unpo-note');
+  toast('메모 저장됨');
+}
+
+// ═══════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════
+function renderSettings() {
+  const rates = DB.settings?.rates || {};
+  document.getElementById('rate-rows').innerHTML = ['JPY','CNY','USD','TWD'].map(c => `
+    <div class="form-row cols-3" style="margin-bottom:8px">
+      <div><label>${c} 1원 = ? KRW</label><input type="number" id="rate-${c}" value="${rates[c]?.rate || ''}" step="0.0001"></div>
+      <div><label>수동</label><label class="form-check" style="margin-top:8px"><input type="checkbox" id="rate-manual-${c}" ${rates[c]?.manual ? 'checked':''}><span>수동입력</span></label></div>
+      <div style="padding-top:20px"><span class="text-xs text-muted">${rates[c]?.updAt ? '업데이트: ' + new Date(rates[c].updAt).toLocaleDateString('ko-KR') : ''}</span></div>
+    </div>
+  `).join('');
+  const ratesAt = DB.settings?.ratesAt;
+  document.getElementById('rate-updated').textContent = ratesAt ? '마지막 자동업데이트: ' + new Date(ratesAt).toLocaleString('ko-KR') : '';
+}
+
+function saveRates() {
+  const newRates = {};
+  ['JPY','CNY','USD','TWD'].forEach(c => {
+    newRates[c] = {
+      rate: parseFloat(document.getElementById('rate-' + c)?.value || '1'),
+      manual: document.getElementById('rate-manual-' + c)?.checked || false,
+      updAt: new Date().toISOString(),
+    };
+  });
+  dbUpdateSettings({ rates: newRates });
+  toast('환율 저장됨');
+}
+
+async function fetchRates() {
+  toast('환율 조회중...', 'warn');
+  try {
+    const r = await fetch('https://latest.currency-api.pages.dev/v1/currencies/krw.json');
+    if (!r.ok) throw new Error();
+    const d = await r.json(); const kk = d.krw; const now = new Date().toISOString();
+    const rates = {};
+    ['JPY','CNY','USD','TWD'].forEach(c => {
+      const cur = c.toLowerCase();
+      if (kk[cur]) rates[c] = { rate: parseFloat((1/kk[cur]).toFixed(4)), manual: false, updAt: now };
+    });
+    dbUpdateSettings({ rates, ratesAt: now });
+    reloadDB(); renderSettings();
+    toast('환율 업데이트 완료');
+  } catch (e) {
+    toast('자동조회 실패 — 수동입력하세요', 'err');
+  }
+}
+
+function changePw() {
+  const p1 = document.getElementById('new-pw1').value;
+  const p2 = document.getElementById('new-pw2').value;
+  if (!p1) { toast('비밀번호를 입력하세요', 'warn'); return; }
+  if (p1 !== p2) { toast('비밀번호가 일치하지 않습니다', 'err'); return; }
+  dbUpdateSettings({ adminPw: p1 });
+  document.getElementById('new-pw1').value = '';
+  document.getElementById('new-pw2').value = '';
+  toast('비밀번호 변경됨');
+}
+
+function setTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  dbUpdateSettings({ theme: t });
+  toast('테마 변경됨');
+}
+
+// ═══════════════════════════════════════════
+// EXPORT / IMPORT
+// ═══════════════════════════════════════════
+function renderExport() {}
+
+function doExport() {
+  const json = dbExportJSON();
+  document.getElementById('export-box').textContent = json;
+}
+
+function copyExport() {
+  const json = dbExportJSON();
+  navigator.clipboard.writeText(json).then(() => toast('클립보드 복사됨')).catch(() => toast('복사 실패', 'err'));
+}
+
+function doImport() {
+  const json = document.getElementById('import-box').value.trim();
+  if (!json) { toast('데이터를 입력하세요', 'warn'); return; }
+  if (!confirm('기존 데이터가 모두 덮어씌워집니다. 계속하시겠습니까?')) return;
+  if (dbImportJSON(json)) {
+    reloadDB(); buildCatFilters(); renderPage();
+    toast('데이터 가져오기 완료');
+    document.getElementById('import-box').value = '';
+  } else {
+    toast('잘못된 JSON 형식입니다', 'err');
+  }
+}
+
+// ═══════════════════════════════════════════
+// START
+// ═══════════════════════════════════════════
+// Auto-unlock in dev mode (remove for production)
+// initAdmin(); document.getElementById('lock-screen').style.display='none'; document.getElementById('app').style.display='grid';
+</script>
+</body>
+</html>
