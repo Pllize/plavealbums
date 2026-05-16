@@ -27,10 +27,28 @@
 <!-- Toast -->
 <div id="toast"></div>
 
+<!-- Hamburger button (mobile) -->
+<button id="menu-btn" class="menu-btn" onclick="toggleSidebar()" aria-label="메뉴">☰</button>
+
+<!-- Sidebar overlay (mobile) -->
+<div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- Notice popup -->
+<div id="notice-popup" class="notice-popup" style="display:none">
+  <div class="notice-popup-inner">
+    <div class="notice-popup-title" id="np-title"></div>
+    <div class="notice-popup-body" id="np-body"></div>
+    <div class="notice-popup-foot">
+      <button class="btn btn-ghost btn-sm" onclick="dismissNotice(true)">3일간 안보기</button>
+      <button class="btn btn-p btn-sm" onclick="dismissNotice(false)">닫기</button>
+    </div>
+  </div>
+</div>
+
 <div class="app-layout">
 <!-- ── Sidebar ── -->
 <nav class="sidebar" id="sidebar">
-  <div class="logo">📀 앨범 구매관리<span id="cat-label">로딩중...</span></div>
+  <div class="logo">🎵 PLAVE 앨범 구매 관리<span id="cat-label"></span></div>
 
   <div class="nav-section">메뉴</div>
   <button class="nav-item active" onclick="nav('dash')" data-tab="dash">
@@ -49,13 +67,10 @@
     <i class="nav-icon">📅</i> 캘린더
   </button>
 
-  <div class="nav-section" style="margin-top:auto">기타</div>
+  <div style="margin-top:auto"></div>
   <button class="nav-item" onclick="toggleTheme()">
     <i class="nav-icon" id="theme-icon">🌙</i> <span id="theme-label">다크모드</span>
   </button>
-  <a class="nav-item" href="admin/">
-    <i class="nav-icon">⚙</i> 관리자
-  </a>
 </nav>
 
 <!-- ── Main ── -->
@@ -84,6 +99,14 @@
   <!-- Stats -->
   <div class="stats-grid" id="dash-stats"></div>
 
+  <!-- 구매 상태 스트립 -->
+  <div class="card" style="padding:14px 20px;margin-bottom:16px">
+    <div class="card-header" style="margin-bottom:10px">
+      <div class="card-title">🏷 구매 현황</div>
+    </div>
+    <div class="status-strip" id="dash-status-strip"></div>
+  </div>
+
   <!-- 앨범별 집계 -->
   <div class="card">
     <div class="card-header">
@@ -97,14 +120,15 @@
 
   <!-- 구매처별 지출 -->
   <div class="card">
-    <div class="card-header"><div class="card-title">💳 판매처별 지출</div></div>
+    <div class="card-header">
+      <div class="card-title">💳 판매처별 지출</div>
+      <div style="display:flex;gap:4px">
+        <button class="btn btn-ghost btn-xs" id="sort-amount" onclick="S.storeSort='amount';render()">금액</button>
+        <button class="btn btn-ghost btn-xs" id="sort-name" onclick="S.storeSort='name';render()">가나다</button>
+        <button class="btn btn-ghost btn-xs" id="sort-status" onclick="S.storeSort='status';render()">상태</button>
+      </div>
+    </div>
     <div id="dash-store-spend"></div>
-  </div>
-
-  <!-- 배송 현황 -->
-  <div class="card">
-    <div class="card-header"><div class="card-title">📦 배송 현황</div></div>
-    <div id="dash-delivery"></div>
   </div>
 
   <!-- 미구매 처 -->
@@ -299,6 +323,20 @@
   </div>
 </div>
 
+<!-- Detail Modal (status / album) -->
+<div class="modal-bg" id="modal-detail">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h3 id="modal-detail-title">상세</h3>
+      <button class="modal-close" onclick="closeModal('modal-detail')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-detail-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-detail')">닫기</button>
+    </div>
+  </div>
+</div>
+
 <!-- FAB -->
 <div class="fab" id="fab" style="display:none">
   <button class="fab-btn fab-btn-p" onclick="addPurchModal()" title="구매 추가">+</button>
@@ -329,14 +367,24 @@ const STATUS_MAP = {
   cancelled: { lb: '취소',    cls: 'st-cancelled' },
 };
 
+const DISP_STATUSES = [
+  { k: 'none',      lb: '미구매',   cls: 'st-planned',   keys: [] },
+  { k: 'waiting',   lb: '구매대기', cls: 'st-waiting',   keys: ['planned', 'waiting'] },
+  { k: 'ordered',   lb: '구매완료', cls: 'st-ordered',   keys: ['ordered'] },
+  { k: 'shipping',  lb: '배송중',   cls: 'st-shipped',   keys: ['preparing', 'shipped'] },
+  { k: 'delivered', lb: '배송완료', cls: 'st-delivered', keys: ['delivered'] },
+];
+
+const MEMBERS = ['예준', '노아', '밤비', '은호', '하민'];
+
 // ═══════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════
 let DB = {};
 let S = {
   tab: 'dash',
-  catId: null,    // active category
-  albKey: null,   // active album type filter
+  catId: null,
+  albKey: null,
   unpoAlbKey: null,
   calYear: new Date().getFullYear(),
   calMonth: new Date().getMonth(),
@@ -344,6 +392,7 @@ let S = {
   showProxy: false,
   hideExpired: true,
   purchSort: 'date',
+  storeSort: 'amount',
   editPurchId: null,
   editStoreId: null,
   storeFromId: null,
@@ -375,6 +424,20 @@ function init() {
     const bc = new BroadcastChannel('albumapp_sync');
     bc.onmessage = () => { reloadDB(); buildCatBar(); buildFilters(); render(); };
   } catch(e) {}
+
+  checkNoticePopup();
+}
+
+// ═══════════════════════════════════════════
+// MOBILE SIDEBAR
+// ═══════════════════════════════════════════
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
 }
 
 function reloadDB() {
@@ -404,6 +467,7 @@ function applyTheme() {
 // ═══════════════════════════════════════════
 function nav(tab) {
   S.tab = tab;
+  closeSidebar();
   document.querySelectorAll('[data-tab]').forEach(el =>
     el.classList.toggle('active', el.dataset.tab === tab));
   document.querySelectorAll('.page').forEach(el =>
@@ -551,7 +615,9 @@ function buildCatBar() {
 
   const cat = getCat();
   if (cat) {
-    document.getElementById('cat-label').textContent = cat.name + ' · ' + cat.artist;
+    document.getElementById('cat-label').textContent = ' · ' + cat.name;
+  } else {
+    document.getElementById('cat-label').textContent = '';
   }
 }
 
@@ -585,7 +651,10 @@ function buildFilters() {
 // ═══════════════════════════════════════════
 function renderDash() {
   const cat = getCat();
-  if (!cat) { document.getElementById('dash-stats').innerHTML = '<div class="empty">분류가 없습니다. 관리자에서 추가하세요.</div>'; return; }
+  if (!cat) {
+    document.getElementById('dash-stats').innerHTML = '<div class="empty">분류가 없습니다. 관리자에서 추가하세요.</div>';
+    return;
+  }
 
   document.getElementById('dash-title').textContent = cat.name + ' 대시보드';
   document.getElementById('dash-sub').textContent = cat.artist + ' · 발매일: ' + (cat.releaseDate ? fDate(cat.releaseDate) : '미정');
@@ -597,32 +666,37 @@ function renderDash() {
     return st?.categoryId === S.catId;
   });
 
-  const totalSpend = purches.reduce((s, p) => s + calcPurchTotal(p), 0);
-  const mySpend = totalSpend - purches.reduce((s, p) => s + calcProxyTotal(p), 0);
-  const deliveredCount = purches.filter(p => p.status === 'delivered').length;
-  const shippedCount = purches.filter(p => ['shipped', 'preparing'].includes(p.status)).length;
-  const orderedCount = purches.filter(p => p.status === 'ordered').length;
+  // Confirmed vs waiting spend
+  const confirmedSpend = purches
+    .filter(p => !['planned','waiting'].includes(p.status || 'waiting'))
+    .reduce((s, p) => s + calcPurchTotal(p), 0);
+  const waitingSpend = purches
+    .filter(p => ['planned','waiting'].includes(p.status || 'waiting'))
+    .reduce((s, p) => s + calcPurchTotal(p), 0);
+  const proxySpend = purches.reduce((s, p) => s + calcProxyTotal(p), 0);
+  const mySpend = confirmedSpend - proxySpend;
 
   // Days to release
   const daysToRelease = cat.releaseDate
     ? Math.ceil((new Date(cat.releaseDate) - new Date()) / 86400000)
     : null;
 
+  // Stat cards
   document.getElementById('dash-stats').innerHTML = `
-    <div class="stat-card">
-      <div class="stat-num">${purches.length}</div>
-      <div class="stat-label">총 구매 기록</div>
-      <div class="stat-sub">${stores.length}개 판매처 중</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num">${fKRW(totalSpend)}</div>
-      <div class="stat-label">총 지출</div>
+    <div class="stat-card" style="cursor:pointer" onclick="showStatusDetail('ordered')">
+      <div class="stat-num">${fKRW(confirmedSpend)}</div>
+      <div class="stat-label">총 지출 (확정)</div>
       <div class="stat-sub">내 지출: ${fKRW(mySpend)}</div>
     </div>
+    <div class="stat-card" style="cursor:pointer" onclick="showStatusDetail('waiting')">
+      <div class="stat-num warn">${fKRW(waitingSpend)}</div>
+      <div class="stat-label">구매대기 금액</div>
+      <div class="stat-sub">${purches.filter(p => ['planned','waiting'].includes(p.status||'waiting')).length}건 대기중</div>
+    </div>
     <div class="stat-card">
-      <div class="stat-num ok">${deliveredCount}</div>
-      <div class="stat-label">수령완료</div>
-      <div class="stat-sub">배송중: ${shippedCount} / 주문: ${orderedCount}</div>
+      <div class="stat-num">${fKRW(proxySpend)}</div>
+      <div class="stat-label">대리구매 비용</div>
+      <div class="stat-sub">내 지출: ${fKRW(mySpend)}</div>
     </div>
     <div class="stat-card">
       <div class="stat-num ${daysToRelease === null ? '' : daysToRelease <= 0 ? 'ok' : daysToRelease <= 7 ? 'warn' : ''}">${
@@ -632,50 +706,6 @@ function renderDash() {
       <div class="stat-sub">${cat.releaseDate ? fDate(cat.releaseDate) : '미정'}</div>
     </div>
   `;
-
-  // Album table
-  const albCounts = {};
-  const albProxy = {};
-  albums.forEach(a => { albCounts[a.key] = 0; albProxy[a.key] = 0; });
-  purches.forEach(p => {
-    (p.items || []).forEach(it => {
-      albCounts[it.albKey] = (albCounts[it.albKey] || 0) + (it.qty || 0);
-      albProxy[it.albKey] = (albProxy[it.albKey] || 0) + (it.proxyQty || 0);
-    });
-  });
-
-  const albRows = albums.map(a => `
-    <tr>
-      <td><span class="fw-600">${a.name}</span></td>
-      <td>${albCounts[a.key] || 0}장</td>
-      ${S.showProxy ? `<td>${albProxy[a.key] || 0}장 <span class="text-muted2">(대리)</span></td>` : ''}
-      <td>${albCounts[a.key] > 0 ? '<span class="badge badge-ok">구매</span>' : '<span class="badge badge-gray">미구매</span>'}</td>
-    </tr>
-  `).join('');
-
-  document.getElementById('dash-album-table').innerHTML = `
-    <table><thead><tr>
-      <th>앨범</th><th>수량</th>${S.showProxy ? '<th>대리구매</th>' : ''}<th>상태</th>
-    </tr></thead><tbody>${albRows || '<tr><td colspan="4" class="empty">구매 기록 없음</td></tr>'}</tbody></table>
-  `;
-  document.getElementById('proxy-toggle-txt').textContent = S.showProxy ? '숨김' : '표시';
-
-  // Store spend
-  const storeSpend = {};
-  purches.forEach(p => { storeSpend[p.storeId] = (storeSpend[p.storeId] || 0) + calcPurchTotal(p); });
-  const storeRows = Object.entries(storeSpend)
-    .sort((a, b) => b[1] - a[1])
-    .map(([sid, amt]) => `
-      <tr>
-        <td>${storeName(sid)}</td>
-        <td style="text-align:right">${fKRW(amt)}</td>
-        <td>${stBadge(purches.find(p => p.storeId === sid)?.status || 'waiting')}</td>
-      </tr>
-    `).join('');
-
-  document.getElementById('dash-store-spend').innerHTML = storeRows
-    ? `<table><thead><tr><th>판매처</th><th style="text-align:right">지출</th><th>상태</th></tr></thead><tbody>${storeRows}</tbody></table>`
-    : '<div class="empty">지출 기록 없음</div>';
 
   // Notices
   const noticesEl = document.getElementById('dash-notices');
@@ -695,23 +725,111 @@ function renderDash() {
     `).join('');
   }
 
-  // Delivery status
-  const byStatus = {};
+  // Status strip
+  const purchasedIds = new Set(purches.map(p => p.storeId));
+  const bySt = { none: 0, waiting: 0, ordered: 0, shipping: 0, delivered: 0 };
+  stores.forEach(s => { if (!purchasedIds.has(s.id)) bySt.none++; });
   purches.forEach(p => {
     const st = p.status || 'waiting';
-    if (!byStatus[st]) byStatus[st] = [];
-    byStatus[st].push(p);
+    if (['planned','waiting'].includes(st)) bySt.waiting++;
+    else if (st === 'ordered') bySt.ordered++;
+    else if (['preparing','shipped'].includes(st)) bySt.shipping++;
+    else if (st === 'delivered') bySt.delivered++;
   });
-  const delivRows = Object.entries(STATUS_MAP).map(([k, v]) => {
-    const count = (byStatus[k] || []).length;
-    if (!count) return '';
-    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd)">
-      <span class="badge ${v.cls}">${v.lb}</span>
-      <span class="fw-600">${count}건</span>
-      <span class="text-muted text-sm">${(byStatus[k] || []).map(p => storeName(p.storeId)).join(', ')}</span>
+  const stripEl = document.getElementById('dash-status-strip');
+  if (stripEl) {
+    stripEl.innerHTML = DISP_STATUSES.map(ds => {
+      const cnt = bySt[ds.k] || 0;
+      const clickable = cnt > 0;
+      return `<span class="badge ${ds.cls}" style="cursor:${clickable ? 'pointer' : 'default'};opacity:${clickable ? 1 : .4};padding:5px 12px;font-size:12px"
+        ${clickable ? `onclick="showStatusDetail('${ds.k}')"` : ''}>${ds.lb} <b>${cnt}</b></span>`;
+    }).join('');
+  }
+
+  // Album card grid (4 columns)
+  const albCounts = {};
+  const albProxy = {};
+  albums.forEach(a => { albCounts[a.key] = 0; albProxy[a.key] = 0; });
+  purches.forEach(p => {
+    (p.items || []).forEach(it => {
+      albCounts[it.albKey] = (albCounts[it.albKey] || 0) + (it.qty || 0);
+      albProxy[it.albKey] = (albProxy[it.albKey] || 0) + (it.proxyQty || 0);
+    });
+  });
+  document.getElementById('proxy-toggle-txt').textContent = S.showProxy ? '숨김' : '표시';
+  document.getElementById('dash-album-table').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+      ${albums.map(a => {
+        const total = albCounts[a.key] || 0;
+        const proxy = albProxy[a.key] || 0;
+        const mine = total - proxy;
+        return `<div class="alb-count-card${total ? '' : ' empty'}"
+          onclick="${total ? `showAlbumDetail('${a.key}')` : ''}"
+          style="cursor:${total ? 'pointer' : 'default'}">
+          <div class="alb-count-label">${a.name}</div>
+          <div class="alb-count-num${total ? ' ok' : ''}">${total}</div>
+          <div class="alb-count-unit">장</div>
+          ${S.showProxy && proxy > 0 ? `
+            <div class="alb-count-proxy">
+              <span>내 ${mine}장</span>
+              <span style="color:var(--warn)">대리 ${proxy}장</span>
+            </div>` : ''}
+        </div>`;
+      }).join('')}
     </div>`;
-  }).join('');
-  document.getElementById('dash-delivery').innerHTML = delivRows || '<div class="empty">구매 기록 없음</div>';
+
+  // Store spend cards (expandable, sortable)
+  const storeSpend = {};
+  const storeWaiting = {};
+  purches.forEach(p => {
+    storeSpend[p.storeId] = (storeSpend[p.storeId] || 0) + calcPurchTotal(p);
+    if (['planned','waiting'].includes(p.status || 'waiting')) {
+      storeWaiting[p.storeId] = (storeWaiting[p.storeId] || 0) + calcPurchTotal(p);
+    }
+  });
+
+  // Update sort buttons
+  ['amount','name','status'].forEach(v => {
+    const el = document.getElementById('sort-' + v);
+    if (el) el.style.borderColor = S.storeSort === v ? 'var(--pk2)' : '';
+  });
+
+  let storeRows = Object.entries(storeSpend);
+  if (S.storeSort === 'name') {
+    storeRows.sort((a, b) => storeName(a[0]).localeCompare(storeName(b[0]), 'ko'));
+  } else if (S.storeSort === 'status') {
+    const ORDER = ['delivered','shipped','preparing','ordered','waiting','planned',''];
+    storeRows.sort((a, b) => {
+      const stA = purches.find(p => p.storeId === a[0])?.status || '';
+      const stB = purches.find(p => p.storeId === b[0])?.status || '';
+      return ORDER.indexOf(stA) - ORDER.indexOf(stB);
+    });
+  } else {
+    storeRows.sort((a, b) => b[1] - a[1]);
+  }
+
+  document.getElementById('dash-store-spend').innerHTML = storeRows.length
+    ? storeRows.map(([sid, amt]) => {
+        const store = DB.stores?.find(s => s.id === sid);
+        const dist = store ? distName(store.distId) : '';
+        const country = store ? COUNTRIES[store.country] : null;
+        const lastStatus = purches.find(p => p.storeId === sid)?.status || 'waiting';
+        const waitAmt = storeWaiting[sid] || 0;
+        return `<div class="spend-card" id="sc-${sid}" onclick="toggleSpend('${sid}')">
+          <div class="spend-card-head">
+            <div>
+              <div class="fw-600">${storeName(sid)}</div>
+              <div class="text-sm text-muted">${dist ? dist + ' · ' : ''}${country?.flag || ''} ${country?.lb || ''}${waitAmt ? ` · <span style="color:var(--warn)">대기 ${fKRW(waitAmt)}</span>` : ''}</div>
+            </div>
+            <div style="text-align:right">
+              <div class="fw-600">${fKRW(amt)}</div>
+              ${stBadge(lastStatus)}
+            </div>
+          </div>
+          <div class="spend-card-detail" id="scd-${sid}">${buildSpendDetail(sid, purches)}</div>
+        </div>`;
+      }).join('')
+    : '<div class="empty">지출 기록 없음</div>';
 
   // Unpurchased
   const purchasedStoreIds = new Set(purches.map(p => p.storeId));
@@ -722,7 +840,7 @@ function renderDash() {
   document.getElementById('dash-unpurchased').innerHTML = unpurchased.length
     ? `<table><thead><tr><th>판매처</th><th>미공포</th><th>구매기간</th><th>영통</th></tr></thead><tbody>
         ${unpurchased.map(s => `
-          <tr>
+          <tr onclick="showStatusDetail('none')" style="cursor:pointer">
             <td><span class="fw-600">${s.name}</span>${s.isMusicStreamTeam ? ' <span class="music-tag">🎵음총</span>' : ''}</td>
             <td>${s.unpoAlbumKey ? `<span class="badge badge-pk">${s.unpoAlbumKey}</span>` : '<span class="text-muted2">-</span>'}</td>
             <td class="text-sm">${fDate(s.purchaseStart, true)} ~ ${s.purchaseEnd ? fDate(s.purchaseEnd, true) : (s.purchaseEndTxt || '미정')}</td>
@@ -731,6 +849,127 @@ function renderDash() {
         `).join('')}
       </tbody></table>`
     : '<div class="empty">미구매 판매처 없음</div>';
+}
+
+function buildSpendDetail(sid, purches) {
+  const storePurches = purches.filter(p => p.storeId === sid);
+  if (!storePurches.length) return '<div class="empty">구매 기록 없음</div>';
+  return storePurches.map(p => {
+    const total = calcPurchTotal(p);
+    const items = (p.items || []).map(it => {
+      const alb = DB.albumTypes?.find(a => a.key === it.albKey);
+      return `<span class="text-sm text-muted">${alb?.name || it.albKey} ${it.qty}장</span>`;
+    }).join(' · ');
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd)">
+      <div>
+        ${stBadge(p.status || 'waiting')}
+        <span class="text-sm" style="margin-left:6px">${items}</span>
+        ${p.orderDate ? `<span class="text-xs text-muted" style="margin-left:6px">${fDate(p.orderDate)}</span>` : ''}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="fw-600">${fKRW(total)}</span>
+        <button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();editPurch('${p.id}')">편집</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleSpend(sid) {
+  const card = document.getElementById('sc-' + sid);
+  const detail = document.getElementById('scd-' + sid);
+  if (!card || !detail) return;
+  const open = detail.classList.toggle('open');
+  card.classList.toggle('expanded', open);
+}
+
+function showStatusDetail(key) {
+  const cat = getCat();
+  const stores = catStores();
+  const purches = (DB.purchases || []).filter(p => {
+    const st = DB.stores?.find(s => s.id === p.storeId);
+    return st?.categoryId === S.catId;
+  });
+
+  const ds = DISP_STATUSES.find(d => d.k === key);
+  document.getElementById('modal-detail-title').textContent = ds ? ds.lb + ' 상세' : '상세';
+
+  let html = '';
+  if (key === 'none') {
+    const purchasedIds = new Set(purches.map(p => p.storeId));
+    const unpurchased = stores.filter(s => !purchasedIds.has(s.id));
+    html = unpurchased.length
+      ? `<div style="margin-bottom:10px;font-size:13px;color:var(--tx2)">총 ${unpurchased.length}개 판매처 미구매</div>` +
+        unpurchased.map(s => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd)">
+            <div>
+              <span class="fw-600">${s.name}</span>
+              ${s.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : ''}
+              <div class="text-xs text-muted">${fDate(s.purchaseStart, true)} ~ ${s.purchaseEnd ? fDate(s.purchaseEnd, true) : (s.purchaseEndTxt || '미정')}</div>
+            </div>
+            <button class="btn btn-p btn-xs" onclick="closeModal('modal-detail');addPurchModal('${s.id}')">+ 구매 추가</button>
+          </div>`).join('')
+      : '<div class="empty">모든 판매처에서 구매했습니다</div>';
+  } else {
+    const keys = ds?.keys || [];
+    let matched = purches.filter(p => keys.includes(p.status || 'waiting'));
+    if (!matched.length) matched = purches.filter(p => {
+      const st = p.status || 'waiting';
+      if (key === 'shipping') return ['preparing','shipped'].includes(st);
+      return st === key;
+    });
+    html = matched.length
+      ? matched.map(p => {
+          const total = calcPurchTotal(p);
+          const items = (p.items || []).map(it => {
+            const alb = DB.albumTypes?.find(a => a.key === it.albKey);
+            return `${alb?.name || it.albKey} ${it.qty}장`;
+          }).join(', ');
+          return `<div style="display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bd);gap:8px">
+            <div style="flex:1">
+              <div class="fw-600">${storeName(p.storeId)}</div>
+              <div class="text-sm text-muted">${items}</div>
+              ${p.orderDate ? `<div class="text-xs text-muted">${fDate(p.orderDate)}</div>` : ''}
+            </div>
+            <div style="text-align:right">
+              <div class="fw-600">${fKRW(total)}</div>
+              ${stBadge(p.status || 'waiting')}
+              <div style="margin-top:4px"><button class="btn btn-ghost btn-xs" onclick="closeModal('modal-detail');editPurch('${p.id}')">편집</button></div>
+            </div>
+          </div>`;
+        }).join('')
+      : '<div class="empty">해당 상태의 구매 기록 없음</div>';
+  }
+  document.getElementById('modal-detail-body').innerHTML = html;
+  openModal('modal-detail');
+}
+
+function showAlbumDetail(albKey) {
+  const alb = DB.albumTypes?.find(a => a.key === albKey);
+  const purches = (DB.purchases || []).filter(p => {
+    const st = DB.stores?.find(s => s.id === p.storeId);
+    return st?.categoryId === S.catId;
+  });
+  const albPurches = purches.filter(p => (p.items || []).some(it => it.albKey === albKey && it.qty > 0));
+
+  document.getElementById('modal-detail-title').textContent = (alb?.name || albKey) + ' 구매 내역';
+  document.getElementById('modal-detail-body').innerHTML = albPurches.length
+    ? albPurches.map(p => {
+        const item = (p.items || []).find(it => it.albKey === albKey);
+        const qty = item?.qty || 0;
+        const proxy = item?.proxyQty || 0;
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd);gap:8px">
+          <div>
+            <span class="fw-600">${storeName(p.storeId)}</span>
+            <span class="text-sm text-muted" style="margin-left:6px">${qty}장${proxy ? ` (대리 ${proxy}장)` : ''}</span>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            ${stBadge(p.status || 'waiting')}
+            <button class="btn btn-ghost btn-xs" onclick="closeModal('modal-detail');editPurch('${p.id}')">편집</button>
+          </div>
+        </div>`;
+      }).join('')
+    : '<div class="empty">구매 기록 없음</div>';
+  openModal('modal-detail');
 }
 
 // ═══════════════════════════════════════════
@@ -1253,10 +1492,22 @@ function renderUnpo() {
 
   const html = stores.filter(s => !search || s.name.toLowerCase().includes(search)).map(s => {
     const unpo = dbGetUnpoCards(s.id, albKey);
+
+    // Purchase linkage badge
+    const storePurch = (DB.purchases || []).find(p => p.storeId === s.id);
+    const purchBadge = storePurch
+      ? stBadge(storePurch.status || 'waiting') +
+        (() => {
+          const qty = (storePurch.items || []).filter(i => i.albKey === albKey && i.qty > 0).reduce((s, i) => s + i.qty, 0);
+          return qty ? `<span class="text-sm text-muted" style="margin-left:4px">${qty}장</span>` : '';
+        })()
+      : '<span class="badge badge-gray">미구매</span>';
+
     if (!unpo || !unpo.sets?.length) {
       return `<div class="card" style="margin-bottom:12px">
         <div class="card-header">
           <div class="fw-600">${s.name} <span class="text-muted text-sm">미공포 없음</span></div>
+          <div style="display:flex;gap:6px;align-items:center">${purchBadge}</div>
         </div>
       </div>`;
     }
@@ -1289,7 +1540,10 @@ function renderUnpo() {
     return `<div class="card" style="margin-bottom:12px">
       <div class="card-header">
         <div class="fw-600">${s.name}${s.sharedWith ? ` <span class="badge badge-gray" style="font-size:10px">→ ${s.sharedWith.bn} (${s.sharedWith.ak})와 동일</span>` : ''}</div>
-        <span class="badge ${ownedCards === totalCards && totalCards > 0 ? 'badge-ok' : 'badge-gray'}">${ownedCards}/${totalCards}</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          ${purchBadge}
+          <span class="badge ${ownedCards === totalCards && totalCards > 0 ? 'badge-ok' : 'badge-gray'}">${ownedCards}/${totalCards}</span>
+        </div>
       </div>
       ${setsHtml || '<div class="empty">카드 정보 없음</div>'}
     </div>`;
@@ -1369,6 +1623,26 @@ function renderCal() {
     });
   }
 
+  // 초동기간 helper
+  const releaseDate = cat?.releaseDate ? new Date(cat.releaseDate + 'T00:00:00') : null;
+  function chodongCls(dateStr) {
+    if (!releaseDate) return '';
+    const d = new Date(dateStr + 'T00:00:00');
+    const diff = Math.round((d - releaseDate) / 86400000);
+    if (diff === 0) return 'chodong-release';
+    if (diff > 0 && diff <= 6) return 'chodong';
+    if (diff === 7) return 'chodong-dday';
+    return '';
+  }
+  function ddayLabel(dateStr) {
+    if (!releaseDate) return '';
+    const d = new Date(dateStr + 'T00:00:00');
+    const diff = Math.round((d - releaseDate) / 86400000);
+    if (diff === 0) return '<span style="font-size:9px;color:var(--pk);font-weight:700">발매</span>';
+    if (diff > 0 && diff <= 7) return `<span style="font-size:9px;color:var(--warn)">+${diff}일</span>`;
+    return '';
+  }
+
   // Build calendar grid
   const firstDay = new Date(y, m, 1).getDay();
   const daysInMonth = new Date(y, m + 1, 0).getDate();
@@ -1394,10 +1668,13 @@ function renderCal() {
     const isToday = dateStr === today.toISOString().slice(0, 10);
     const isSelected = dateStr === S.calDay;
     const evs = (events[dateStr] || []).slice(0, 3);
+    const chodong = chodongCls(dateStr);
 
-    cells += `<div class="cal-cell${isOther ? ' other-month' : ''}${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}"
+    cells += `<div class="cal-cell${isOther ? ' other-month' : ''}${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}${chodong ? ' ' + chodong : ''}"
       onclick="calSelectDay('${dateStr}')">
-      <div class="cal-day-num">${day}</div>
+      <div class="cal-day-num" style="display:flex;justify-content:space-between;align-items:center">
+        <span>${day}</span>${ddayLabel(dateStr)}
+      </div>
       ${evs.map(ev => `<div class="cal-event ${ev.type}">${ev.label}</div>`).join('')}
       ${(events[dateStr] || []).length > 3 ? `<div style="font-size:9px;color:var(--tx3)">+${(events[dateStr]||[]).length-3}</div>` : ''}
     </div>`;
@@ -1411,9 +1688,23 @@ function renderCal() {
       <div class="cal-day-panel">
         <div class="fw-600" style="margin-bottom:8px">${S.calDay} 일정 (${dayEvents.length}건)</div>
         ${dayEvents.map(ev => `<div class="cal-event ${ev.type}" style="font-size:12px;margin-bottom:4px">${ev.label}</div>`).join('')}
+      </div>
+      <div class="cal-legend">
+        ${cat?.releaseDate ? '<span class="cal-legend-item chodong-release">발매일</span><span class="cal-legend-item chodong">초동기간</span><span class="cal-legend-item chodong-dday">초동마감</span>' : ''}
+        <span class="cal-legend-item purchase">구매기간</span>
+        <span class="cal-legend-item offline">오프라인</span>
+        <span class="cal-legend-item delivery">배송예정</span>
       </div>`;
   } else {
-    document.getElementById('cal-day-detail').innerHTML = '';
+    document.getElementById('cal-day-detail').innerHTML = cat?.releaseDate ? `
+      <div class="cal-legend">
+        <span class="cal-legend-item chodong-release">발매일</span>
+        <span class="cal-legend-item chodong">초동기간</span>
+        <span class="cal-legend-item chodong-dday">초동마감</span>
+        <span class="cal-legend-item purchase">구매기간</span>
+        <span class="cal-legend-item offline">오프라인</span>
+        <span class="cal-legend-item delivery">배송예정</span>
+      </div>` : '';
   }
 }
 
@@ -1437,6 +1728,31 @@ document.querySelectorAll('.modal-bg').forEach(el => {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') document.querySelectorAll('.modal-bg.open').forEach(el => closeModal(el.id));
 });
+
+// ═══════════════════════════════════════════
+// NOTICE POPUP
+// ═══════════════════════════════════════════
+function checkNoticePopup() {
+  const notices = (DB.notices || []).filter(n => n.visible);
+  if (!notices.length) return;
+  const latest = notices.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || new Date(b.createdAt) - new Date(a.createdAt))[0];
+  const dismissed = JSON.parse(localStorage.getItem('albumapp_noticed') || '{}');
+  const ts = dismissed[latest.id];
+  if (ts && Date.now() - ts < 72 * 3600 * 1000) return;
+  document.getElementById('np-title').textContent = latest.title;
+  document.getElementById('np-body').textContent = latest.body || '';
+  document.getElementById('notice-popup').style.display = 'flex';
+  window._currentNoticeId = latest.id;
+}
+
+function dismissNotice(permanent) {
+  if (permanent && window._currentNoticeId) {
+    const dismissed = JSON.parse(localStorage.getItem('albumapp_noticed') || '{}');
+    dismissed[window._currentNoticeId] = Date.now();
+    localStorage.setItem('albumapp_noticed', JSON.stringify(dismissed));
+  }
+  document.getElementById('notice-popup').style.display = 'none';
+}
 
 // ═══════════════════════════════════════════
 // START
