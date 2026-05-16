@@ -15,6 +15,7 @@
 .unpo-set-wrap { background: var(--sur2); border: 1px solid var(--bd); border-radius: var(--r-sm); padding: 12px; margin-bottom: 10px; }
 .unpo-set-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .unpo-grid-admin { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.unpo-grid-admin.six { grid-template-columns: repeat(6, 1fr); }
 .unpo-card-admin {
   position: relative; aspect-ratio: 3/4; border-radius: 4px; overflow: hidden;
   border: 1px solid var(--bd2); background: var(--sur); cursor: pointer; transition: border-color .15s;
@@ -704,6 +705,7 @@ function openStoreModal(id) {
         <select id="sp-pricemode" onchange="document.getElementById('sp-custom-prices').style.display=this.value==='custom'?'block':'none'">
           <option value="country" ${(s?.priceMode||'country')==='country'?'selected':''}>국가 정가</option>
           <option value="custom" ${s?.priceMode==='custom'?'selected':''}>커스텀 가격</option>
+          <option value="nosale" ${s?.priceMode==='nosale'?'selected':''}>미판매 (전체)</option>
         </select>
       </div>
     </div>
@@ -711,6 +713,18 @@ function openStoreModal(id) {
     <div id="sp-custom-prices" style="display:${s?.priceMode==='custom'?'block':'none'}">
       <div style="font-size:12px;color:var(--tx2);margin-bottom:8px">커스텀 가격 (빈칸=국가가격, null입력=미판매)</div>
       <div class="form-row cols-2" id="sp-prices-grid">${priceRows}</div>
+    </div>
+
+    <hr class="divider">
+    <div class="form-row cols-3">
+      <div><label>미공포 세트 수</label><input type="number" min="1" id="sp-unpo-sets" value="${s?.unpoSets || 1}"></div>
+      <div><label>뒷면 포함</label>
+        <label class="form-check" style="margin-top:8px"><input type="checkbox" id="sp-unpo-back" ${s?.unpoBack ? 'checked':''}><span>뒷면 카드 포함</span></label>
+      </div>
+    </div>
+    <div class="form-row cols-2">
+      <div><label>미공포 공유: 앨범 키</label><input type="text" id="sp-shared-ak" value="${s?.sharedWith?.ak || ''}" placeholder="예: ID_PASS"></div>
+      <div><label>미공포 공유: 판매처 이름</label><input type="text" id="sp-shared-bn" value="${s?.sharedWith?.bn || ''}" placeholder="예: 무신사"></div>
     </div>
 
     <hr class="divider">
@@ -802,6 +816,13 @@ function saveStore() {
     offlineAddress: document.getElementById('sp-offaddr').value,
     offlineNote: document.getElementById('sp-offnote').value,
     offlineLuckyDraw: document.getElementById('sp-lucky').checked,
+    unpoSets: parseInt(document.getElementById('sp-unpo-sets')?.value || '1') || 1,
+    unpoBack: document.getElementById('sp-unpo-back')?.checked || false,
+    sharedWith: (() => {
+      const ak = document.getElementById('sp-shared-ak')?.value.trim();
+      const bn = document.getElementById('sp-shared-bn')?.value.trim();
+      return ak && bn ? { ak, bn } : null;
+    })(),
     url: document.getElementById('sp-url').value,
     memo: document.getElementById('sp-memo').value,
   };
@@ -942,7 +963,7 @@ function renderUnpoSet(store, si, set) {
         <button class="btn btn-err btn-xs" onclick="removeUnpoSet('${storeId}','${albKey}',${si})">세트 삭제</button>
       </div>
     </div>
-    <div class="unpo-grid-admin" id="unpo-grid-${storeId}-${si}">${cardsHtml}</div>
+    <div class="unpo-grid-admin${store.unpoBack || cards.length > 5 ? ' six' : ''}" id="unpo-grid-${storeId}-${si}">${cardsHtml}</div>
     <div style="margin-top:8px">
       <button class="btn btn-ghost btn-sm" onclick="addUnpoCardFromUrl('${storeId}','${albKey}',${si})">+ URL로 이미지 추가</button>
     </div>
@@ -1042,18 +1063,28 @@ function saveUnpoNote() {
 // ═══════════════════════════════════════════
 function renderSettings() {
   const rates = DB.settings?.rates || {};
-  document.getElementById('rate-rows').innerHTML = ['JPY','CNY','USD','TWD'].map(c => `
+  const autoRows = ['JPY','CNY','USD','TWD'].map(c => `
     <div class="form-row cols-3" style="margin-bottom:8px">
       <div><label>${c} 1원 = ? KRW</label><input type="number" id="rate-${c}" value="${rates[c]?.rate || ''}" step="0.0001"></div>
       <div><label>수동</label><label class="form-check" style="margin-top:8px"><input type="checkbox" id="rate-manual-${c}" ${rates[c]?.manual ? 'checked':''}><span>수동입력</span></label></div>
       <div style="padding-top:20px"><span class="text-xs text-muted">${rates[c]?.updAt ? '업데이트: ' + new Date(rates[c].updAt).toLocaleDateString('ko-KR') : ''}</span></div>
     </div>
   `).join('');
+  const otherRate = rates['OTHER'] || {};
+  const otherRow = `
+    <div class="form-row cols-3" style="margin-bottom:8px">
+      <div><label>OTHER (기타) 1단위 = ? KRW</label><input type="number" id="rate-OTHER" value="${otherRate.rate ?? 1}" step="0.0001"></div>
+      <div><label>수동 (항상)</label><label class="form-check" style="margin-top:8px"><input type="checkbox" id="rate-manual-OTHER" checked disabled><span>수동입력</span></label></div>
+      <div style="padding-top:20px"><span class="text-xs text-muted">기타 해외통화 직접 입력</span></div>
+    </div>
+  `;
+  document.getElementById('rate-rows').innerHTML = autoRows + otherRow;
   const ratesAt = DB.settings?.ratesAt;
   document.getElementById('rate-updated').textContent = ratesAt ? '마지막 자동업데이트: ' + new Date(ratesAt).toLocaleString('ko-KR') : '';
 }
 
 function saveRates() {
+  const existing = DB.settings?.rates || {};
   const newRates = {};
   ['JPY','CNY','USD','TWD'].forEach(c => {
     newRates[c] = {
@@ -1062,26 +1093,47 @@ function saveRates() {
       updAt: new Date().toISOString(),
     };
   });
+  newRates['OTHER'] = {
+    rate: parseFloat(document.getElementById('rate-OTHER')?.value || '1'),
+    manual: true,
+    name: existing['OTHER']?.name || '기타',
+    updAt: new Date().toISOString(),
+  };
   dbUpdateSettings({ rates: newRates });
+  reloadDB();
   toast('환율 저장됨');
 }
 
 async function fetchRates() {
   toast('환율 조회중...', 'warn');
-  try {
-    const r = await fetch('https://latest.currency-api.pages.dev/v1/currencies/krw.json');
-    if (!r.ok) throw new Error();
-    const d = await r.json(); const kk = d.krw; const now = new Date().toISOString();
+  const now = new Date().toISOString();
+  const existing = DB.settings?.rates || {};
+  const apply = kk => {
     const rates = {};
     ['JPY','CNY','USD','TWD'].forEach(c => {
       const cur = c.toLowerCase();
-      if (kk[cur]) rates[c] = { rate: parseFloat((1/kk[cur]).toFixed(4)), manual: false, updAt: now };
+      if (kk[cur] && !existing[c]?.manual) rates[c] = { rate: parseFloat((1/kk[cur]).toFixed(4)), manual: false, updAt: now };
+      else if (existing[c]) rates[c] = existing[c];
     });
+    rates['OTHER'] = existing['OTHER'] || { rate: 1, manual: true, name: '기타', updAt: null };
     dbUpdateSettings({ rates, ratesAt: now });
     reloadDB(); renderSettings();
     toast('환율 업데이트 완료');
-  } catch (e) {
-    toast('자동조회 실패 — 수동입력하세요', 'err');
+  };
+  try {
+    const r = await fetch('https://latest.currency-api.pages.dev/v1/currencies/krw.json');
+    if (!r.ok) throw new Error('primary failed');
+    const d = await r.json();
+    apply(d.krw);
+  } catch {
+    try {
+      const r2 = await fetch('https://open.er-api.com/v6/latest/KRW');
+      if (!r2.ok) throw new Error('fallback failed');
+      const d2 = await r2.json();
+      apply(d2.rates);
+    } catch {
+      toast('자동조회 실패 — 수동입력하세요', 'err');
+    }
   }
 }
 
