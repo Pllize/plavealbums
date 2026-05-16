@@ -22,7 +22,7 @@ const _defaultState = () => ({
     },
     ratesAt: null,
     theme: 'dark',
-    adminPw: '1234',
+    adminPw: '0312',
   },
 });
 
