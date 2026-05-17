@@ -6,8 +6,13 @@
       "artist": "PLAVE",
       "releaseDate": "2026-04-14",
       "description": "PLAVE 4th Mini Album",
-      "sortOrder": 1,
-      "createdAt": "2026-03-24"
+      "sortOrder": 1779040919417,
+      "createdAt": "2026-03-24",
+      "preReleaseDate": "",
+      "digitalReleaseDate": "",
+      "physicalReleaseDate": "2026-04-14",
+      "chodongBaseDate": "2026-04-14",
+      "chodongEndDate": "2026-04-21"
     },
     {
       "name": "Caligo Pt.3",
@@ -253,7 +258,9 @@
       "offlineAddressDetail": "서대문구 연희로11가길 48-23",
       "hanteoChart": true,
       "billboardChart": false,
-      "chartEtc": ""
+      "chartEtc": "",
+      "sharedWithAlbs": [],
+      "sharedWithStoreIds": []
     },
     {
       "id": "cs1774546314667",
@@ -1627,17 +1634,12 @@
       "country": "KR",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "POCAALBUM",
+      "unpoAlbumKey": "ALB_1779038847739",
       "unpoSets": 2,
       "unpoBack": true,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": null,
-        "POCAALBUM": 8200,
-        "ID_PASS": null,
-        "INVENTORY": null
-      },
+      "customPrices": {},
       "purchaseStart": "2026-04-14T11:00",
       "purchaseEnd": "2026-04-20T20:00",
       "purchaseEndTxt": "",
@@ -1645,14 +1647,44 @@
       "offlineEnd": "2026-04-20",
       "offlineHours": "11:00 - 20:00 (15-16시 브레이크)",
       "offlineAddress": "케타포 인사 / 케타포 코엑스",
-      "offlineNote": "포카앨범 구매 시 미공포\n스페셜메뉴 구매 시 컨셉포토카드 중 랜덤 1종 + 로고스티커 1종\n네임스티커",
+      "offlineNote": "포카앨범 구매 시 미공포스페셜메뉴 구매 시 컨셉포토카드 중 랜덤 1종 + 로고스티커 1종네임스티커",
       "offlineLuckyDraw": false,
       "defDomShip": 0,
       "defOvsShip": 0,
       "defDeliveryDate": "",
       "url": "https://kr.ktown4u.com/iteminfo?goods_no=159360",
       "videocall": false,
-      "memo": ""
+      "memo": "",
+      "unpoAlbumKeys": [
+        "ALB_1779038847739"
+      ],
+      "offlineEvents": [
+        {
+          "id": "oe0",
+          "start": "2026-04-14",
+          "end": "2026-04-20",
+          "addressName": "",
+          "addressDetail": "케타포 인사 / 케타포 코엑스",
+          "hoursMap": {
+            "0": "",
+            "1": "",
+            "2": "",
+            "3": "",
+            "4": "",
+            "5": "",
+            "6": ""
+          },
+          "note": "포카앨범 구매 시 미공포스페셜메뉴 구매 시 컨셉포토카드 중 랜덤 1종 + 로고스티커 1종네임스티커",
+          "luckyDraw": false
+        }
+      ],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "케타포 인사 / 케타포 코엑스",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": "",
+      "sharedWithAlbs": [],
+      "sharedWithStoreIds": []
     },
     {
       "id": "cs1776085066455",
@@ -1736,17 +1768,12 @@
       "country": "KR",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "POCAALBUM",
+      "unpoAlbumKey": "ALB_1779038847739",
       "unpoSets": 1,
       "unpoBack": false,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": null,
-        "POCAALBUM": 8200,
-        "ID_PASS": null,
-        "INVENTORY": null
-      },
+      "customPrices": {},
       "purchaseStart": "2026-04-14T11:00",
       "purchaseEnd": "2026-04-20T23:00",
       "purchaseEndTxt": "",
@@ -1761,7 +1788,18 @@
       "defDeliveryDate": "",
       "url": "https://vlastshop.com/product/[DRIVING-TALK-EVENT]-PLAVE-4th-Mini-Album-/'Caligo-Pt.2/'-(POCAALBUM-Ver._5%EC%A2%85-%EC%A4%91-%EB%9E%9C%EB%8D%A4%EB%B0%9C%EC%86%A1)/305/category/55/display/1/",
       "videocall": true,
-      "memo": "영통발표: 4/21 ; 드라이빙토크회: 5/31"
+      "memo": "영통발표: 4/21 ; 드라이빙토크회: 5/31",
+      "unpoAlbumKeys": [
+        "ALB_1779038847739"
+      ],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": "",
+      "sharedWithAlbs": [],
+      "sharedWithStoreIds": []
     },
     {
       "id": "cs1776402107838",
@@ -1885,7 +1923,7 @@
       "repo": "myalbums",
       "branch": "main",
       "filePath": "db/data.json",
-      "sha": "cbe9f17723ae28b6a926d55af022861c02878776"
+      "sha": "09a3efc79f6572f6eb7c8f0587911a554d95168a"
     }
   }
 }
