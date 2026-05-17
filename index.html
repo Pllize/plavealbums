@@ -702,7 +702,7 @@ function renderDash() {
     .filter(p => ['planned','waiting'].includes(p.status || 'waiting'))
     .reduce((s, p) => s + calcPurchTotal(p), 0);
   const proxySpend = purches.reduce((s, p) => s + calcProxyTotal(p), 0);
-  const totalQty = purches.reduce((s, p) => (p.items || []).reduce((ss, it) => ss + (it.qty || 0), ss), 0);
+  const totalQty = purches.reduce((s, p) => s + (p.items || []).reduce((ss, it) => ss + (it.qty || 0), 0), 0);
   const pendingCount = purches.filter(p => !['delivered','cancelled'].includes(p.status || 'waiting')).length;
   const deliveredCount = purches.filter(p => p.status === 'delivered').length;
 
