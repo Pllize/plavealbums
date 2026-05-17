@@ -815,6 +815,7 @@ function openStoreModal(id) {
     </div>
     <div class="form-row cols-2">
       <div><label>럭키드로우</label><label class="form-check"><input type="checkbox" id="sp-lucky" ${s?.offlineLuckyDraw ? 'checked':''}><span>럭키드로우</span></label></div>
+      <div><label>한터차트</label><label class="form-check"><input type="checkbox" id="sp-hanteo" ${s?.hanteoChart ? 'checked':''}><span>한터차트 반영</span></label></div>
     </div>
 
     <hr class="divider">
@@ -876,6 +877,7 @@ function saveStore() {
     offlineAddress: document.getElementById('sp-offaddr').value,
     offlineNote: document.getElementById('sp-offnote').value,
     offlineLuckyDraw: document.getElementById('sp-lucky').checked,
+    hanteoChart: document.getElementById('sp-hanteo')?.checked || false,
     unpoSets: parseInt(document.getElementById('sp-unpo-sets')?.value || '1') || 1,
     unpoBack: document.getElementById('sp-unpo-back')?.checked || false,
     sharedWith: (() => {
