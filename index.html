@@ -1274,44 +1274,106 @@ function openStorePopup(storeId) {
   const unpoKeys = getStoreUnpoKeys(store);
   const myPurch = (DB.purchases || []).find(p => p.storeId === storeId);
 
+  // Top badges
+  const topBadges = [
+    store.videocall ? '<span class="badge badge-pk">📞 영통</span>' : '',
+    store.hanteoChart ? '<span style="font-size:11px;background:rgba(96,165,250,.15);color:var(--info);padding:2px 6px;border-radius:3px">한터</span>' : '',
+    store.billboardChart ? '<span style="font-size:11px;background:rgba(34,197,94,.15);color:var(--ok);padding:2px 6px;border-radius:3px">빌보드</span>' : '',
+    store.chartEtc ? `<span class="badge badge-gray">${store.chartEtc}</span>` : '',
+    store.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : '',
+    store.offlineLuckyDraw ? '<span title="럭키드로우">🎰 럭키드로우</span>' : '',
+    country ? `<span class="badge badge-gray">${country.flag} ${country.lb}</span>` : '',
+    store.round ? `<span class="badge badge-info">${store.round}차</span>` : '',
+  ].filter(Boolean).join('');
+
+  // Purchase period
+  const deadline = fDeadline(store);
+  const deadlineColor = isExpired(store) ? 'var(--err)' : 'var(--ok)';
+  const periodHtml = `<div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px;margin-bottom:10px">
+    ${store.purchaseStart ? `<div style="font-size:12px;margin-bottom:4px"><span class="text-muted">구매 시작</span> <span class="fw-600">${fDate(store.purchaseStart, true)}</span></div>` : ''}
+    <div style="font-size:12px;margin-bottom:4px"><span class="text-muted">구매 마감</span> <span class="fw-600">${store.purchaseEnd ? fDate(store.purchaseEnd, true) : (store.purchaseEndTxt || '미정')}</span></div>
+    ${deadline ? `<div style="font-size:13px;font-weight:700;color:${deadlineColor}">${deadline}</div>` : ''}
+  </div>`;
+
+  // Offline info
+  const offlineAddr = store.offlineAddressDetail || store.offlineAddress || '';
+  const offlineHtml = (store.offlineStart || store.offlineAddressName) ? `
+    <div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px;margin-bottom:10px">
+      <div class="fw-600 text-sm" style="margin-bottom:6px">🏪 오프라인 정보</div>
+      ${store.offlineStart ? `<div style="font-size:12px;margin-bottom:3px">${fDate(store.offlineStart)}${store.offlineEnd ? ' ~ ' + fDate(store.offlineEnd) : ''}</div>` : ''}
+      ${store.offlineHours ? `<div style="font-size:12px;color:var(--tx2);margin-bottom:3px">⏰ ${store.offlineHours}</div>` : ''}
+      ${store.offlineAddressName ? `<div style="font-size:12px;margin-bottom:3px">${store.offlineAddressName}</div>` : ''}
+      ${offlineAddr ? `<div style="font-size:12px"><a href="https://map.naver.com/v5/search/${encodeURIComponent(offlineAddr)}" target="_blank" style="color:var(--pk)">${offlineAddr} 🗺</a></div>` : ''}
+      ${store.offlineNote ? `<div style="font-size:11px;color:var(--tx3);margin-top:4px">${store.offlineNote}</div>` : ''}
+    </div>` : '';
+
+  // Price rows
+  const hasUnpo = unpoKeys.length > 0;
   const priceRows = albums.map(a => {
     const pr = storePrice(store, a.key);
     if (pr === null) return '';
     const isUnpo = unpoKeys.includes(a.key);
     const prKrw = ovs ? toKRW(pr, cur) : pr;
-    return `<div class="price-row${isUnpo ? ' unpo-highlight' : ''}">
-      <span>${a.name}${isUnpo ? ' <span class="badge badge-pk" style="font-size:10px">미공포</span>' : ''}</span>
-      <span class="fw-600">${ovs
-        ? `${cur} ${Number(pr).toLocaleString()} <span style="color:var(--tx3);font-size:11px">(${fKRW(prKrw)})</span>`
-        : fKRW(pr)}</span>
+    const unpoClickAttr = isUnpo ? `onclick="openUnpoViewer('${storeId}','${a.key}')" style="cursor:pointer"` : '';
+    return `<div class="price-row${isUnpo ? ' unpo-highlight' : ''}" ${unpoClickAttr}>
+      <span>${a.name}${isUnpo ? ' <span class="badge badge-pk" style="font-size:10px">미공포 👁</span>' : ''}</span>
+      <span class="fw-600">${ovs ? `${cur} ${Number(pr).toLocaleString()} <span style="color:var(--tx3);font-size:11px">(${fKRW(prKrw)})</span>` : fKRW(pr)}</span>
     </div>`;
   }).filter(Boolean).join('');
 
+  // My purchase
+  const myPurchHtml = myPurch ? `
+    <div class="section-divider">내 구매기록</div>
+    <div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px">
+      ${stBadge(myPurch.status||'waiting')} <span class="fw-600 text-sm">${fKRW(calcPurchTotal(myPurch))}</span>
+      <div style="font-size:12px;color:var(--tx2);margin-top:4px">
+        ${(myPurch.items||[]).filter(it=>it.qty>0).map(it=>{const a=DB.albumTypes?.find(a=>a.key===it.albKey);return `${a?.name||it.albKey} ${it.qty}장`;}).join(' · ')}
+      </div>
+    </div>` : '';
+
   document.getElementById('modal-detail-title').textContent = store.name;
   document.getElementById('modal-detail-body').innerHTML = `
-    <div class="store-detail-grid" style="margin-bottom:12px">
-      <div class="store-detail-row"><div class="store-detail-label">판매 지역</div><div class="store-detail-val">${country?.flag||''} ${country?.lb||store.country}</div></div>
-      <div class="store-detail-row"><div class="store-detail-label">배급사</div><div class="store-detail-val">${distName(store.distId)||'—'}</div></div>
-      <div class="store-detail-row"><div class="store-detail-label">구매기간</div><div class="store-detail-val">${fDate(store.purchaseStart,true)||'—'} ~ ${store.purchaseEnd?fDate(store.purchaseEnd,true):(store.purchaseEndTxt||'미정')} <b style="color:${isExpired(store)?'var(--err)':'var(--ok)'}">${fDeadline(store)}</b></div></div>
-      <div class="store-detail-row"><div class="store-detail-label">영통</div><div class="store-detail-val">${store.videocall?'📞 있음':'없음'}</div></div>
-      ${store.offlineStart?`<div class="store-detail-row"><div class="store-detail-label">오프라인</div><div class="store-detail-val">🏪 ${fDate(store.offlineStart,true)}${store.offlineEnd?' ~ '+fDate(store.offlineEnd,true):''}${store.offlineLuckyDraw?' · 🎰 럭키드로우':''}</div></div>`:''}
-      ${store.offlineAddress?`<div class="store-detail-row"><div class="store-detail-label">주소</div><div class="store-detail-val"><a href="https://map.naver.com/v5/search/${encodeURIComponent(store.offlineAddress)}" target="_blank" style="color:var(--pk)">${store.offlineAddress} 🗺</a></div></div>`:''}
-      ${store.url?`<div class="store-detail-row"><div class="store-detail-label">구매링크</div><div class="store-detail-val"><a href="${store.url}" target="_blank" style="color:var(--pk)">바로가기 ↗</a></div></div>`:''}
-    </div>
-    <div class="section-divider">앨범 단가</div>
-    ${priceRows||'<div class="text-muted text-sm">가격 정보 없음</div>'}
-    ${myPurch?`
-      <div class="section-divider">내 구매기록</div>
-      <div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px">
-        ${stBadge(myPurch.status||'waiting')} <span class="fw-600 text-sm">${fKRW(calcPurchTotal(myPurch))}</span>
-        <div style="font-size:12px;color:var(--tx2);margin-top:4px">
-          ${(myPurch.items||[]).filter(it=>it.qty>0).map(it=>{const a=DB.albumTypes?.find(a=>a.key===it.albKey);return `${a?.name||it.albKey} ${it.qty}장`;}).join(' · ')}
-        </div>
-      </div>`:''}
+    ${topBadges ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${topBadges}</div>` : ''}
+    ${periodHtml}
+    ${offlineHtml}
+    <div class="section-divider">앨범 단가${hasUnpo ? ' (미공포 클릭 시 사진 보기)' : ''}</div>
+    ${priceRows || '<div class="text-muted text-sm">가격 정보 없음</div>'}
+    ${myPurchHtml}
   `;
   document.getElementById('modal-detail-foot').innerHTML = `
     <button class="btn btn-ghost" onclick="closeModal('modal-detail')">닫기</button>
+    ${store.url ? `<a href="${store.url}" target="_blank" class="btn btn-ghost">구매 링크 ↗</a>` : ''}
     <button class="btn btn-p" onclick="closeModal('modal-detail');addPurchModal('${storeId}')">+ 구매 추가</button>
+  `;
+  openModal('modal-detail');
+}
+
+function openUnpoViewer(storeId, albKey) {
+  const store = DB.stores?.find(s => s.id === storeId);
+  const uc = (DB.unpoCards || []).find(uc => uc.storeId === storeId && uc.albumTypeId === albKey);
+  if (!uc?.sets?.length) { toast('미공포 사진이 없습니다'); return; }
+  const alb = DB.albumTypes?.find(a => a.key === albKey);
+
+  const setsHtml = uc.sets.map((set, si) => `
+    <div style="margin-bottom:16px">
+      <div class="text-sm fw-600" style="margin-bottom:6px">세트 ${si+1}${set.memo ? ': ' + set.memo : ''}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px">
+        ${(set.cards||[]).map(c => `
+          <div style="text-align:center">
+            <div style="aspect-ratio:3/4;border-radius:4px;overflow:hidden;border:1px solid var(--bd);background:var(--sur2)">
+              ${c.img ? `<img src="${c.img}" style="width:100%;height:100%;object-fit:cover" loading="lazy">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--tx3);font-size:11px">미등록</div>'}
+            </div>
+            ${c.note ? `<div style="font-size:10px;color:var(--tx2);margin-top:2px">${c.note}</div>` : ''}
+            ${c.owned ? '<div style="font-size:10px;color:var(--ok)">✓ 보유</div>' : ''}
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+
+  document.getElementById('modal-detail-title').textContent = `${store?.name} · ${alb?.name || albKey} 미공포`;
+  document.getElementById('modal-detail-body').innerHTML = setsHtml;
+  document.getElementById('modal-detail-foot').innerHTML = `
+    <button class="btn btn-ghost" onclick="openStorePopup('${storeId}')">← 판매처 정보</button>
+    <button class="btn btn-ghost" onclick="closeModal('modal-detail')">닫기</button>
   `;
   openModal('modal-detail');
 }
@@ -1361,12 +1423,16 @@ function renderPurch() {
   document.getElementById('purch-sort-txt').textContent = S.purchSort === 'date' ? '날짜' : '금액';
 
   const total = purches.reduce((s, p) => s + calcPurchTotal(p), 0);
-  const myTotal = total - purches.reduce((s, p) => s + calcProxyTotal(p), 0);
+  const proxyTotal = purches.reduce((s, p) => s + calcProxyTotal(p), 0);
+  const myTotal = total - proxyTotal;
   document.getElementById('purch-total-bar').innerHTML = purches.length
-    ? `<div class="flex gap-12" style="padding:8px 12px;background:var(--sur);border:1px solid var(--bd);border-radius:var(--r-sm)">
-        <span class="text-muted text-sm">${purches.length}건</span>
-        <span class="text-sm fw-600">총 ${fKRW(total)}</span>
-        <span class="text-sm text-muted">내 지출 ${fKRW(myTotal)}</span>
+    ? `<div style="padding:8px 12px;background:var(--sur);border:1px solid var(--bd);border-radius:var(--r-sm)">
+        <div class="flex gap-12">
+          <span class="text-muted text-sm">${purches.length}건</span>
+          <span class="text-sm fw-600">총 ${fKRW(total)}</span>
+          <span class="text-sm text-muted">내 지출 ${fKRW(myTotal)}</span>
+        </div>
+        ${proxyTotal > 0 ? `<div style="font-size:11px;color:var(--warn);margin-top:3px">대리구매 포함 ${fKRW(proxyTotal)}</div>` : ''}
       </div>` : '';
 
   document.getElementById('purch-list').innerHTML = purches.length
@@ -1381,8 +1447,9 @@ function renderProxyTab() {
     return st?.categoryId === S.catId;
   });
 
-  // Aggregate all proxyDetails across purchases, grouped by person name
-  const byPerson = {}; // name -> [{ purchId, storeId, albKey, albName, qty, paid, delivered, entryIdx }]
+  // Split entries by type: receive vs give
+  const receivedByPerson = {}; // name -> entries where type='receive' or no type
+  const givenByPerson = {};    // name -> entries where type='give'
 
   purches.forEach(p => {
     (p.items || []).forEach(it => {
@@ -1391,8 +1458,9 @@ function renderProxyTab() {
       it.proxyDetails.forEach((e, ei) => {
         if (!e.name && !e.qty) return;
         const name = e.name || '(이름 없음)';
-        if (!byPerson[name]) byPerson[name] = [];
-        byPerson[name].push({
+        const target = (e.type === 'give') ? givenByPerson : receivedByPerson;
+        if (!target[name]) target[name] = [];
+        target[name].push({
           purchId: p.id,
           storeId: p.storeId,
           albKey: it.albKey,
@@ -1402,21 +1470,22 @@ function renderProxyTab() {
           delivered: !!e.delivered,
           entryIdx: ei,
           storeName: storeName(p.storeId),
+          type: e.type || 'receive',
         });
       });
     });
   });
 
-  const names = Object.keys(byPerson).sort((a, b) => a.localeCompare(b, 'ko'));
+  const receiveNames = Object.keys(receivedByPerson).sort((a, b) => a.localeCompare(b, 'ko'));
+  const giveNames = Object.keys(givenByPerson).sort((a, b) => a.localeCompare(b, 'ko'));
 
-  if (!names.length) {
+  if (!receiveNames.length && !giveNames.length) {
     document.getElementById('purch-proxy-content').innerHTML =
       '<div class="empty">대리구매 기록이 없습니다.<br><small style="color:var(--tx3)">구매 추가 시 앨범 행에서 + 대리 버튼으로 입력하세요.</small></div>';
     return;
   }
 
-  const html = names.map(name => {
-    const entries = byPerson[name];
+  function buildPersonCard(name, entries) {
     const totalQty = entries.reduce((s, e) => s + e.qty, 0);
     const allPaid = entries.every(e => e.paid);
     const allDelivered = entries.every(e => e.delivered);
@@ -1450,15 +1519,24 @@ function renderProxyTab() {
       </div>
       <div style="padding:0 4px">${rows}</div>
     </div>`;
-  }).join('');
+  }
 
-  const unpaidPersons = names.filter(n => byPerson[n].some(e => !e.paid)).length;
-  const summary = `<div style="padding:8px 12px;background:var(--sur);border:1px solid var(--bd);border-radius:var(--r-sm);margin-bottom:12px;display:flex;gap:16px">
-    <span class="text-muted text-sm">${names.length}명</span>
-    ${unpaidPersons ? `<span class="text-sm" style="color:var(--warn)">미입금 ${unpaidPersons}명</span>` : '<span class="text-sm" style="color:var(--ok)">전원 입금완료</span>'}
-  </div>`;
+  let html = '';
+  if (receiveNames.length) {
+    html += `<div class="section-divider">내가 받는 대리구매 (${receiveNames.length}명)</div>`;
+    const unpaidPersons = receiveNames.filter(n => receivedByPerson[n].some(e => !e.paid)).length;
+    html += `<div style="padding:8px 12px;background:var(--sur);border:1px solid var(--bd);border-radius:var(--r-sm);margin-bottom:12px;display:flex;gap:16px">
+      <span class="text-muted text-sm">${receiveNames.length}명</span>
+      ${unpaidPersons ? `<span class="text-sm" style="color:var(--warn)">미입금 ${unpaidPersons}명</span>` : '<span class="text-sm" style="color:var(--ok)">전원 입금완료</span>'}
+    </div>`;
+    html += receiveNames.map(name => buildPersonCard(name, receivedByPerson[name])).join('');
+  }
+  if (giveNames.length) {
+    html += `<div class="section-divider">내가 해주는 대리구매 (${giveNames.length}명)</div>`;
+    html += giveNames.map(name => buildPersonCard(name, givenByPerson[name])).join('');
+  }
 
-  document.getElementById('purch-proxy-content').innerHTML = summary + html;
+  document.getElementById('purch-proxy-content').innerHTML = html;
 }
 
 function renderPurchCard(p) {
@@ -1498,7 +1576,7 @@ function renderPurchCard(p) {
       ${STATUS_STEPS.slice(1).map((st, i) => {
         const done = stepIdx > i + 1;
         const current = stepIdx === i + 1;
-        return `<div class="delivery-step ${done ? 'done' : current ? 'current' : ''}">
+        return `<div class="delivery-step ${done ? 'done' : current ? 'current' : ''}" style="cursor:pointer" onclick="setPurchStatus('${p.id}','${st}')" title="${STATUS_MAP[st].lb}으로 변경">
           <div class="delivery-dot"></div>
           <div class="delivery-label">${STATUS_MAP[st].lb}</div>
         </div>`;
@@ -2350,10 +2428,9 @@ function renderCal() {
     });
   }
 
-  // 초동기간 helper
-  const releaseDate = cat?.digitalReleaseDate
-    ? new Date(cat.digitalReleaseDate + 'T00:00:00')
-    : cat?.releaseDate ? new Date(cat.releaseDate + 'T00:00:00') : null;
+  // 초동기간 helper - use chodongBaseDate if set, else digitalReleaseDate, else releaseDate
+  const chodongBaseDateStr = cat?.chodongBaseDate || cat?.digitalReleaseDate || cat?.releaseDate;
+  const releaseDate = chodongBaseDateStr ? new Date(chodongBaseDateStr + 'T00:00:00') : null;
   const chodongEnd = cat?.chodongEndDate ? new Date(cat.chodongEndDate + 'T00:00:00') : null;
   const preRelDate = cat?.preReleaseDate;
   const physRelDate = cat?.physicalReleaseDate;

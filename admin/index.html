@@ -141,6 +141,12 @@
       <option value="">전체 분류</option>
     </select>
     <input type="text" id="store-search" placeholder="이름 검색..." oninput="renderStores()" style="max-width:200px">
+    <div style="display:flex;gap:4px;align-items:center;margin-left:auto">
+      <span class="text-xs text-muted">정렬:</span>
+      <button class="btn btn-ghost btn-xs" onclick="ADM.storeSort='name';renderStores()">이름</button>
+      <button class="btn btn-ghost btn-xs" onclick="ADM.storeSort='date';renderStores()">구매기간</button>
+      <button class="btn btn-ghost btn-xs" onclick="ADM.storeSort='cat';renderStores()">분류</button>
+    </div>
   </div>
   <div class="card table-wrap"><table id="stores-table">
     <thead><tr><th>판매처명</th><th>분류</th><th>배급사</th><th>국가</th><th>차수</th><th>음총</th><th>구매기간</th><th></th></tr></thead>
@@ -459,6 +465,7 @@ let ADM = {
   unpoAlbKey: null,
   unpoNoteCtx: null,
   page: 'dashboard',
+  storeSort: 'name',
 };
 
 function initAdmin() {
@@ -756,7 +763,12 @@ function deleteAlb(id) {
 function renderStores() {
   const catF = document.getElementById('store-cat-filter')?.value || '';
   const search = document.getElementById('store-search')?.value.toLowerCase() || '';
-  const stores = (DB.stores || []).filter(s => (!catF || s.categoryId === catF) && (!search || s.name.toLowerCase().includes(search)));
+  let stores = (DB.stores || []).filter(s => (!catF || s.categoryId === catF) && (!search || s.name.toLowerCase().includes(search)));
+  // Sort
+  const sort = ADM.storeSort || 'name';
+  if (sort === 'name') stores = stores.slice().sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+  else if (sort === 'date') stores = stores.slice().sort((a, b) => (a.purchaseEnd || '').localeCompare(b.purchaseEnd || ''));
+  else if (sort === 'cat') stores = stores.slice().sort((a, b) => (a.categoryId || '').localeCompare(b.categoryId || ''));
 
   document.getElementById('stores-tbody').innerHTML = stores.map(s => `<tr>
     <td>
@@ -827,11 +839,15 @@ function openStoreModal(id) {
     </div>
 
     <div class="form-row cols-2">
-      <div><label>미공포 제공 앨범 키</label>
-        <select id="sp-unpo">
-          <option value="">없음</option>
-          ${albs.map(a => `<option value="${a.key}" ${a.key === (s?.unpoAlbumKey||'') ? 'selected' : ''}>${a.name}</option>`).join('')}
-        </select>
+      <div><label>미공포 제공 앨범 (복수 선택 가능)</label>
+        <div id="sp-unpo-checks" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;padding:6px;background:var(--sur2);border:1px solid var(--bd);border-radius:var(--r-sm)">
+          ${albs.map(a => {
+            const existingKeys = Array.isArray(s?.unpoAlbumKeys) ? s.unpoAlbumKeys : (s?.unpoAlbumKey ? [s.unpoAlbumKey] : []);
+            return `<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer">
+              <input type="checkbox" value="${a.key}" ${existingKeys.includes(a.key) ? 'checked' : ''}> ${a.name}
+            </label>`;
+          }).join('')}
+        </div>
       </div>
       <div><label>가격 모드</label>
         <select id="sp-pricemode" onchange="document.getElementById('sp-custom-prices').style.display=this.value==='custom'?'block':'none'">
@@ -879,15 +895,34 @@ function openStoreModal(id) {
       <div><label>오프라인 종료</label><input type="date" id="sp-offend" value="${s?.offlineEnd || ''}"></div>
     </div>
     <div class="form-row cols-2">
-      <div><label>운영시간</label><input type="text" id="sp-offhours" value="${s?.offlineHours || ''}"></div>
-      <div><label>주소</label><input type="text" id="sp-offaddr" value="${s?.offlineAddress || ''}"></div>
+      <div><label>오프라인 장소명</label><input type="text" id="sp-offaddr-name" value="${s?.offlineAddressName || ''}" placeholder="성수 팝업 스토어"></div>
+      <div><label>상세주소</label><input type="text" id="sp-offaddr-detail" value="${s?.offlineAddressDetail || s?.offlineAddress || ''}" placeholder="서울 성동구 서울숲2길..."></div>
+    </div>
+    <div class="form-row">
+      <div><label>운영시간 (월~일, 예: 10-20)</label>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:6px">
+          ${['월','화','수','목','금','토','일'].map((day, i) => {
+            const hoursMap = s?.offlineHoursMap || {};
+            return `<div style="text-align:center">
+              <div style="font-size:10px;margin-bottom:2px;color:var(--tx2)">${day}</div>
+              <input type="text" id="sp-hour-${i}" style="width:100%;font-size:10px;padding:2px;text-align:center;border:1px solid var(--bd);border-radius:3px;background:var(--sur)"
+                value="${hoursMap[i] || ''}" placeholder="10-20">
+            </div>`;
+          }).join('')}
+        </div>
+        <div style="margin-top:4px"><label style="font-size:11px;color:var(--tx2)">휴무일 메모</label><input type="text" id="sp-offclosed" value="${s?.offlineClosed || ''}" placeholder="매주 월요일 휴무" style="font-size:12px;margin-top:2px"></div>
+      </div>
     </div>
     <div class="form-row">
       <div><label>오프라인 메모</label><textarea id="sp-offnote">${s?.offlineNote || ''}</textarea></div>
     </div>
-    <div class="form-row cols-2">
-      <div><label>럭키드로우</label><label class="form-check"><input type="checkbox" id="sp-lucky" ${s?.offlineLuckyDraw ? 'checked':''}><span>럭키드로우</span></label></div>
-      <div><label>한터차트</label><label class="form-check"><input type="checkbox" id="sp-hanteo" ${s?.hanteoChart ? 'checked':''}><span>한터차트 반영</span></label></div>
+    <div class="form-row cols-3">
+      <div><label>럭키드로우</label><label class="form-check" style="margin-top:8px"><input type="checkbox" id="sp-lucky" ${s?.offlineLuckyDraw ? 'checked':''}><span>럭키드로우</span></label></div>
+      <div><label>한터차트</label><label class="form-check" style="margin-top:8px"><input type="checkbox" id="sp-hanteo" ${s?.hanteoChart ? 'checked':''}><span>한터 반영</span></label></div>
+      <div><label>빌보드</label><label class="form-check" style="margin-top:8px"><input type="checkbox" id="sp-billboard" ${s?.billboardChart ? 'checked':''}><span>빌보드 반영</span></label></div>
+    </div>
+    <div class="form-row">
+      <div><label>기타 차트</label><input type="text" id="sp-chart-etc" value="${s?.chartEtc || ''}" placeholder="가온, 써클 등 직접 입력"></div>
     </div>
 
     <hr class="divider">
@@ -906,8 +941,13 @@ function rebuildStorePrices(catId) {
       <input type="text" id="sp-price-${a.key}" placeholder="빈칸=국가가격, null=미판매">
     </div>
   `).join('');
-  const unpoSel = document.getElementById('sp-unpo');
-  if (unpoSel) unpoSel.innerHTML = '<option value="">없음</option>' + albs.map(a => `<option value="${a.key}">${a.name}</option>`).join('');
+  // Rebuild unpo checkboxes
+  const unpoChecks = document.getElementById('sp-unpo-checks');
+  if (unpoChecks) {
+    unpoChecks.innerHTML = albs.map(a => `<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer">
+      <input type="checkbox" value="${a.key}"> ${a.name}
+    </label>`).join('');
+  }
 }
 
 function saveStore() {
@@ -926,6 +966,22 @@ function saveStore() {
     });
   }
 
+  // Collect multi-unpo selections
+  const unpoAlbumKeys = Array.from(document.querySelectorAll('#sp-unpo-checks input:checked')).map(cb => cb.value);
+  const unpoAlbumKey = unpoAlbumKeys[0] || '';
+
+  // Collect offline hours map
+  const offlineHoursMap = {};
+  ['월','화','수','목','금','토','일'].forEach((_, i) => {
+    const val = document.getElementById('sp-hour-' + i)?.value?.trim();
+    if (val) offlineHoursMap[i] = val;
+  });
+  const offlineHoursFormatted = ['월','화','수','목','금','토','일']
+    .map((day, i) => offlineHoursMap[i] ? `${day} ${offlineHoursMap[i]}` : null)
+    .filter(Boolean).join(', ');
+  const offlineAddressDetail = document.getElementById('sp-offaddr-detail')?.value || '';
+  const offlineAddressName = document.getElementById('sp-offaddr-name')?.value || '';
+
   const data = {
     categoryId: catId,
     name,
@@ -934,7 +990,8 @@ function saveStore() {
     round: parseInt(document.getElementById('sp-round').value) || null,
     isMusicStreamTeam: document.getElementById('sp-music').checked,
     videocall: document.getElementById('sp-videocall').checked,
-    unpoAlbumKey: document.getElementById('sp-unpo').value || '',
+    unpoAlbumKey,
+    unpoAlbumKeys,
     priceMode,
     customPrices: priceMode === 'custom' ? customPrices : {},
     purchaseStart: document.getElementById('sp-pstart').value,
@@ -945,11 +1002,17 @@ function saveStore() {
     defOvsShip: parseFloat(document.getElementById('sp-ovsship').value) || 0,
     offlineStart: document.getElementById('sp-offstart').value,
     offlineEnd: document.getElementById('sp-offend').value,
-    offlineHours: document.getElementById('sp-offhours').value,
-    offlineAddress: document.getElementById('sp-offaddr').value,
+    offlineHours: offlineHoursFormatted || document.getElementById('sp-offhours')?.value || '',
+    offlineHoursMap,
+    offlineClosed: document.getElementById('sp-offclosed')?.value || '',
+    offlineAddressName,
+    offlineAddressDetail,
+    offlineAddress: offlineAddressDetail, // backward compat
     offlineNote: document.getElementById('sp-offnote').value,
     offlineLuckyDraw: document.getElementById('sp-lucky').checked,
     hanteoChart: document.getElementById('sp-hanteo')?.checked || false,
+    billboardChart: document.getElementById('sp-billboard')?.checked || false,
+    chartEtc: document.getElementById('sp-chart-etc')?.value || '',
     unpoSets: parseInt(document.getElementById('sp-unpo-sets')?.value || '1') || 1,
     unpoBack: document.getElementById('sp-unpo-back')?.checked || false,
     sharedWith: (() => {
@@ -1478,6 +1541,62 @@ async function pushToGithub() {
     document.getElementById('gh-status').textContent = '실패: ' + e.message;
     toast('저장 실패: ' + e.message, 'err');
   }
+}
+
+// ═══════════════════════════════════════════
+// GITHUB PAGE
+// ═══════════════════════════════════════════
+function renderGithubPage() {
+  // Populate fields from saved settings
+  const gh = DB.settings?.github || {};
+  const t2 = document.getElementById('gh-token2');
+  const r2 = document.getElementById('gh-repo2');
+  const b2 = document.getElementById('gh-branch2');
+  const f2 = document.getElementById('gh-filepath2');
+  if (t2) t2.value = gh.token || '';
+  if (r2) r2.value = gh.owner && gh.repo ? gh.owner + '/' + gh.repo : '';
+  if (b2) b2.value = gh.branch || 'main';
+  if (f2) f2.value = gh.filePath || 'db/albumapp_v1.json';
+
+  // Show sync status
+  const statusEl = document.getElementById('gh-sync-status');
+  if (statusEl) {
+    if (!gh.token || !gh.owner || !gh.repo) {
+      statusEl.textContent = '설정을 먼저 완료하세요.';
+    } else {
+      const lastSync = DB.settings?.lastSyncAt;
+      statusEl.textContent = lastSync
+        ? '마지막 동기화: ' + new Date(lastSync).toLocaleString('ko-KR')
+        : gh.owner + '/' + gh.repo + ' 연결됨. 동기화 버튼을 눌러 동기화하세요.';
+    }
+  }
+}
+
+function saveGithubSettings2() {
+  const repoVal = document.getElementById('gh-repo2')?.value.trim();
+  const parts = repoVal ? repoVal.split('/') : [];
+  const gh = {
+    token: document.getElementById('gh-token2')?.value.trim() || '',
+    owner: parts[0] || '',
+    repo: parts[1] || '',
+    branch: document.getElementById('gh-branch2')?.value.trim() || 'main',
+    filePath: document.getElementById('gh-filepath2')?.value.trim() || 'db/albumapp_v1.json',
+    sha: DB.settings?.github?.sha || '',
+  };
+  dbUpdateSettings({ github: gh });
+  // Also update main settings page inputs if visible
+  const t = document.getElementById('gh-token');
+  const r = document.getElementById('gh-repo');
+  const b = document.getElementById('gh-branch');
+  const f = document.getElementById('gh-filepath');
+  if (t) t.value = gh.token;
+  if (r) r.value = gh.owner && gh.repo ? gh.owner + '/' + gh.repo : '';
+  if (b) b.value = gh.branch;
+  if (f) f.value = gh.filePath;
+  reloadDB();
+  const statusEl = document.getElementById('gh-sync-status');
+  if (statusEl) statusEl.textContent = '설정 저장됨 ✓ — ' + gh.owner + '/' + gh.repo;
+  toast('GitHub 설정 저장됨');
 }
 
 // ═══════════════════════════════════════════
