@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" data-theme="dark">
+<html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -29,6 +29,37 @@
 
 <!-- Hamburger button (mobile) -->
 <button id="menu-btn" class="menu-btn" onclick="toggleSidebar()" aria-label="메뉴">☰</button>
+
+<!-- Settings button -->
+<button class="settings-btn" onclick="openSettings()" title="설정">⚙</button>
+
+<!-- Settings panel -->
+<div id="settings-panel" class="settings-panel">
+  <div class="settings-panel-head">
+    <span style="font-weight:600;font-size:15px">설정</span>
+    <button onclick="closeSettings()" style="background:none;border:none;color:var(--tx2);font-size:18px;line-height:1;cursor:pointer">✕</button>
+  </div>
+  <div class="settings-panel-body">
+    <div class="section-divider">테마</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm" id="theme-btn-light" onclick="setTheme('light')">☀️ 라이트</button>
+      <button class="btn btn-ghost btn-sm" id="theme-btn-dark" onclick="setTheme('dark')">🌙 다크</button>
+    </div>
+    <div class="section-divider" style="display:flex;align-items:center;justify-content:space-between">
+      <span>환율</span>
+      <span id="rate-updated-label" style="font-size:10px;color:var(--tx3)"></span>
+    </div>
+    <div id="settings-rates" style="margin-bottom:8px"></div>
+    <button class="btn btn-ghost btn-sm" onclick="fetchRatesIndex()" style="margin-bottom:4px">🔄 환율 자동 갱신</button>
+    <div class="section-divider">데이터 백업</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm" onclick="exportDB()">⬇ 내보내기</button>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('import-file').click()">⬆ 불러오기</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importDB(this)">
+    </div>
+  </div>
+</div>
+<div class="settings-overlay" id="settings-overlay" onclick="closeSettings()"></div>
 
 <!-- Sidebar overlay (mobile) -->
 <div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
@@ -66,10 +97,13 @@
   <button class="nav-item" onclick="nav('cal')" data-tab="cal">
     <i class="nav-icon">📅</i> 캘린더
   </button>
+  <button class="nav-item" onclick="nav('notices')" data-tab="notices">
+    <i class="nav-icon">📢</i> 공지사항
+  </button>
 
   <div style="margin-top:auto"></div>
-  <button class="nav-item" onclick="toggleTheme()">
-    <i class="nav-icon" id="theme-icon">🌙</i> <span id="theme-label">다크모드</span>
+  <button class="nav-item" onclick="openSettings()">
+    <i class="nav-icon">⚙</i> 설정
   </button>
 </nav>
 
@@ -98,6 +132,14 @@
 
   <!-- Stats -->
   <div class="stats-grid" id="dash-stats"></div>
+
+  <!-- 앨범별 구매 장수 -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-header">
+      <div class="card-title">📦 앨범별 구매 현황</div>
+    </div>
+    <div id="dash-album-grid"></div>
+  </div>
 
   <!-- 구매 현황 -->
   <div class="card">
@@ -152,12 +194,12 @@
     <input type="text" id="purch-search" placeholder="판매처, 메모 검색..." oninput="render()">
     <select id="purch-status-filter" onchange="render()">
       <option value="">전체 상태</option>
-      <option value="planned">계획</option>
-      <option value="waiting">대기중</option>
-      <option value="ordered">주문완료</option>
+      <option value="planned">구매예정</option>
+      <option value="waiting">구매대기</option>
+      <option value="ordered">구매완료</option>
       <option value="preparing">발송준비</option>
       <option value="shipped">배송중</option>
-      <option value="delivered">수령완료</option>
+      <option value="delivered">배송완료</option>
       <option value="cancelled">취소</option>
     </select>
     <select id="purch-cat-filter" onchange="render()">
@@ -204,6 +246,15 @@
       <input type="checkbox" id="store-music-only" onchange="render()">
       <span style="font-size:12px">음총만</span>
     </label>
+    <label class="form-check" style="white-space:nowrap">
+      <input type="checkbox" id="store-unpo-only" onchange="render()">
+      <span style="font-size:12px">미공포</span>
+    </label>
+    <label class="form-check" style="white-space:nowrap">
+      <input type="checkbox" id="store-vc-only" onchange="render()">
+      <span style="font-size:12px">영통</span>
+    </label>
+    <select id="store-country-filter2" onchange="render()" style="display:none"></select>
   </div>
 
   <!-- Album type tabs -->
@@ -245,24 +296,49 @@
       <div class="page-title">캘린더</div>
       <div class="page-sub">발매일 기준 일정 정리</div>
     </div>
-    <div class="flex gap-8">
+    <div class="flex gap-8" id="cal-header-checks">
       <label class="form-check"><input type="checkbox" id="cal-show-pur" checked onchange="render()"><span style="font-size:12px">구매기간</span></label>
       <label class="form-check"><input type="checkbox" id="cal-show-off" checked onchange="render()"><span style="font-size:12px">오프라인</span></label>
       <label class="form-check"><input type="checkbox" id="cal-show-del" checked onchange="render()"><span style="font-size:12px">배송예정</span></label>
     </div>
   </div>
 
-  <div class="cal-nav">
-    <button class="btn btn-ghost btn-sm" onclick="calPrev()">‹</button>
-    <div class="cal-nav-title" id="cal-month-title"></div>
-    <button class="btn btn-ghost btn-sm" onclick="calNext()">›</button>
-    <button class="btn btn-ghost btn-sm" onclick="calToday()">오늘</button>
+  <!-- 캘린더 서브탭 -->
+  <div class="section-tabs" style="margin-bottom:12px" id="cal-subtabs">
+    <button class="section-tab active" onclick="S.calTab='calendar';render()" data-caltab="calendar">📅 캘린더</button>
+    <button class="section-tab" onclick="S.calTab='events';render()" data-caltab="events">🏪 오프라인 이벤트</button>
   </div>
 
-  <div class="cal-grid" id="cal-header-row"></div>
-  <div class="cal-grid" id="cal-body" style="margin-top:4px"></div>
+  <!-- 캘린더 뷰 -->
+  <div id="cal-calendar-view">
+    <div class="cal-nav">
+      <button class="btn btn-ghost btn-sm" onclick="calPrev()">‹</button>
+      <div class="cal-nav-title" id="cal-month-title"></div>
+      <button class="btn btn-ghost btn-sm" onclick="calNext()">›</button>
+      <button class="btn btn-ghost btn-sm" onclick="calToday()">오늘</button>
+    </div>
+    <div class="cal-grid" id="cal-header-row"></div>
+    <div class="cal-grid" id="cal-body" style="margin-top:4px"></div>
+    <div id="cal-day-detail"></div>
+  </div>
 
-  <div id="cal-day-detail"></div>
+  <!-- 오프라인 이벤트 뷰 -->
+  <div id="cal-events-view" style="display:none">
+    <div id="cal-events-list"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+  NOTICES
+════════════════════════════════════════ -->
+<div class="page" id="page-notices">
+  <div class="page-header">
+    <div>
+      <div class="page-title">공지사항</div>
+      <div class="page-sub">운영자 공지 및 안내</div>
+    </div>
+  </div>
+  <div id="notices-list"></div>
 </div>
 
 </main>
@@ -316,7 +392,7 @@
   </div>
 </div>
 
-<!-- Detail Modal (status / album) -->
+<!-- Detail Modal (status / album / store popup) -->
 <div class="modal-bg" id="modal-detail">
   <div class="modal modal-lg">
     <div class="modal-head">
@@ -324,7 +400,7 @@
       <button class="modal-close" onclick="closeModal('modal-detail')">✕</button>
     </div>
     <div class="modal-body" id="modal-detail-body"></div>
-    <div class="modal-foot">
+    <div class="modal-foot" id="modal-detail-foot">
       <button class="btn btn-ghost" onclick="closeModal('modal-detail')">닫기</button>
     </div>
   </div>
@@ -358,6 +434,10 @@
     <span class="bottom-nav-icon">📅</span>
     <span class="bottom-nav-label">캘린더</span>
   </button>
+  <button class="bottom-nav-item" onclick="nav('notices')" data-tab="notices">
+    <span class="bottom-nav-icon">📢</span>
+    <span class="bottom-nav-label">공지</span>
+  </button>
 </nav>
 
 <script src="js/db.js"></script>
@@ -372,16 +452,17 @@ const COUNTRIES = {
   CN: { lb: '중국', cur: 'CNY', ovs: true,  flag: '🇨🇳' },
   US: { lb: '미국', cur: 'USD', ovs: true,  flag: '🇺🇸' },
   TW: { lb: '대만', cur: 'TWD', ovs: true,  flag: '🇹🇼' },
+  HK: { lb: '홍콩', cur: 'HKD', ovs: true,  flag: '🇭🇰' },
 };
 
 const STATUS_MAP = {
-  planned:   { lb: '계획',    cls: 'st-planned' },
-  waiting:   { lb: '대기중',  cls: 'st-waiting' },
-  ordered:   { lb: '주문완료',cls: 'st-ordered' },
-  preparing: { lb: '발송준비',cls: 'st-preparing' },
-  shipped:   { lb: '배송중',  cls: 'st-shipped' },
-  delivered: { lb: '수령완료',cls: 'st-delivered' },
-  cancelled: { lb: '취소',    cls: 'st-cancelled' },
+  planned:   { lb: '구매예정', cls: 'st-planned' },
+  waiting:   { lb: '구매대기', cls: 'st-waiting' },
+  ordered:   { lb: '구매완료', cls: 'st-ordered' },
+  preparing: { lb: '발송준비', cls: 'st-preparing' },
+  shipped:   { lb: '배송중',   cls: 'st-shipped' },
+  delivered: { lb: '배송완료', cls: 'st-delivered' },
+  cancelled: { lb: '취소',     cls: 'st-cancelled' },
 };
 
 const DISP_STATUSES = [
@@ -406,6 +487,7 @@ let S = {
   calYear: new Date().getFullYear(),
   calMonth: new Date().getMonth(),
   calDay: null,
+  calTab: 'calendar',
   showProxy: false,
   hideExpired: true,
   purchSort: 'date',
@@ -465,19 +547,126 @@ function reloadDB() {
 // ═══════════════════════════════════════════
 // THEME
 // ═══════════════════════════════════════════
-function toggleTheme() {
-  const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+function setTheme(t) {
   document.documentElement.setAttribute('data-theme', t);
-  document.getElementById('theme-icon').textContent = t === 'dark' ? '🌙' : '☀️';
-  document.getElementById('theme-label').textContent = t === 'dark' ? '다크모드' : '라이트모드';
   dbUpdateSettings({ theme: t });
+  updateThemeButtons(t);
 }
 
 function applyTheme() {
-  const t = DB.settings?.theme || 'dark';
+  const t = DB.settings?.theme || 'light';
   document.documentElement.setAttribute('data-theme', t);
-  document.getElementById('theme-icon').textContent = t === 'dark' ? '🌙' : '☀️';
-  document.getElementById('theme-label').textContent = t === 'dark' ? '다크모드' : '라이트모드';
+  updateThemeButtons(t);
+}
+
+function updateThemeButtons(t) {
+  const light = document.getElementById('theme-btn-light');
+  const dark = document.getElementById('theme-btn-dark');
+  if (light) light.style.borderColor = t === 'light' ? 'var(--pk2)' : '';
+  if (dark) dark.style.borderColor = t === 'dark' ? 'var(--pk2)' : '';
+}
+
+// ═══════════════════════════════════════════
+// SETTINGS PANEL
+// ═══════════════════════════════════════════
+const RATE_LABELS = { JPY: '일본 (JPY)', CNY: '중국 (CNY)', USD: '미국 (USD)', TWD: '대만 (TWD)', HKD: '홍콩 (HKD)' };
+
+function openSettings() {
+  renderSettingsRates();
+  const t = DB.settings?.theme || 'light';
+  updateThemeButtons(t);
+  const upd = DB.settings?.ratesAt;
+  const label = document.getElementById('rate-updated-label');
+  if (label) label.textContent = upd ? '갱신: ' + new Date(upd).toLocaleDateString('ko-KR') : '';
+  document.getElementById('settings-panel').classList.add('open');
+  document.getElementById('settings-overlay').classList.add('show');
+}
+
+function closeSettings() {
+  document.getElementById('settings-panel').classList.remove('open');
+  document.getElementById('settings-overlay').classList.remove('show');
+}
+
+function renderSettingsRates() {
+  const rates = DB.settings?.rates || {};
+  const keys = ['JPY','CNY','USD','TWD','HKD'];
+  document.getElementById('settings-rates').innerHTML = keys.map(k => {
+    const r = rates[k];
+    if (!r) return '';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <span style="font-size:12px;color:var(--tx2);min-width:100px">${RATE_LABELS[k]||k}</span>
+      <input type="number" step="0.01" value="${r.rate}" style="width:110px;font-size:12px"
+        onchange="saveRateFromSettings('${k}',this.value)">
+    </div>`;
+  }).join('');
+}
+
+function saveRateFromSettings(cur, val) {
+  const v = parseFloat(val);
+  if (!v || v <= 0) return;
+  const rates = { ...(DB.settings?.rates || {}) };
+  rates[cur] = { ...(rates[cur] || {}), rate: v, manual: true, updAt: new Date().toISOString() };
+  dbUpdateSettings({ rates });
+  reloadDB();
+}
+
+async function fetchRatesIndex() {
+  toast('환율 가져오는 중...', 'ok');
+  try {
+    const res = await fetch('https://api.frankfurter.app/latest?from=KRW&to=JPY,CNY,USD,TWD,HKD');
+    const data = await res.json();
+    const r = data.rates;
+    const rates = { ...(DB.settings?.rates || {}) };
+    const map = { JPY: r.JPY, CNY: r.CNY, USD: r.USD, TWD: r.TWD, HKD: r.HKD };
+    Object.entries(map).forEach(([k,v]) => {
+      if (!v) return;
+      const krwPer = Math.round((1 / v) * 10000) / 10000;
+      rates[k] = { ...(rates[k]||{}), rate: krwPer, manual: false, updAt: new Date().toISOString() };
+    });
+    dbUpdateSettings({ rates, ratesAt: new Date().toISOString() });
+    reloadDB();
+    renderSettingsRates();
+    const label = document.getElementById('rate-updated-label');
+    if (label) label.textContent = '갱신: 방금';
+    toast('환율 업데이트 완료');
+  } catch(e) {
+    toast('환율 가져오기 실패: ' + e.message, 'err');
+  }
+}
+
+function exportDB() {
+  const a = document.createElement('a');
+  a.href = 'data:application/json,' + encodeURIComponent(dbExportJSON());
+  const d = new Date().toISOString().slice(0,10);
+  a.download = 'albumapp_backup_' + d + '.json';
+  a.click();
+  toast('백업 파일 다운로드됨');
+}
+
+function importDB(input) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    if (dbImportJSON(e.target.result)) {
+      reloadDB();
+      applyTheme();
+      buildCatBar();
+      buildFilters();
+      render();
+      toast('데이터 불러오기 완료');
+    } else {
+      toast('파일 형식 오류', 'err');
+    }
+  };
+  reader.readAsText(input.files[0]);
+  input.value = '';
+}
+
+// ═══════════════════════════════════════════
+// UNPO KEYS HELPER
+// ═══════════════════════════════════════════
+function getStoreUnpoKeys(store) {
+  if (Array.isArray(store.unpoAlbumKeys)) return store.unpoAlbumKeys;
+  return store.unpoAlbumKey ? [store.unpoAlbumKey] : [];
 }
 
 // ═══════════════════════════════════════════
@@ -496,7 +685,7 @@ function nav(tab) {
 
 function render() {
   reloadDB();
-  const fns = { dash: renderDash, purch: renderPurch, stores: renderStores, unpo: renderUnpo, cal: renderCal };
+  const fns = { dash: renderDash, purch: renderPurch, stores: renderStores, unpo: renderUnpo, cal: renderCal, notices: renderNotices };
   (fns[S.tab] || renderDash)();
 }
 
@@ -706,8 +895,9 @@ function renderDash() {
   const pendingCount = purches.filter(p => !['delivered','cancelled'].includes(p.status || 'waiting')).length;
   const deliveredCount = purches.filter(p => p.status === 'delivered').length;
 
-  const daysToRelease = cat.releaseDate
-    ? Math.ceil((new Date(cat.releaseDate) - new Date()) / 86400000)
+  const releaseRef = cat.preReleaseDate || cat.digitalReleaseDate || cat.releaseDate;
+  const daysToRelease = releaseRef
+    ? Math.ceil((new Date(releaseRef) - new Date()) / 86400000)
     : null;
 
   // Stat cards: 총지출 / D-day / 총구매장수 / 미배송건수
@@ -724,7 +914,7 @@ function renderDash() {
         daysToRelease === null ? '?' : daysToRelease <= 0 ? '발매됨' : 'D-' + daysToRelease
       }</div>
       <div class="stat-label">발매까지</div>
-      <div class="stat-sub">${cat.releaseDate ? fDate(cat.releaseDate) : '미정'}</div>
+      <div class="stat-sub">${releaseRef ? fDate(releaseRef) : '미정'}</div>
     </div>
     <div class="stat-card">
       <div class="stat-num ok">${totalQty}</div>
@@ -734,9 +924,31 @@ function renderDash() {
     <div class="stat-card">
       <div class="stat-num ${pendingCount > 0 ? 'warn' : 'ok'}">${pendingCount}</div>
       <div class="stat-label">미배송 건수</div>
-      <div class="stat-sub">수령완료 ${deliveredCount}건</div>
+      <div class="stat-sub">배송완료 ${deliveredCount}건</div>
     </div>
   `;
+
+  // Album count grid
+  const albGrid = document.getElementById('dash-album-grid');
+  if (albGrid) {
+    const albCounts = {}, albProxy = {};
+    albums.forEach(a => { albCounts[a.key] = 0; albProxy[a.key] = 0; });
+    purches.forEach(p => (p.items||[]).forEach(it => {
+      albCounts[it.albKey] = (albCounts[it.albKey]||0) + (it.qty||0);
+      albProxy[it.albKey] = (albProxy[it.albKey]||0) + (it.proxyQty||0);
+    }));
+    albGrid.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;padding:4px 0">
+      ${albums.map(a => {
+        const total = albCounts[a.key]||0, proxy = albProxy[a.key]||0;
+        return `<div class="alb-count-card${total?'':' empty'}"${total?` onclick="showAlbumDetail('${a.key}')" style="cursor:pointer"`:''}">
+          <div class="alb-count-label">${a.name}</div>
+          <div class="alb-count-num${total?' ok':''}">${total}</div>
+          <div class="alb-count-unit">장</div>
+          ${S.showProxy&&proxy>0?`<div class="alb-count-proxy"><span>대리 ${proxy}장</span></div>`:''}
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
 
   // Notices
   const noticesEl = document.getElementById('dash-notices');
@@ -882,13 +1094,14 @@ function renderDash() {
         ${unpurchased.map(s => {
           const deadline = fDeadline(s);
           const expired = isExpired(s);
-          return `<div class="unpurchased-row" onclick="addPurchModal('${s.id}')">
+          const unpoKeys = getStoreUnpoKeys(s);
+          return `<div class="unpurchased-row" onclick="openStorePopup('${s.id}')">
             <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0">
               <span class="fw-600" style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</span>
               ${s.isMusicStreamTeam ? '<span class="music-tag" style="flex-shrink:0">🎵</span>' : ''}
               ${s.videocall ? '<span style="font-size:13px;flex-shrink:0" title="영통">📞</span>' : ''}
               ${s.hanteoChart ? '<span style="font-size:11px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px;flex-shrink:0">한터</span>' : ''}
-              ${s.unpoAlbumKey ? `<span class="badge badge-pk" style="font-size:10px;flex-shrink:0">${s.unpoAlbumKey}</span>` : ''}
+              ${unpoKeys.map(k=>`<span class="badge badge-pk" style="font-size:10px;flex-shrink:0">${k}</span>`).join('')}
             </div>
             <div class="text-sm fw-600" style="color:${expired ? 'var(--err)' : 'var(--tx2)'};flex-shrink:0">${deadline}</div>
           </div>`;
@@ -1001,6 +1214,7 @@ function showStatusDetail(key) {
       : '<div class="empty">해당 상태의 구매 기록 없음</div>';
   }
   document.getElementById('modal-detail-body').innerHTML = html;
+  document.getElementById('modal-detail-foot').innerHTML = '<button class="btn btn-ghost" onclick="closeModal(\'modal-detail\')">닫기</button>';
   openModal('modal-detail');
 }
 
@@ -1030,6 +1244,62 @@ function showAlbumDetail(albKey) {
         </div>`;
       }).join('')
     : '<div class="empty">구매 기록 없음</div>';
+  document.getElementById('modal-detail-foot').innerHTML = '<button class="btn btn-ghost" onclick="closeModal(\'modal-detail\')">닫기</button>';
+  openModal('modal-detail');
+}
+
+// ═══════════════════════════════════════════
+// STORE POPUP (from unpurchased list)
+// ═══════════════════════════════════════════
+function openStorePopup(storeId) {
+  const store = DB.stores?.find(s => s.id === storeId);
+  if (!store) return;
+  const country = COUNTRIES[store.country];
+  const ovs = isOvs(store);
+  const cur = getStoreCur(store);
+  const albums = getCatAlbums(store.categoryId);
+  const unpoKeys = getStoreUnpoKeys(store);
+  const myPurch = (DB.purchases || []).find(p => p.storeId === storeId);
+
+  const priceRows = albums.map(a => {
+    const pr = storePrice(store, a.key);
+    if (pr === null) return '';
+    const isUnpo = unpoKeys.includes(a.key);
+    const prKrw = ovs ? toKRW(pr, cur) : pr;
+    return `<div class="price-row${isUnpo ? ' unpo-highlight' : ''}">
+      <span>${a.name}${isUnpo ? ' <span class="badge badge-pk" style="font-size:10px">미공포</span>' : ''}</span>
+      <span class="fw-600">${ovs
+        ? `${cur} ${Number(pr).toLocaleString()} <span style="color:var(--tx3);font-size:11px">(${fKRW(prKrw)})</span>`
+        : fKRW(pr)}</span>
+    </div>`;
+  }).filter(Boolean).join('');
+
+  document.getElementById('modal-detail-title').textContent = store.name;
+  document.getElementById('modal-detail-body').innerHTML = `
+    <div class="store-detail-grid" style="margin-bottom:12px">
+      <div class="store-detail-row"><div class="store-detail-label">판매 지역</div><div class="store-detail-val">${country?.flag||''} ${country?.lb||store.country}</div></div>
+      <div class="store-detail-row"><div class="store-detail-label">배급사</div><div class="store-detail-val">${distName(store.distId)||'—'}</div></div>
+      <div class="store-detail-row"><div class="store-detail-label">구매기간</div><div class="store-detail-val">${fDate(store.purchaseStart,true)||'—'} ~ ${store.purchaseEnd?fDate(store.purchaseEnd,true):(store.purchaseEndTxt||'미정')} <b style="color:${isExpired(store)?'var(--err)':'var(--ok)'}">${fDeadline(store)}</b></div></div>
+      <div class="store-detail-row"><div class="store-detail-label">영통</div><div class="store-detail-val">${store.videocall?'📞 있음':'없음'}</div></div>
+      ${store.offlineStart?`<div class="store-detail-row"><div class="store-detail-label">오프라인</div><div class="store-detail-val">🏪 ${fDate(store.offlineStart,true)}${store.offlineEnd?' ~ '+fDate(store.offlineEnd,true):''}${store.offlineLuckyDraw?' · 🎰 럭키드로우':''}</div></div>`:''}
+      ${store.offlineAddress?`<div class="store-detail-row"><div class="store-detail-label">주소</div><div class="store-detail-val"><a href="https://map.naver.com/v5/search/${encodeURIComponent(store.offlineAddress)}" target="_blank" style="color:var(--pk)">${store.offlineAddress} 🗺</a></div></div>`:''}
+      ${store.url?`<div class="store-detail-row"><div class="store-detail-label">구매링크</div><div class="store-detail-val"><a href="${store.url}" target="_blank" style="color:var(--pk)">바로가기 ↗</a></div></div>`:''}
+    </div>
+    <div class="section-divider">앨범 단가</div>
+    ${priceRows||'<div class="text-muted text-sm">가격 정보 없음</div>'}
+    ${myPurch?`
+      <div class="section-divider">내 구매기록</div>
+      <div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px">
+        ${stBadge(myPurch.status||'waiting')} <span class="fw-600 text-sm">${fKRW(calcPurchTotal(myPurch))}</span>
+        <div style="font-size:12px;color:var(--tx2);margin-top:4px">
+          ${(myPurch.items||[]).filter(it=>it.qty>0).map(it=>{const a=DB.albumTypes?.find(a=>a.key===it.albKey);return `${a?.name||it.albKey} ${it.qty}장`;}).join(' · ')}
+        </div>
+      </div>`:''}
+  `;
+  document.getElementById('modal-detail-foot').innerHTML = `
+    <button class="btn btn-ghost" onclick="closeModal('modal-detail')">닫기</button>
+    <button class="btn btn-p" onclick="closeModal('modal-detail');addPurchModal('${storeId}')">+ 구매 추가</button>
+  `;
   openModal('modal-detail');
 }
 
@@ -1163,7 +1433,12 @@ function renderPurchCard(p) {
 
     ${p.trackingNumber ? `
       <div style="margin-top:8px;font-size:12px">
-        📦 ${p.carrier || '택배'}: <code>${p.trackingNumber}</code>
+        📦 ${p.carrier || '택배'}: ${(() => {
+          const url = carrierTrackUrl(p.carrier, p.trackingNumber);
+          return url
+            ? `<a href="${url}" target="_blank" style="color:var(--pk)"><code>${p.trackingNumber}</code> 조회↗</a>`
+            : `<code>${p.trackingNumber}</code>`;
+        })()}
         ${p.shippedAt ? ` · 발송 ${fDate(p.shippedAt)}` : ''}
         ${p.deliveredAt ? ` · 수령 ${fDate(p.deliveredAt)}` : ''}
       </div>
@@ -1193,6 +1468,36 @@ function deletePurch(id) {
   dbDeleteItem('purchases', id);
   render();
   toast('삭제되었습니다.', 'warn');
+}
+
+// ═══════════════════════════════════════════
+// CARRIERS
+// ═══════════════════════════════════════════
+const CARRIERS = [
+  { name: 'CJ대한통운', url: 'https://www.cjlogistics.com/ko/tool/parcel/tracking?gnbInvcNo={no}' },
+  { name: '한진택배',   url: 'https://www.hanjin.co.kr/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblnumText2={no}' },
+  { name: '롯데택배',   url: 'https://www.lotteglogis.com/home/reservation/tracking/linkView?InvNo={no}' },
+  { name: '우체국택배', url: 'https://service.epost.go.kr/trace.RetrieveDomRfndReason.comm?sid1={no}' },
+  { name: 'EMS',       url: 'https://service.epost.go.kr/trace.RetrieveEMSRDetail.comm?POST_CODE={no}' },
+  { name: 'DHL',       url: 'https://www.dhl.com/kr-ko/home/tracking.html?tracking-id={no}' },
+  { name: 'FedEx',     url: 'https://www.fedex.com/fedextrack/?trknbr={no}' },
+  { name: 'UPS',       url: 'https://www.ups.com/track?tracknum={no}' },
+  { name: '기타',       url: null },
+];
+
+function carrierTrackUrl(carrierName, trackNo) {
+  if (!carrierName || !trackNo) return null;
+  const c = CARRIERS.find(x => x.name === carrierName);
+  if (!c || !c.url) return null;
+  return c.url.replace('{no}', encodeURIComponent(trackNo));
+}
+
+function updateCarrierLink() {
+  const carrier = document.getElementById('mp-carrier-sel')?.value || '';
+  const trackNo = document.getElementById('mp-tracking')?.value || '';
+  const link = document.getElementById('mp-track-link');
+  const url = carrierTrackUrl(carrier, trackNo);
+  if (link) { link.href = url || '#'; link.style.display = url ? 'inline' : 'none'; }
 }
 
 // ═══════════════════════════════════════════
@@ -1226,19 +1531,31 @@ function buildPurchModal(p) {
   const selectedStoreId = p?.storeId || S.storeFromId || '';
   const selectedStore = DB.stores?.find(s => s.id === selectedStoreId);
   const ovs = selectedStore ? isOvs(selectedStore) : false;
+  const cur = selectedStore ? getStoreCur(selectedStore) : 'KRW';
+  const unpoKeys = selectedStore ? getStoreUnpoKeys(selectedStore) : [];
 
   const existingItems = p?.items || albums.map(a => ({ albKey: a.key, qty: 0, unitPrice: 0, proxyQty: 0 }));
 
   const itemRows = albums.map(a => {
     const item = existingItems.find(it => it.albKey === a.key) || { qty: 0, unitPrice: 0, proxyQty: 0 };
     const price = selectedStore ? storePrice(selectedStore, a.key) : null;
-    return `<tr>
-      <td style="padding:6px 8px;font-size:13px">${a.name}</td>
-      <td style="padding:6px 4px"><input type="number" min="0" value="${item.qty || 0}" style="width:60px" id="item-qty-${a.key}" onchange="updatePurchItemPrice('${a.key}')"></td>
-      <td style="padding:6px 4px"><input type="number" min="0" value="${item.unitPrice > 0 ? item.unitPrice : (price || '')}" placeholder="${price || '가격입력'}" style="width:90px" id="item-price-${a.key}"></td>
-      <td style="padding:6px 4px"><input type="number" min="0" value="${item.proxyQty || 0}" style="width:60px" id="item-proxy-${a.key}"></td>
+    const isUnpo = unpoKeys.includes(a.key);
+    const sub = (item.qty||0) * (item.unitPrice > 0 ? item.unitPrice : (price||0));
+    return `<tr${isUnpo ? ' style="background:rgba(168,85,247,.07)"' : ''}>
+      <td style="padding:6px 8px;font-size:13px">
+        ${a.name}${isUnpo ? ' <span class="badge badge-pk" style="font-size:9px">미공포</span>' : ''}
+      </td>
+      <td style="padding:6px 4px"><input type="number" min="0" value="${item.qty || 0}" style="width:55px" id="item-qty-${a.key}" oninput="updatePurchItemSub('${a.key}');updatePurchTotal()"></td>
+      <td style="padding:6px 4px"><input type="number" min="0" value="${item.unitPrice > 0 ? item.unitPrice : (price || '')}" placeholder="${price || '가격입력'}" style="width:85px" id="item-price-${a.key}" oninput="updatePurchItemSub('${a.key}');updatePurchTotal()"></td>
+      <td style="padding:6px 4px;font-size:11px;color:var(--tx2);min-width:60px" id="item-sub-${a.key}">${sub>0?`${ovs?cur+' ':fKRW(0).slice(0,-1)}${Number(sub).toLocaleString()}${ovs?'':'원'}`:''}</td>
+      <td style="padding:6px 4px"><input type="number" min="0" value="${item.proxyQty || 0}" style="width:50px" id="item-proxy-${a.key}" oninput="updatePurchTotal()"></td>
     </tr>`;
   }).join('');
+
+  const defEstDeliv = selectedStore?.defDeliveryDate || '';
+  const carrierVal = p?.carrier || '';
+  const trackVal = p?.trackingNumber || '';
+  const trackUrl = carrierTrackUrl(carrierVal, trackVal);
 
   document.getElementById('modal-purch-body').innerHTML = `
     <div class="form-row cols-2">
@@ -1273,52 +1590,76 @@ function buildPurchModal(p) {
       <thead><tr style="background:var(--sur2)">
         <th style="padding:6px 8px;font-size:11px;text-align:left">앨범</th>
         <th style="padding:6px 8px;font-size:11px;text-align:left">수량</th>
-        <th style="padding:6px 8px;font-size:11px;text-align:left">단가(${ovs ? getStoreCur(selectedStore) : '₩'})</th>
-        <th style="padding:6px 8px;font-size:11px;text-align:left">대리구매수량</th>
+        <th style="padding:6px 8px;font-size:11px;text-align:left">단가 (${ovs ? cur : '₩'})</th>
+        <th style="padding:6px 8px;font-size:11px;text-align:left">소계</th>
+        <th style="padding:6px 8px;font-size:11px;text-align:left">대리수량</th>
       </tr></thead>
       <tbody id="mp-items">${itemRows}</tbody>
     </table>
 
     <div class="section-divider">배송 및 추가비용</div>
-    <div class="form-row cols-3">
-      <div><label>국내배송비 (₩)</label><input type="number" min="0" id="mp-domship" value="${p?.domShip || 0}"></div>
-      ${ovs ? `
-        <div><label>국제배송비 (₩)</label><input type="number" min="0" id="mp-intlship" value="${p?.intlShip || 0}"></div>
-        <div><label>포워딩 수수료 (₩)</label><input type="number" min="0" id="mp-fwdfee" value="${p?.fwdFee || 0}"></div>
-      ` : '<div></div><div></div>'}
-    </div>
-    <div class="form-row cols-3">
-      ${ovs ? `<div><label>관세 (₩)</label><input type="number" min="0" id="mp-customs" value="${p?.customs || 0}"></div>` : '<div></div>'}
-      <div><label>할인 (₩)</label><input type="number" min="0" id="mp-discount" value="${p?.discount || 0}"></div>
-      ${ovs ? `<div><label>직접입력 KRW (0=자동)</label><input type="number" min="0" id="mp-directkrw" value="${p?.directKrw || 0}"></div>` : '<div></div>'}
-    </div>
     ${ovs ? `
-      <div class="form-row">
-        <div><label>외화 총액 (${getStoreCur(selectedStore) || 'foreign'}, 0=자동)</label>
-          <input type="number" min="0" id="mp-foreign" value="${p?.foreignTotal || 0}"></div>
+    <div class="form-row cols-2">
+      <div><label>해외배송비 (${cur})</label><input type="number" min="0" step="0.01" id="mp-intlship-cur" value="${p?.intlShipCur || 0}" oninput="updatePurchTotal()"></div>
+      <div><label>할인 (${cur})</label><input type="number" min="0" step="0.01" id="mp-discount-cur" value="${p?.discountCur || 0}" oninput="updatePurchTotal()"></div>
+    </div>
+    <div class="form-row">
+      <div><label>직접 원화 입력 (₩, 입력 시 자동계산 무시)</label>
+        <input type="number" min="0" id="mp-directkrw" value="${p?.directKrw || 0}" oninput="updatePurchTotal()">
       </div>
-    ` : ''}
+    </div>
+    <details style="margin-bottom:10px">
+      <summary class="btn btn-ghost btn-sm" style="display:inline-block;cursor:pointer;margin-bottom:8px">🚚 국내 배송 추가비용 ▾</summary>
+      <div class="form-row cols-3" style="margin-top:8px">
+        <div><label>배송대행비 (₩)</label><input type="number" min="0" id="mp-fwdfee" value="${p?.fwdFee || 0}" oninput="updatePurchTotal()"></div>
+        <div><label>관세 (₩)</label><input type="number" min="0" id="mp-customs" value="${p?.customs || 0}" oninput="updatePurchTotal()"></div>
+        <div><label>국내배송비 (₩)</label><input type="number" min="0" id="mp-domship" value="${p?.domShip || 0}" oninput="updatePurchTotal()"></div>
+      </div>
+    </details>
+    <div class="form-row">
+      <div><label>외화 총액 (${cur}, 0=자동)</label>
+        <input type="number" min="0" step="0.01" id="mp-foreign" value="${p?.foreignTotal || 0}" oninput="updatePurchTotal()">
+      </div>
+    </div>
+    ` : `
+    <div class="form-row cols-2">
+      <div><label>국내배송비 (₩)</label><input type="number" min="0" id="mp-domship" value="${p?.domShip || 0}" oninput="updatePurchTotal()"></div>
+      <div><label>할인 (₩)</label><input type="number" min="0" id="mp-discount" value="${p?.discount || 0}" oninput="updatePurchTotal()"></div>
+    </div>
+    `}
     ${isEdit && (p?.proxyKrw > 0) ? `
-      <div class="form-row">
-        <div><label>대리구매 비용 직접입력 (₩, 0=자동계산)</label>
-          <input type="number" min="0" id="mp-proxykrw" value="${p?.proxyKrw || 0}"></div>
-      </div>
+      <div class="form-row"><div><label>대리구매 비용 직접입력 (₩, 0=자동)</label>
+        <input type="number" min="0" id="mp-proxykrw" value="${p?.proxyKrw || 0}"></div></div>
     ` : ''}
+    <div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:10px" id="mp-total-preview">
+      <div class="price-row total-price-row"><span>예상 합계</span><span id="mp-total-num">—</span></div>
+    </div>
 
     <div class="section-divider">배송 추적</div>
-    <div class="form-row cols-3">
-      <div><label>택배사</label><input type="text" id="mp-carrier" placeholder="CJ대한통운, EMS..." value="${p?.carrier || ''}"></div>
-      <div><label>운송장번호</label><input type="text" id="mp-tracking" placeholder="운송장번호" value="${p?.trackingNumber || ''}"></div>
-      <div><label>발송예정일</label><input type="date" id="mp-shipdate" value="${p?.shippedAt || ''}"></div>
-    </div>
     <div class="form-row cols-2">
+      <div>
+        <label>택배사</label>
+        <select id="mp-carrier-sel" onchange="updateCarrierLink()">
+          <option value="">선택</option>
+          ${CARRIERS.map(c => `<option value="${c.name}" ${c.name===carrierVal?'selected':''}>${c.name}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label>운송장번호 <a id="mp-track-link" target="_blank" style="color:var(--pk);font-size:11px;display:${trackUrl?'inline':'none'}" href="${trackUrl||'#'}">📦 조회</a></label>
+        <input type="text" id="mp-tracking" placeholder="운송장번호" value="${trackVal}" oninput="updateCarrierLink()">
+      </div>
+    </div>
+    <div class="form-row cols-3">
+      <div><label>발송일</label><input type="date" id="mp-shipdate" value="${p?.shippedAt || ''}"></div>
       <div><label>수령일</label><input type="date" id="mp-delivdate" value="${p?.deliveredAt || ''}"></div>
+      <div><label>배송예정일</label><input type="date" id="mp-estdeliv" value="${p?.estDelivDate || defEstDeliv}"></div>
     </div>
 
     <div class="form-row">
       <div><label>메모</label><textarea id="mp-memo" rows="2">${p?.memo || ''}</textarea></div>
     </div>
   `;
+  updatePurchTotal();
 }
 
 function updatePurchPrices() {
@@ -1326,15 +1667,72 @@ function updatePurchPrices() {
   const store = DB.stores?.find(s => s.id === storeId);
   if (!store) return;
   const albums = getCatAlbums();
+  const unpoKeys = getStoreUnpoKeys(store);
   albums.forEach(a => {
     const pr = storePrice(store, a.key);
     const input = document.getElementById('item-price-' + a.key);
-    if (input && !input.value) input.placeholder = pr ? pr.toString() : '가격입력';
-    if (input && !input._userEdited && pr) input.value = pr;
+    if (input) {
+      input.placeholder = pr ? pr.toString() : '가격입력';
+      if (!input._userEdited && pr) input.value = pr;
+    }
+    // unpo highlight
+    const row = input?.closest('tr');
+    if (row) row.style.background = unpoKeys.includes(a.key) ? 'rgba(168,85,247,.07)' : '';
   });
+  // auto-fill est delivery
+  const estEl = document.getElementById('mp-estdeliv');
+  if (estEl && !estEl.value && store.defDeliveryDate) estEl.value = store.defDeliveryDate;
+  updatePurchTotal();
 }
 
-function updatePurchItemPrice(albKey) { /* price auto-fill handled in build */ }
+function updatePurchItemSub(albKey) {
+  const qty = parseFloat(document.getElementById('item-qty-' + albKey)?.value || '0');
+  const price = parseFloat(document.getElementById('item-price-' + albKey)?.value || '0');
+  const sub = qty * price;
+  const el = document.getElementById('item-sub-' + albKey);
+  if (!el) return;
+  const storeId = document.getElementById('mp-store')?.value;
+  const store = DB.stores?.find(s => s.id === storeId);
+  const ovs = store ? isOvs(store) : false;
+  const cur = store ? getStoreCur(store) : 'KRW';
+  el.textContent = sub > 0 ? (ovs ? `${cur} ${Number(sub).toLocaleString()}` : fKRW(sub)) : '';
+}
+
+function updatePurchTotal() {
+  const el = document.getElementById('mp-total-num');
+  if (!el) return;
+  const storeId = document.getElementById('mp-store')?.value;
+  const store = DB.stores?.find(s => s.id === storeId);
+  if (!store) { el.textContent = '—'; return; }
+  const ovs = isOvs(store);
+  const cur = getStoreCur(store);
+  const albums = getCatAlbums();
+
+  let itemsTotal = 0;
+  albums.forEach(a => {
+    const qty = parseFloat(document.getElementById('item-qty-' + a.key)?.value || '0');
+    const price = parseFloat(document.getElementById('item-price-' + a.key)?.value || '0');
+    itemsTotal += qty * price;
+  });
+
+  let total = 0;
+  if (ovs) {
+    const foreign = parseFloat(document.getElementById('mp-foreign')?.value || '0') || itemsTotal;
+    const intlShipCur = parseFloat(document.getElementById('mp-intlship-cur')?.value || '0');
+    const discountCur = parseFloat(document.getElementById('mp-discount-cur')?.value || '0');
+    const directKrw = parseFloat(document.getElementById('mp-directkrw')?.value || '0');
+    const fwdFee = parseFloat(document.getElementById('mp-fwdfee')?.value || '0');
+    const customs = parseFloat(document.getElementById('mp-customs')?.value || '0');
+    const domShip = parseFloat(document.getElementById('mp-domship')?.value || '0');
+    const base = directKrw > 0 ? directKrw : toKRW(foreign + intlShipCur - discountCur, cur);
+    total = base + fwdFee + customs + domShip;
+  } else {
+    const domShip = parseFloat(document.getElementById('mp-domship')?.value || '0');
+    const discount = parseFloat(document.getElementById('mp-discount')?.value || '0');
+    total = itemsTotal + domShip - discount;
+  }
+  el.textContent = fKRW(Math.max(0, total));
+}
 
 function savePurch() {
   const storeId = document.getElementById('mp-store')?.value;
@@ -1357,17 +1755,18 @@ function savePurch() {
     orderNumber: document.getElementById('mp-ordno')?.value || '',
     status: document.getElementById('mp-status')?.value || 'waiting',
     domShip: parseFloat(document.getElementById('mp-domship')?.value || '0'),
-    intlShip: parseFloat(document.getElementById('mp-intlship')?.value || '0'),
+    intlShip: parseFloat(document.getElementById('mp-intlship-cur')?.value || '0'),
     fwdFee: parseFloat(document.getElementById('mp-fwdfee')?.value || '0'),
     customs: parseFloat(document.getElementById('mp-customs')?.value || '0'),
-    discount: parseFloat(document.getElementById('mp-discount')?.value || '0'),
+    discount: parseFloat(document.getElementById('mp-discount')?.value || document.getElementById('mp-discount-cur')?.value || '0'),
     directKrw: parseFloat(document.getElementById('mp-directkrw')?.value || '0'),
     foreignTotal: parseFloat(document.getElementById('mp-foreign')?.value || '0'),
     proxyKrw: parseFloat(document.getElementById('mp-proxykrw')?.value || '0'),
-    carrier: document.getElementById('mp-carrier')?.value || '',
+    carrier: document.getElementById('mp-carrier-sel')?.value || '',
     trackingNumber: document.getElementById('mp-tracking')?.value || '',
     shippedAt: document.getElementById('mp-shipdate')?.value || '',
     deliveredAt: document.getElementById('mp-delivdate')?.value || '',
+    estDelivDate: document.getElementById('mp-estdeliv')?.value || '',
     memo: document.getElementById('mp-memo')?.value || '',
     createdAt: new Date().toISOString(),
   };
@@ -1386,6 +1785,18 @@ function savePurch() {
 // ═══════════════════════════════════════════
 // STORES
 // ═══════════════════════════════════════════
+function storeMinKrw(store) {
+  const albums = getCatAlbums(store.categoryId);
+  const cur = getStoreCur(store);
+  const prices = albums.map(a => {
+    const pr = storePrice(store, a.key);
+    if (pr === null || pr === undefined) return Infinity;
+    return isOvs(store) ? toKRW(pr, cur) : pr;
+  }).filter(v => v < Infinity);
+  if (!prices.length) return Infinity;
+  return prices[0];
+}
+
 function renderStores() {
   const albums = getCatAlbums();
   const search = document.getElementById('store-search')?.value.toLowerCase() || '';
@@ -1393,6 +1804,8 @@ function renderStores() {
   const albF = document.getElementById('store-alb-filter')?.value || S.albKey || '';
   const showEnded = document.getElementById('store-show-ended')?.checked || false;
   const musicOnly = document.getElementById('store-music-only')?.checked || false;
+  const unpoOnly = document.getElementById('store-unpo-only')?.checked || false;
+  const videocallOnly = document.getElementById('store-vc-only')?.checked || false;
 
   // Album tabs
   const tabsEl = document.getElementById('stores-alb-tabs');
@@ -1404,54 +1817,69 @@ function renderStores() {
   let stores = catStores();
   if (search) stores = stores.filter(s => s.name.toLowerCase().includes(search));
   if (countryF) stores = stores.filter(s => s.country === countryF);
-  if (albF) stores = stores.filter(s => s.unpoAlbumKey === albF || (s.priceMode === 'country') || (s.customPrices && albF in s.customPrices && s.customPrices[albF] !== null));
+  if (albF) stores = stores.filter(s => getStoreUnpoKeys(s).includes(albF) || (s.priceMode === 'country') || (s.customPrices && albF in s.customPrices && s.customPrices[albF] !== null));
   if (!showEnded) stores = stores.filter(s => !isExpired(s));
   if (musicOnly) stores = stores.filter(s => s.isMusicStreamTeam);
+  if (unpoOnly) stores = stores.filter(s => getStoreUnpoKeys(s).length > 0);
+  if (videocallOnly) stores = stores.filter(s => s.videocall);
+
+  // Find cheapest store per cat (by first album price in KRW)
+  const allCatStores = catStores().filter(s => !isExpired(s));
+  const minPrice = Math.min(...allCatStores.map(s => storeMinKrw(s)));
 
   const grid = document.getElementById('stores-grid');
   grid.innerHTML = stores.length
-    ? stores.map(s => renderStoreCard(s)).join('')
+    ? stores.map(s => renderStoreCard(s, storeMinKrw(s) === minPrice && minPrice < Infinity)).join('')
     : '<div class="empty" style="grid-column:1/-1">조건에 맞는 판매처가 없습니다</div>';
 }
 
-function renderStoreCard(s) {
+function renderStoreCard(s, isCheapest = false) {
   const dist = distName(s.distId);
   const country = COUNTRIES[s.country];
   const expired = isExpired(s);
   const albums = getCatAlbums(s.categoryId);
+  const unpoKeys = getStoreUnpoKeys(s);
+  const deadline = fDeadline(s);
+  const isUrgent = !expired && s.purchaseEnd && Math.ceil((new Date(s.purchaseEnd)-new Date())/86400000) <= 3;
 
   const priceRows = albums.map(a => {
     const pr = storePrice(s, a.key);
     if (pr === null) return '';
     const cur = getStoreCur(s);
     const prKRW = isOvs(s) ? toKRW(pr, cur) : pr;
-    return `<div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0">
-      <span class="text-muted">${a.name}</span>
-      <span class="fw-600">${isOvs(s) ? `${cur} ${Number(pr).toLocaleString()} (${fKRW(prKRW)})` : fKRW(pr)}</span>
+    const isUnpo = unpoKeys.includes(a.key);
+    return `<div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0${isUnpo?';background:rgba(168,85,247,.07);border-radius:3px;padding-left:4px':''}">
+      <span class="text-muted">${a.name}${isUnpo?` <span class="badge badge-pk" style="font-size:9px">미공포</span>`:''}</span>
+      <span class="fw-600">${isOvs(s) ? `${cur} ${Number(pr).toLocaleString()} <span style="font-size:10px;color:var(--tx3)">(${fKRW(prKRW)})</span>` : fKRW(pr)}</span>
     </div>`;
   }).filter(Boolean).join('');
 
-  return `<div class="card" style="margin-bottom:0;${expired ? 'opacity:.55' : ''}cursor:pointer" onclick="showStoreDetail('${s.id}')">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px">
-      <div>
-        <div class="fw-600">${s.name}${expired ? ' <span class="badge badge-gray" style="font-size:10px">마감</span>' : ''}</div>
+  return `<div class="card" style="margin-bottom:0;${expired ? 'opacity:.55;' : ''}cursor:pointer" onclick="showStoreDetail('${s.id}')">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px">
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span class="fw-600">${s.name}</span>
+          ${expired ? '<span class="badge badge-gray" style="font-size:10px">마감</span>' : ''}
+          ${isCheapest ? '<span class="badge badge-ok" style="font-size:10px">최저가</span>' : ''}
+        </div>
         <div class="text-sm text-muted">${dist ? dist + ' · ' : ''}${country?.flag || ''} ${country?.lb || s.country}</div>
       </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
         ${s.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : ''}
         ${s.round ? `<span class="badge badge-info">${s.round}차</span>` : ''}
-        ${s.unpoAlbumKey ? `<span class="badge badge-pk" style="font-size:10px">미공포</span>` : ''}
+        ${unpoKeys.map(k=>`<span class="badge badge-pk" style="font-size:10px">${k} 미공포</span>`).join('')}
         ${s.videocall ? '<span title="영통" style="font-size:14px">📞</span>' : ''}
         ${s.offlineLuckyDraw ? '<span title="럭키드로우" style="font-size:14px">🎰</span>' : ''}
       </div>
     </div>
 
-    <div style="margin-bottom:8px">${priceRows}</div>
+    <div style="margin-bottom:8px">${priceRows || '<div class="text-muted text-sm">가격 정보 없음</div>'}</div>
 
-    <div style="font-size:11px;color:var(--tx3)">
-      ${s.purchaseStart ? '구매: ' + fDate(s.purchaseStart, true) + ' ~ ' + (s.purchaseEnd ? fDate(s.purchaseEnd, true) : (s.purchaseEndTxt || '미정')) : ''}
+    <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px">
+      <span style="color:var(--tx3)">${s.purchaseStart ? fDate(s.purchaseStart, true) + ' ~ ' + (s.purchaseEnd ? fDate(s.purchaseEnd, true) : (s.purchaseEndTxt || '미정')) : ''}</span>
+      <span style="font-weight:700;color:${expired?'var(--tx3)':isUrgent?'var(--err)':'var(--ok)'}">${deadline}</span>
     </div>
-    ${s.offlineStart ? `<div style="font-size:11px;color:var(--warn)">🏪 오프라인: ${fDate(s.offlineStart)} ~ ${fDate(s.offlineEnd)}</div>` : ''}
+    ${s.offlineStart ? `<div style="font-size:11px;color:var(--warn);margin-top:3px">🏪 오프라인: ${fDate(s.offlineStart)} ~ ${fDate(s.offlineEnd)}</div>` : ''}
   </div>`;
 }
 
@@ -1491,7 +1919,7 @@ function showStoreDetail(storeId) {
       <span class="badge badge-gray">${country?.flag || ''} ${country?.lb || s.country}</span>
       ${dist ? `<span class="badge badge-gray">${dist}</span>` : ''}
       ${s.videocall ? '<span class="badge badge-pk">📞 영통</span>' : ''}
-      ${s.unpoAlbumKey ? `<span class="badge badge-pk">미공포: ${s.unpoAlbumKey}</span>` : ''}
+      ${getStoreUnpoKeys(s).map(k=>`<span class="badge badge-pk">미공포: ${k}</span>`).join('')}
     </div>
 
     <div class="section-divider">가격표</div>
@@ -1549,7 +1977,7 @@ function renderUnpo() {
   }
 
   // Get stores with unpo for this album key
-  const stores = catStores().filter(s => s.unpoAlbumKey === albKey);
+  const stores = catStores().filter(s => getStoreUnpoKeys(s).includes(albKey));
 
   const html = stores.filter(s => !search || s.name.toLowerCase().includes(search)).map(s => {
     const unpo = dbGetUnpoCards(s.id, albKey);
@@ -1631,6 +2059,16 @@ function toggleUnpoOwned(storeId, albKey, si, ci) {
 // CALENDAR
 // ═══════════════════════════════════════════
 function renderCal() {
+  // Sub-tab management
+  const calTab = S.calTab || 'calendar';
+  document.querySelectorAll('[data-caltab]').forEach(el =>
+    el.classList.toggle('active', el.dataset.caltab === calTab));
+  document.getElementById('cal-calendar-view').style.display = calTab === 'calendar' ? '' : 'none';
+  document.getElementById('cal-events-view').style.display = calTab === 'events' ? '' : 'none';
+  document.getElementById('cal-header-checks').style.display = calTab === 'calendar' ? '' : 'none';
+
+  if (calTab === 'events') { renderCalEvents(); return; }
+
   const y = S.calYear, m = S.calMonth;
   const today = new Date();
   const monthNames = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
@@ -1685,22 +2123,38 @@ function renderCal() {
   }
 
   // 초동기간 helper
-  const releaseDate = cat?.releaseDate ? new Date(cat.releaseDate + 'T00:00:00') : null;
+  const releaseDate = cat?.digitalReleaseDate
+    ? new Date(cat.digitalReleaseDate + 'T00:00:00')
+    : cat?.releaseDate ? new Date(cat.releaseDate + 'T00:00:00') : null;
+  const chodongEnd = cat?.chodongEndDate ? new Date(cat.chodongEndDate + 'T00:00:00') : null;
+  const preRelDate = cat?.preReleaseDate;
+  const physRelDate = cat?.physicalReleaseDate;
+
   function chodongCls(dateStr) {
+    if (preRelDate && dateStr === preRelDate) return 'pre-release';
+    if (physRelDate && dateStr === physRelDate) return 'physical-release';
+    if (chodongEnd && dateStr === cat.chodongEndDate) return 'chodong-end';
     if (!releaseDate) return '';
     const d = new Date(dateStr + 'T00:00:00');
     const diff = Math.round((d - releaseDate) / 86400000);
     if (diff === 0) return 'chodong-release';
-    if (diff > 0 && diff <= 6) return 'chodong';
-    if (diff === 7) return 'chodong-dday';
+    if (chodongEnd) {
+      if (diff > 0 && d < chodongEnd) return 'chodong';
+    } else {
+      if (diff > 0 && diff <= 6) return 'chodong';
+      if (diff === 7) return 'chodong-dday';
+    }
     return '';
   }
   function ddayLabel(dateStr) {
+    if (preRelDate && dateStr === preRelDate) return '<span style="font-size:9px;color:#a855f7;font-weight:700">선공개</span>';
+    if (physRelDate && dateStr === physRelDate) return '<span style="font-size:9px;color:var(--ok);font-weight:700">실물</span>';
     if (!releaseDate) return '';
     const d = new Date(dateStr + 'T00:00:00');
     const diff = Math.round((d - releaseDate) / 86400000);
     if (diff === 0) return '<span style="font-size:9px;color:var(--pk);font-weight:700">발매</span>';
-    if (diff > 0 && diff <= 7) return `<span style="font-size:9px;color:var(--warn)">+${diff}일</span>`;
+    const maxDiff = chodongEnd ? Math.round((chodongEnd - releaseDate) / 86400000) : 7;
+    if (diff > 0 && diff <= maxDiff) return `<span style="font-size:9px;color:var(--warn)">+${diff}일</span>`;
     return '';
   }
 
@@ -1750,23 +2204,59 @@ function renderCal() {
         <div class="fw-600" style="margin-bottom:8px">${S.calDay} 일정 (${dayEvents.length}건)</div>
         ${dayEvents.map(ev => `<div class="cal-event ${ev.type}" style="font-size:12px;margin-bottom:4px">${ev.label}</div>`).join('')}
       </div>
-      <div class="cal-legend">
-        ${cat?.releaseDate ? '<span class="cal-legend-item chodong-release">발매일</span><span class="cal-legend-item chodong">초동기간</span><span class="cal-legend-item chodong-dday">초동마감</span>' : ''}
-        <span class="cal-legend-item purchase">구매기간</span>
-        <span class="cal-legend-item offline">오프라인</span>
-        <span class="cal-legend-item delivery">배송예정</span>
-      </div>`;
+      ${buildCalLegend(cat)}`;
   } else {
-    document.getElementById('cal-day-detail').innerHTML = cat?.releaseDate ? `
-      <div class="cal-legend">
-        <span class="cal-legend-item chodong-release">발매일</span>
-        <span class="cal-legend-item chodong">초동기간</span>
-        <span class="cal-legend-item chodong-dday">초동마감</span>
-        <span class="cal-legend-item purchase">구매기간</span>
-        <span class="cal-legend-item offline">오프라인</span>
-        <span class="cal-legend-item delivery">배송예정</span>
-      </div>` : '';
+    document.getElementById('cal-day-detail').innerHTML = buildCalLegend(cat);
   }
+}
+
+function buildCalLegend(cat) {
+  if (!cat) return '';
+  const hasRelease = cat.digitalReleaseDate || cat.releaseDate;
+  return `<div class="cal-legend">
+    ${cat.preReleaseDate ? '<span class="cal-legend-item pre-release">선공개</span>' : ''}
+    ${hasRelease ? '<span class="cal-legend-item chodong-release">발매일(디지털)</span>' : ''}
+    ${cat.physicalReleaseDate ? '<span class="cal-legend-item physical-release">실물발매</span>' : ''}
+    ${hasRelease ? '<span class="cal-legend-item chodong">초동기간</span>' : ''}
+    ${cat.chodongEndDate ? '<span class="cal-legend-item chodong-end">초동마감</span>' : (hasRelease ? '<span class="cal-legend-item chodong-dday">초동마감(+7)</span>' : '')}
+    <span class="cal-legend-item purchase">구매기간</span>
+    <span class="cal-legend-item offline">오프라인</span>
+    <span class="cal-legend-item delivery">배송예정</span>
+  </div>`;
+}
+
+function renderCalEvents() {
+  const stores = catStores().filter(s => s.offlineStart);
+  const today = new Date().toISOString().slice(0,10);
+  const sorted = [...stores].sort((a, b) => (a.offlineStart||'').localeCompare(b.offlineStart||''));
+  const future = sorted.filter(s => !s.offlineEnd || s.offlineEnd >= today);
+  const past = sorted.filter(s => s.offlineEnd && s.offlineEnd < today);
+
+  function eventCard(s) {
+    const mapUrl = s.offlineAddress ? `https://map.naver.com/v5/search/${encodeURIComponent(s.offlineAddress)}` : null;
+    return `<div class="card" style="margin-bottom:10px">
+      <div class="card-header">
+        <div class="fw-600">${s.name}</div>
+        <div style="display:flex;gap:4px">
+          ${s.offlineLuckyDraw ? '<span class="badge badge-pk">🎰 럭키드로우</span>' : ''}
+          ${s.videocall ? '<span class="badge badge-info">📞 영통</span>' : ''}
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--tx2);margin-bottom:6px">
+        📅 ${fDate(s.offlineStart)}${s.offlineEnd && s.offlineEnd!==s.offlineStart?' ~ '+fDate(s.offlineEnd):''}
+        ${s.offlineHours ? ` · ⏰ ${s.offlineHours}` : ''}
+      </div>
+      ${s.offlineAddress ? `<div style="font-size:12px;margin-bottom:6px">
+        📍 ${mapUrl ? `<a href="${mapUrl}" target="_blank" style="color:var(--pk)">${s.offlineAddress} 🗺</a>` : s.offlineAddress}
+      </div>` : ''}
+      ${s.offlineNote ? `<div style="font-size:12px;color:var(--tx2);white-space:pre-wrap">${s.offlineNote}</div>` : ''}
+    </div>`;
+  }
+
+  document.getElementById('cal-events-list').innerHTML = `
+    ${future.length ? `<div class="section-divider">예정 / 진행중 (${future.length}건)</div>${future.map(eventCard).join('')}` : '<div class="empty">예정된 오프라인 이벤트 없음</div>'}
+    ${past.length ? `<div class="section-divider">지난 이벤트 (${past.length}건)</div><div style="opacity:.6">${past.map(eventCard).join('')}</div>` : ''}
+  `;
 }
 
 function calSelectDay(dateStr) { S.calDay = S.calDay === dateStr ? null : dateStr; render(); }
@@ -1789,6 +2279,34 @@ document.querySelectorAll('.modal-bg').forEach(el => {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') document.querySelectorAll('.modal-bg.open').forEach(el => closeModal(el.id));
 });
+
+// ═══════════════════════════════════════════
+// NOTICES PAGE
+// ═══════════════════════════════════════════
+function renderNotices() {
+  const NOTICE_STYLE = {
+    info: 'border-left:3px solid var(--info)',
+    warn: 'border-left:3px solid var(--warn)',
+    ok: 'border-left:3px solid var(--ok)',
+  };
+  const notices = (DB.notices || [])
+    .filter(n => n.visible)
+    .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || new Date(b.createdAt) - new Date(a.createdAt));
+
+  const el = document.getElementById('notices-list');
+  if (!el) return;
+  el.innerHTML = notices.length
+    ? notices.map(n => `
+        <div style="background:var(--sur2);border-radius:var(--r);padding:14px 16px;margin-bottom:10px;${NOTICE_STYLE[n.type]||'border-left:3px solid var(--bd2)'}">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:${n.body?'8':'0'}px">
+            ${n.pinned ? '<span>📌</span>' : ''}
+            <span class="fw-600" style="font-size:15px">${n.title}</span>
+            <span style="margin-left:auto;font-size:11px;color:var(--tx3)">${n.createdAt ? fDate(n.createdAt) : ''}</span>
+          </div>
+          ${n.body ? `<div style="font-size:13px;color:var(--tx2);white-space:pre-wrap;line-height:1.7">${n.body}</div>` : ''}
+        </div>`).join('')
+    : '<div class="empty">공지사항이 없습니다.</div>';
+}
 
 // ═══════════════════════════════════════════
 // NOTICE POPUP

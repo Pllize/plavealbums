@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" data-theme="dark">
+<html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -274,7 +274,15 @@
         <div><label>아티스트</label><input type="text" id="mc-artist" placeholder="예: PLAVE"></div>
       </div>
       <div class="form-row cols-2">
-        <div><label>발매일</label><input type="date" id="mc-release"></div>
+        <div><label>선공개 날짜</label><input type="date" id="mc-prerelease"></div>
+        <div><label>디지털 발매일 (초동 기준)</label><input type="date" id="mc-digitalrelease"></div>
+      </div>
+      <div class="form-row cols-2">
+        <div><label>실물 앨범 발매일</label><input type="date" id="mc-physicalrelease"></div>
+        <div><label>초동 마감일 (직접 지정)</label><input type="date" id="mc-chodongend"></div>
+      </div>
+      <div class="form-row cols-2">
+        <div><label>발매일 (기존)</label><input type="date" id="mc-release"></div>
         <div><label>설명</label><input type="text" id="mc-desc" placeholder="예: 4th Mini Album"></div>
       </div>
     </div>
@@ -381,6 +389,7 @@ const COUNTRIES = {
   CN: { lb: '중국', cur: 'CNY', ovs: true,  flag: '🇨🇳' },
   US: { lb: '미국', cur: 'USD', ovs: true,  flag: '🇺🇸' },
   TW: { lb: '대만', cur: 'TWD', ovs: true,  flag: '🇹🇼' },
+  HK: { lb: '홍콩', cur: 'HKD', ovs: true,  flag: '🇭🇰' },
 };
 
 const DEF_PW = '0312';
@@ -424,6 +433,8 @@ let ADM = {
 
 function initAdmin() {
   DB = dbInit(seedDatabase);
+  const t = DB.settings?.theme || 'light';
+  document.documentElement.setAttribute('data-theme', t);
   buildCatFilters();
   renderPage();
 }
@@ -563,6 +574,10 @@ function openCatModal(id) {
   document.getElementById('mc-artist').value = c?.artist || '';
   document.getElementById('mc-release').value = c?.releaseDate || '';
   document.getElementById('mc-desc').value = c?.description || '';
+  document.getElementById('mc-prerelease').value = c?.preReleaseDate || '';
+  document.getElementById('mc-digitalrelease').value = c?.digitalReleaseDate || '';
+  document.getElementById('mc-physicalrelease').value = c?.physicalReleaseDate || '';
+  document.getElementById('mc-chodongend').value = c?.chodongEndDate || '';
   openModal('modal-cat');
 }
 
@@ -573,6 +588,10 @@ function saveCat() {
     name,
     artist: document.getElementById('mc-artist').value.trim(),
     releaseDate: document.getElementById('mc-release').value,
+    preReleaseDate: document.getElementById('mc-prerelease').value,
+    digitalReleaseDate: document.getElementById('mc-digitalrelease').value,
+    physicalReleaseDate: document.getElementById('mc-physicalrelease').value,
+    chodongEndDate: document.getElementById('mc-chodongend').value,
     description: document.getElementById('mc-desc').value.trim(),
     sortOrder: Date.now(),
   };
@@ -640,9 +659,10 @@ function openAlbModal(id) {
       <div><label>일본 (¥)</label><input type="number" id="ma-jp" value="${a?.countryPrices?.JP || ''}"></div>
       <div><label>중국 (元)</label><input type="number" id="ma-cn" value="${a?.countryPrices?.CN || ''}"></div>
     </div>
-    <div class="form-row cols-2">
+    <div class="form-row cols-3">
       <div><label>미국 ($)</label><input type="number" id="ma-us" value="${a?.countryPrices?.US || ''}"></div>
       <div><label>대만 (NT$)</label><input type="number" id="ma-tw" value="${a?.countryPrices?.TW || ''}"></div>
+      <div><label>홍콩 (HK$)</label><input type="number" id="ma-hk" value="${a?.countryPrices?.HK || ''}"></div>
     </div>
   `;
   openModal('modal-alb');
@@ -663,6 +683,7 @@ function saveAlb() {
       CN: parseFloat(document.getElementById('ma-cn').value) || 0,
       US: parseFloat(document.getElementById('ma-us').value) || 0,
       TW: parseFloat(document.getElementById('ma-tw').value) || 0,
+      HK: parseFloat(document.getElementById('ma-hk').value) || 0,
     },
   };
   if (ADM.editAlbId) { dbUpdateItem('albumTypes', ADM.editAlbId, data); toast('앨범 수정됨'); }
@@ -1132,7 +1153,7 @@ function saveUnpoNote() {
 // ═══════════════════════════════════════════
 function renderSettings() {
   const rates = DB.settings?.rates || {};
-  const autoRows = ['JPY','CNY','USD','TWD'].map(c => `
+  const autoRows = ['JPY','CNY','USD','TWD','HKD'].map(c => `
     <div class="form-row cols-3" style="margin-bottom:8px">
       <div><label>${c} 1원 = ? KRW</label><input type="number" id="rate-${c}" value="${rates[c]?.rate || ''}" step="0.0001"></div>
       <div><label>수동</label><label class="form-check" style="margin-top:8px"><input type="checkbox" id="rate-manual-${c}" ${rates[c]?.manual ? 'checked':''}><span>수동입력</span></label></div>
@@ -1156,7 +1177,7 @@ function renderSettings() {
 function saveRates() {
   const existing = DB.settings?.rates || {};
   const newRates = {};
-  ['JPY','CNY','USD','TWD'].forEach(c => {
+  ['JPY','CNY','USD','TWD','HKD'].forEach(c => {
     newRates[c] = {
       rate: parseFloat(document.getElementById('rate-' + c)?.value || '1'),
       manual: document.getElementById('rate-manual-' + c)?.checked || false,
@@ -1180,7 +1201,7 @@ async function fetchRates() {
   const existing = DB.settings?.rates || {};
   const apply = kk => {
     const rates = {};
-    ['JPY','CNY','USD','TWD'].forEach(c => {
+    ['JPY','CNY','USD','TWD','HKD'].forEach(c => {
       const cur = c.toLowerCase();
       if (kk[cur] && !existing[c]?.manual) rates[c] = { rate: parseFloat((1/kk[cur]).toFixed(4)), manual: false, updAt: now };
       else if (existing[c]) rates[c] = existing[c];
