@@ -75,8 +75,8 @@
   <div class="nav-section">데이터</div>
   <button class="nav-item" onclick="showPage('categories')" data-page="categories">🗂 분류 관리</button>
   <button class="nav-item" onclick="showPage('albums')" data-page="albums">💿 앨범 관리</button>
-  <button class="nav-item" onclick="showPage('stores')" data-page="stores">🏪 판매처 관리</button>
-  <button class="nav-item" onclick="showPage('distributors')" data-page="distributors">📦 배급사 관리</button>
+  <button class="nav-item" onclick="showPage('stores')" data-page="stores">🏪 플랫폼 관리</button>
+  <button class="nav-item" onclick="showPage('distributors')" data-page="distributors">📦 판매처 관리</button>
   <button class="nav-item" onclick="showPage('unpo')" data-page="unpo">📸 미공포 관리</button>
   <button class="nav-item" onclick="showPage('notices')" data-page="notices">📢 공지사항</button>
 
@@ -86,7 +86,14 @@
   <button class="nav-item" onclick="showPage('github')" data-page="github">🔗 GitHub 동기화</button>
 
   <div style="margin-top:auto"></div>
-  <a class="nav-item" href="../" style="margin-top:16px">← 메인으로</a>
+  <div style="padding:8px 12px;border-top:1px solid var(--bd);margin-top:8px">
+    <div id="sidebar-gh-status" style="font-size:10px;color:var(--tx2);margin-bottom:6px;min-height:14px">GitHub</div>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-ghost btn-xs" style="flex:1" onclick="pullFromGithub()">⬇ Pull</button>
+      <button class="btn btn-p btn-xs" style="flex:1" onclick="pushToGithub()">⬆ Push</button>
+    </div>
+  </div>
+  <a class="nav-item" href="../" style="margin-top:4px">← 메인으로</a>
 </nav>
 
 <!-- ── Main ── -->
@@ -130,25 +137,25 @@
   </table></div>
 </div>
 
-<!-- ─── STORES ─── -->
+<!-- ─── STORES (플랫폼) ─── -->
 <div class="page" id="page-stores">
   <div class="page-header">
-    <div><div class="page-title">판매처 관리</div><div class="page-sub">판매처 추가·수정·삭제</div></div>
-    <button class="btn btn-p" onclick="openStoreModal()">+ 판매처 추가</button>
+    <div><div class="page-title">플랫폼 관리</div><div class="page-sub">플랫폼 추가·수정·삭제</div></div>
+    <button class="btn btn-p" onclick="openStoreModal()">+ 플랫폼 추가</button>
   </div>
-  <div class="filter-bar">
-    <select id="store-cat-filter" onchange="renderStores()">
-      <option value="">전체 분류</option>
-    </select>
+  <div id="store-cat-tabs" class="section-tabs" style="margin-bottom:8px;flex-wrap:wrap"></div>
+  <div class="filter-bar" style="margin-bottom:8px">
     <input type="text" id="store-search" placeholder="이름 검색..." oninput="renderStores()" style="max-width:200px">
   </div>
   <div class="card table-wrap"><table id="stores-table">
     <thead><tr>
-      <th onclick="sortStores('name')" style="cursor:pointer">판매처명 <span id="sort-icon-name"></span></th>
-      <th onclick="sortStores('cat')" style="cursor:pointer">분류 <span id="sort-icon-cat"></span></th>
-      <th>국가/배급사</th>
-      <th onclick="sortStores('date')" style="cursor:pointer">구매기간 <span id="sort-icon-date"></span></th>
-      <th>음총·차트·영통</th>
+      <th onclick="sortStores('name')" style="cursor:pointer">플랫폼명 <span id="sort-icon-name"></span></th>
+      <th>판매처</th>
+      <th>국가</th>
+      <th onclick="sortStores('date')" style="cursor:pointer">차수 / 구매기간 <span id="sort-icon-date"></span></th>
+      <th>음총</th>
+      <th>영통</th>
+      <th>차트</th>
       <th>오프라인</th>
       <th></th>
     </tr></thead>
@@ -156,14 +163,14 @@
   </table></div>
 </div>
 
-<!-- ─── DISTRIBUTORS ─── -->
+<!-- ─── DISTRIBUTORS (판매처) ─── -->
 <div class="page" id="page-distributors">
   <div class="page-header">
-    <div><div class="page-title">배급사 관리</div><div class="page-sub">배급사 추가·수정·삭제</div></div>
-    <button class="btn btn-p" onclick="openDistModal()">+ 배급사 추가</button>
+    <div><div class="page-title">판매처 관리</div><div class="page-sub">판매처 추가·수정·삭제</div></div>
+    <button class="btn btn-p" onclick="openDistModal()">+ 판매처 추가</button>
   </div>
   <div class="card"><table id="dist-table">
-    <thead><tr><th>배급사명</th><th>ID</th><th>연결된 판매처</th><th></th></tr></thead>
+    <thead><tr><th>판매처명</th><th>영문명</th><th>ID</th><th>연결된 플랫폼</th><th></th></tr></thead>
     <tbody id="dist-tbody"></tbody>
   </table></div>
 </div>
@@ -355,13 +362,14 @@
   </div>
 </div>
 
-<!-- Distributor Modal -->
+<!-- Distributor Modal (판매처) -->
 <div class="modal-bg" id="modal-dist">
   <div class="modal">
-    <div class="modal-head"><h3 id="modal-dist-title">배급사 추가</h3><button class="modal-close" onclick="closeModal('modal-dist')">✕</button></div>
+    <div class="modal-head"><h3 id="modal-dist-title">판매처 추가</h3><button class="modal-close" onclick="closeModal('modal-dist')">✕</button></div>
     <div class="modal-body">
-      <div class="form-row">
-        <div><label>배급사명 *</label><input type="text" id="md-name" placeholder="배급사 이름"></div>
+      <div class="form-row cols-2">
+        <div><label>판매처명 *</label><input type="text" id="md-name" placeholder="예: 위버스샵"></div>
+        <div><label>영문명</label><input type="text" id="md-name-en" placeholder="예: Weverse Shop"></div>
       </div>
     </div>
     <div class="modal-foot">
@@ -469,6 +477,7 @@ let ADM = {
   page: 'dashboard',
   storeSort: 'name',
   sortDir: 'asc',
+  storeCatTab: '',
 };
 
 function initAdmin() {
@@ -512,11 +521,21 @@ function buildCatFilters() {
   reloadDB();
   const cats = DB.categories || [];
   const opts = '<option value="">전체 분류</option>' + cats.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-  ['alb-cat-filter','store-cat-filter','unpo-cat-filter'].forEach(id => {
+  ['alb-cat-filter','unpo-cat-filter'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = opts;
   });
+  buildStoreTabs();
   buildUnpoAlbFilter();
+}
+
+function buildStoreTabs() {
+  const tabs = document.getElementById('store-cat-tabs');
+  if (!tabs) return;
+  const cats = DB.categories || [];
+  tabs.innerHTML =
+    `<button class="section-tab${ADM.storeCatTab===''?' active':''}" onclick="ADM.storeCatTab='';buildStoreTabs();renderStores()">전체</button>` +
+    cats.map(c => `<button class="section-tab${ADM.storeCatTab===c.id?' active':''}" onclick="ADM.storeCatTab='${c.id}';buildStoreTabs();renderStores()">${c.name}</button>`).join('');
 }
 
 function buildUnpoAlbFilter() {
@@ -534,6 +553,11 @@ function fDate(dt) { if (!dt) return ''; try { return new Date(dt).toLocaleDateS
 function fDateFull(dt) { if (!dt) return ''; try { return new Date(dt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch(e) { return dt; } }
 function catName(catId) { return (DB.categories || []).find(c => c.id === catId)?.name || '?'; }
 function distName(distId) { return (DB.distributors || []).find(d => d.id === distId)?.name || '—'; }
+function distNameFull(distId) {
+  const d = (DB.distributors || []).find(d => d.id === distId);
+  if (!d) return '—';
+  return d.name + (d.nameEn ? ' / ' + d.nameEn : '');
+}
 function isExpired(store) { return store.purchaseEnd && new Date(store.purchaseEnd) < new Date(); }
 
 let _toastT;
@@ -774,37 +798,47 @@ function deleteAlb(id) {
 // STORES
 // ═══════════════════════════════════════════
 function renderStores() {
-  const catF = document.getElementById('store-cat-filter')?.value || '';
+  const catF = ADM.storeCatTab || '';
   const search = document.getElementById('store-search')?.value.toLowerCase() || '';
   let stores = (DB.stores || []).filter(s => (!catF || s.categoryId === catF) && (!search || s.name.toLowerCase().includes(search)));
   // Update sort icons
-  ['name','cat','date'].forEach(c => {
+  ['name','date'].forEach(c => {
     const el = document.getElementById('sort-icon-' + c);
     if (el) el.textContent = ADM.storeSort === c ? (ADM.sortDir === 'asc' ? ' ▲' : ' ▼') : '';
   });
   const dir = ADM.sortDir === 'desc' ? -1 : 1;
   if (ADM.storeSort === 'name') stores.sort((a,b) => a.name.localeCompare(b.name,'ko') * dir);
-  else if (ADM.storeSort === 'cat') stores.sort((a,b) => catName(a.categoryId).localeCompare(catName(b.categoryId),'ko') * dir);
   else if (ADM.storeSort === 'date') stores.sort((a,b) => (a.purchaseStart||'').localeCompare(b.purchaseStart||'') * dir);
 
-  document.getElementById('stores-tbody').innerHTML = stores.map(s => `<tr>
-    <td><div class="fw-600">${s.name}</div><div class="text-xs text-muted">${getStoreUnpoKeys(s).length ? '미공포 '+getStoreUnpoKeys(s).join(', ') : ''}</div></td>
-    <td><div>${catName(s.categoryId)}</div><div class="text-xs text-muted">${distName(s.distId)||''}</div></td>
-    <td>${COUNTRIES[s.country]?.flag||''} ${s.country}</td>
-    <td class="text-xs">${s.purchaseStart ? fDateFull(s.purchaseStart) : ''}${isExpired(s) ? ' <span class="badge badge-gray">마감</span>' : ''}</td>
-    <td style="font-size:11px">
-      ${s.isMusicStreamTeam ? '<span class="badge badge-music" style="font-size:10px">음총</span> ' : ''}
-      ${s.hanteoChart ? '<span style="font-size:10px;color:var(--info)">한터</span> ' : ''}
-      ${s.billboardChart ? '<span style="font-size:10px;color:var(--ok)">빌보드</span> ' : ''}
-      ${s.chartEtc ? `<span style="font-size:10px">${s.chartEtc}</span> ` : ''}
-      ${s.videocall ? '📞' : ''}
-    </td>
-    <td>${(s.offlineEvents?.length || s.offlineStart) ? '🏪' : '—'}</td>
-    <td class="flex gap-4">
-      <button class="btn btn-ghost btn-xs" onclick="openStoreModal('${s.id}')">편집</button>
-      <button class="btn btn-err btn-xs" onclick="deleteStore('${s.id}')">삭제</button>
-    </td>
-  </tr>`).join('') || '<tr><td colspan="7" class="empty">판매처 없음</td></tr>';
+  document.getElementById('stores-tbody').innerHTML = stores.map(s => {
+    const unpoNames = getStoreUnpoKeys(s).map(k => (DB.albumTypes||[]).find(a=>a.key===k)?.shortName || k).join(', ');
+    const chartBadges = [
+      s.hanteoChart ? '<span class="badge badge-hanteo" style="font-size:10px">한터</span>' : '',
+      s.billboardChart ? '<span class="badge badge-board" style="font-size:10px">빌보드</span>' : '',
+      s.chartEtc ? `<span style="font-size:10px;color:var(--tx2)">${s.chartEtc}</span>` : '',
+    ].filter(Boolean).join(' ');
+    return `<tr>
+      <td>
+        <div class="fw-600">${s.name}</div>
+        ${unpoNames ? `<div class="text-xs text-muted">미공포: ${unpoNames}</div>` : ''}
+      </td>
+      <td class="text-sm">${distNameFull(s.distId)}</td>
+      <td>${COUNTRIES[s.country]?.flag||''} ${s.country}</td>
+      <td class="text-xs">
+        ${s.round ? `<span class="badge badge-gray" style="font-size:10px">${s.round}차</span> ` : ''}
+        ${s.purchaseStart ? fDateFull(s.purchaseStart) : ''}
+        ${isExpired(s) ? ' <span class="badge badge-gray">마감</span>' : ''}
+      </td>
+      <td>${s.isMusicStreamTeam ? '<span class="badge badge-music" style="font-size:10px">음총</span>' : '—'}</td>
+      <td>${s.videocall ? '<span class="badge badge-videocall" style="font-size:10px">영통</span>' : '—'}</td>
+      <td>${chartBadges || '—'}</td>
+      <td>${(s.offlineEvents?.length || s.offlineStart) ? '🏪' : '—'}</td>
+      <td class="flex gap-4">
+        <button class="btn btn-ghost btn-xs" onclick="openStoreModal('${s.id}')">편집</button>
+        <button class="btn btn-err btn-xs" onclick="deleteStore('${s.id}')">삭제</button>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="9" class="empty">플랫폼 없음</td></tr>';
 }
 
 function sortStores(col) {
@@ -827,7 +861,7 @@ function openStoreModal(id) {
   const catId = s?.categoryId || cats[0]?.id || '';
   const albs = (DB.albumTypes || []).filter(a => a.categoryId === catId);
 
-  document.getElementById('modal-store-title').textContent = id ? '판매처 수정' : '판매처 추가';
+  document.getElementById('modal-store-title').textContent = id ? '플랫폼 수정' : '플랫폼 추가';
 
   // Build custom prices rows
   const customPrices = s?.customPrices || {};
@@ -853,15 +887,15 @@ function openStoreModal(id) {
           ${cats.map(c => `<option value="${c.id}" ${c.id === catId ? 'selected' : ''}>${c.name}</option>`).join('')}
         </select>
       </div>
-      <div><label>배급사</label>
+      <div><label>판매처</label>
         <select id="sp-dist">
           <option value="">없음</option>
-          ${dists.map(d => `<option value="${d.id}" ${d.id === (s?.distId || '') ? 'selected' : ''}>${d.name}</option>`).join('')}
+          ${dists.map(d => `<option value="${d.id}" ${d.id === (s?.distId || '') ? 'selected' : ''}>${d.name}${d.nameEn?' / '+d.nameEn:''}</option>`).join('')}
         </select>
       </div>
     </div>
     <div class="form-row cols-2">
-      <div><label>판매처명 *</label><input type="text" id="sp-name" value="${s?.name || ''}"></div>
+      <div><label>플랫폼명 *</label><input type="text" id="sp-name" value="${s?.name || ''}"></div>
       <div><label>국가</label>
         <select id="sp-country" onchange="updateCountryPreview()">
           ${Object.entries(COUNTRIES).map(([k,v]) => `<option value="${k}" ${(s?.country||'KR')===k?'selected':''}>${v.flag} ${v.lb}</option>`).join('')}
@@ -917,17 +951,26 @@ function openStoreModal(id) {
       </div>
     </div>
     <div class="form-row cols-2">
-      <div><label>미공포 공유: 앨범</label>
-        <select id="sp-shared-alb-sel">
-          <option value="">없음</option>
-          ${albs.map(a => `<option value="${a.key}" ${(s?.sharedWith?.ak === a.key) ? 'selected' : ''}>${a.name}</option>`).join('')}
-        </select>
+      <div><label>미공포 공유: 앨범 (복수 선택)</label>
+        <div id="sp-shared-alb-checks" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;padding:6px;background:var(--sur2);border:1px solid var(--bd);border-radius:var(--r-sm)">
+          ${(() => {
+            const existAlbs = Array.isArray(s?.sharedWithAlbs) ? s.sharedWithAlbs : (s?.sharedWith?.ak ? [s.sharedWith.ak] : []);
+            return albs.map(a => `<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer">
+              <input type="checkbox" value="${a.key}" ${existAlbs.includes(a.key)?'checked':''}> ${a.name}
+            </label>`).join('');
+          })()}
+        </div>
       </div>
-      <div><label>미공포 공유: 판매처</label>
-        <select id="sp-shared-store-sel">
-          <option value="">없음</option>
-          ${(DB.stores || []).filter(st => st.id !== (s?.id || '')).map(st => `<option value="${st.id}" ${(s?.sharedWith?.bn === st.name) ? 'selected' : ''}>${st.name}</option>`).join('')}
-        </select>
+      <div><label>미공포 공유: 플랫폼 (복수 선택)</label>
+        <div id="sp-shared-store-checks" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;padding:6px;background:var(--sur2);border:1px solid var(--bd);border-radius:var(--r-sm);max-height:100px;overflow-y:auto">
+          ${(() => {
+            const existIds = Array.isArray(s?.sharedWithStoreIds) ? s.sharedWithStoreIds :
+              (s?.sharedWith?.bn ? [(DB.stores||[]).find(st=>st.name===s.sharedWith.bn)?.id||''].filter(Boolean) : []);
+            return (DB.stores||[]).filter(st => st.id !== (s?.id||'')).map(st => `<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer">
+              <input type="checkbox" value="${st.id}" ${existIds.includes(st.id)?'checked':''}> ${st.name}
+            </label>`).join('');
+          })()}
+        </div>
       </div>
     </div>
 
@@ -1000,7 +1043,7 @@ function renderOfflineEventsList() {
             return '<div style="text-align:center">' +
               '<div style="font-size:10px;margin-bottom:2px">' + day + '</div>' +
               '<label style="font-size:9px;display:block"><input type="checkbox" id="oe-closed-' + idx + '-' + di + '" ' + (closed?'checked':'') + ' onchange="toggleOfflineDay(' + idx + ',' + di + ')"> 휴무</label>' +
-              '<input type="text" id="oe-hour-' + idx + '-' + di + '" value="' + hours + '" placeholder="10-20" ' +
+              '<input type="text" id="oe-hour-' + idx + '-' + di + '" value="' + hours + '" placeholder="10:00-20:00" ' +
                 'style="width:100%;font-size:9px;padding:2px;text-align:center" ' +
                 (closed?'disabled':'') +
                 ' onchange="saveOfflineEventField(' + idx + ')">' +
@@ -1157,26 +1200,20 @@ function saveStore() {
     chartEtc: document.getElementById('sp-chart-etc')?.value || '',
     unpoSets: parseInt(document.getElementById('sp-unpo-sets')?.value || '1') || 1,
     unpoBack: document.getElementById('sp-unpo-back')?.checked || false,
-    sharedWith: (() => {
-      const sharedAlbSel = document.getElementById('sp-shared-alb-sel');
-      const sharedStoreSel = document.getElementById('sp-shared-store-sel');
-      const ak = sharedAlbSel?.value;
-      const storeId2 = sharedStoreSel?.value;
-      const bn = storeId2 ? (DB.stores||[]).find(st=>st.id===storeId2)?.name : '';
-      return (ak && bn) ? { ak, bn } : null;
-    })(),
+    sharedWithAlbs: Array.from(document.querySelectorAll('#sp-shared-alb-checks input:checked')).map(x=>x.value),
+    sharedWithStoreIds: Array.from(document.querySelectorAll('#sp-shared-store-checks input:checked')).map(x=>x.value),
     url: document.getElementById('sp-url').value,
     memo: document.getElementById('sp-memo').value,
   };
 
-  if (ADM.editStoreId) { dbUpdateItem('stores', ADM.editStoreId, data); toast('판매처 수정됨'); }
-  else { dbInsert('stores', data); toast('판매처 추가됨'); }
+  if (ADM.editStoreId) { dbUpdateItem('stores', ADM.editStoreId, data); toast('플랫폼 수정됨'); }
+  else { dbInsert('stores', data); toast('플랫폼 추가됨'); }
   closeModal('modal-store');
   reloadDB(); renderStores();
 }
 
 function deleteStore(id) {
-  if (!confirm('이 판매처를 삭제하시겠습니까?')) return;
+  if (!confirm('이 플랫폼을 삭제하시겠습니까?')) return;
   dbDeleteItem('stores', id);
   reloadDB(); renderStores();
   toast('삭제됨', 'warn');
@@ -1191,6 +1228,7 @@ function renderDist() {
     const linked = (DB.stores || []).filter(s => s.distId === d.id).length;
     return `<tr>
       <td class="fw-600">${d.name}</td>
+      <td class="text-muted">${d.nameEn || '—'}</td>
       <td><code>${d.id}</code></td>
       <td>${linked}개</td>
       <td class="flex gap-4">
@@ -1198,29 +1236,31 @@ function renderDist() {
         <button class="btn btn-err btn-xs" onclick="deleteDist('${d.id}')">삭제</button>
       </td>
     </tr>`;
-  }).join('') || '<tr><td colspan="4" class="empty">배급사 없음</td></tr>';
+  }).join('') || '<tr><td colspan="5" class="empty">판매처 없음</td></tr>';
 }
 
 function openDistModal(id) {
   ADM.editDistId = id || null;
   const d = id ? (DB.distributors || []).find(x => x.id === id) : null;
-  document.getElementById('modal-dist-title').textContent = id ? '배급사 수정' : '배급사 추가';
+  document.getElementById('modal-dist-title').textContent = id ? '판매처 수정' : '판매처 추가';
   document.getElementById('md-name').value = d?.name || '';
+  document.getElementById('md-name-en').value = d?.nameEn || '';
   openModal('modal-dist');
 }
 
 function saveDist() {
   const name = document.getElementById('md-name').value.trim();
-  if (!name) { toast('배급사명을 입력하세요', 'warn'); return; }
-  if (ADM.editDistId) { dbUpdateItem('distributors', ADM.editDistId, { name }); toast('배급사 수정됨'); }
-  else { dbInsert('distributors', { name }); toast('배급사 추가됨'); }
+  if (!name) { toast('판매처명을 입력하세요', 'warn'); return; }
+  const nameEn = document.getElementById('md-name-en').value.trim();
+  if (ADM.editDistId) { dbUpdateItem('distributors', ADM.editDistId, { name, nameEn }); toast('판매처 수정됨'); }
+  else { dbInsert('distributors', { name, nameEn }); toast('판매처 추가됨'); }
   closeModal('modal-dist');
   reloadDB(); renderDist();
 }
 
 function deleteDist(id) {
   const linked = (DB.stores || []).filter(s => s.distId === id).length;
-  if (!confirm(`이 배급사를 삭제하시겠습니까?\n연결된 판매처 ${linked}개의 배급사 정보가 제거됩니다.`)) return;
+  if (!confirm(`이 판매처를 삭제하시겠습니까?\n연결된 플랫폼 ${linked}개의 판매처 정보가 제거됩니다.`)) return;
   dbDeleteItem('distributors', id);
   dbUpdate(s => ({ ...s, stores: (s.stores||[]).map(st => st.distId === id ? { ...st, distId: '' } : st) }));
   reloadDB(); renderDist();
@@ -1237,38 +1277,43 @@ function renderUnpo() {
 
   buildUnpoAlbFilter();
 
+  const unpoKeys = s => getStoreUnpoKeys(s);
   let stores = (DB.stores || []).filter(s => {
     if (catF && s.categoryId !== catF) return false;
-    if (albF && s.unpoAlbumKey !== albF) return false;
+    const keys = getStoreUnpoKeys(s);
+    if (albF && !keys.includes(albF)) return false;
     if (search && !s.name.toLowerCase().includes(search)) return false;
-    return s.unpoAlbumKey; // only stores with unpo configured
+    return keys.length > 0;
   });
 
-  const html = stores.map(s => {
-    const existing = (DB.unpoCards || []).find(uc => uc.storeId === s.id && uc.albumTypeId === s.unpoAlbumKey);
-    const sets = existing?.sets || [];
-    const totalCards = sets.reduce((sum, set) => sum + (set.cards?.length || 0), 0);
-    const withImg = sets.reduce((sum, set) => sum + (set.cards?.filter(c => c.img).length || 0), 0);
-    const owned = sets.reduce((sum, set) => sum + (set.cards?.filter(c => c.owned).length || 0), 0);
+  const html = stores.flatMap(s => {
+    return getStoreUnpoKeys(s).map(albKey => {
+      const albName = (DB.albumTypes||[]).find(a=>a.key===albKey)?.name || albKey;
+      const existing = (DB.unpoCards || []).find(uc => uc.storeId === s.id && uc.albumTypeId === albKey);
+      const sets = existing?.sets || [];
+      const totalCards = sets.reduce((sum, set) => sum + (set.cards?.length || 0), 0);
+      const withImg = sets.reduce((sum, set) => sum + (set.cards?.filter(c => c.img).length || 0), 0);
 
-    return `<div class="card" style="margin-bottom:12px">
-      <div class="card-header">
-        <div>
-          <span class="fw-600">${s.name}</span>
-          <span class="badge badge-pk" style="margin-left:6px">${s.unpoAlbumKey}</span>
+      const storeForRender = { ...s, unpoAlbumKey: albKey };
+      return `<div class="card" style="margin-bottom:12px">
+        <div class="card-header">
+          <div>
+            <span class="fw-600">${s.name}</span>
+            <span class="badge badge-pk" style="margin-left:6px">${albName}</span>
+          </div>
+          <div class="flex gap-8">
+            <span class="text-xs text-muted">${totalCards}장 · 이미지 ${withImg}/${totalCards}</span>
+            <button class="btn btn-ghost btn-sm" onclick="addUnpoSet('${s.id}','${albKey}')">+ 세트 추가</button>
+          </div>
         </div>
-        <div class="flex gap-8">
-          <span class="text-xs text-muted">${totalCards}장 · 이미지 ${withImg}/${totalCards} · 보유 ${owned}</span>
-          <button class="btn btn-ghost btn-sm" onclick="addUnpoSet('${s.id}','${s.unpoAlbumKey}')">+ 세트 추가</button>
+        <div id="unpo-sets-${s.id}-${albKey}">
+          ${sets.map((set, si) => renderUnpoSet(storeForRender, si, set)).join('')}
         </div>
-      </div>
-      <div id="unpo-sets-${s.id}">
-        ${sets.map((set, si) => renderUnpoSet(s, si, set)).join('')}
-      </div>
-    </div>`;
+      </div>`;
+    });
   }).join('');
 
-  document.getElementById('unpo-content').innerHTML = html || '<div class="empty">미공포가 등록된 판매처가 없습니다.</div>';
+  document.getElementById('unpo-content').innerHTML = html || '<div class="empty">미공포가 등록된 플랫폼이 없습니다.</div>';
 }
 
 function renderUnpoSet(store, si, set) {
@@ -1288,7 +1333,6 @@ function renderUnpoSet(store, si, set) {
       <div style="display:flex;gap:2px">
         <button class="btn btn-ghost btn-xs" style="flex:1" onclick="setUnpoCardUrl('${storeId}','${albKey}',${si},${ci})" title="이미지 URL">🔗</button>
         <button class="btn btn-ghost btn-xs" style="flex:1" onclick="editUnpoNote('${storeId}','${albKey}',${si},${ci})" title="메모">✏</button>
-        <button class="btn btn-ghost btn-xs" style="flex:1;${c.owned ? 'color:var(--ok);border-color:var(--ok)' : ''}" onclick="toggleUnpoOwned('${storeId}','${albKey}',${si},${ci})" title="보유">${c.owned ? '✓' : '○'}</button>
         <button class="btn btn-err btn-xs" style="flex:1" onclick="removeUnpoCard('${storeId}','${albKey}',${si},${ci})" title="삭제">✕</button>
       </div>
     </div>
@@ -1307,8 +1351,9 @@ function renderUnpoSet(store, si, set) {
       </div>
     </div>
     <div class="unpo-grid-admin${store.unpoBack || cards.length > 5 ? ' six' : ''}" id="unpo-grid-${storeId}-${si}">${cardsHtml}</div>
-    <div style="margin-top:8px">
+    <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
       <button class="btn btn-ghost btn-sm" onclick="addUnpoCardFromUrl('${storeId}','${albKey}',${si})">+ URL로 이미지 추가</button>
+      ${store.unpoBack && cards.length <= MEMBERS.length ? `<button class="btn btn-ghost btn-sm" onclick="addBackCardsToSet('${storeId}','${albKey}',${si})">+ 뒷면 카드 추가</button>` : ''}
     </div>
   </div>`;
 }
@@ -1326,6 +1371,13 @@ function setUnpoSets(storeId, albKey, sets) {
 }
 
 const MEMBERS = ['예준', '노아', '밤비', '은호', '하민'];
+
+function addBackCardsToSet(storeId, albKey, si) {
+  const sets = JSON.parse(JSON.stringify(getUnpoSets(storeId, albKey)));
+  if (!sets[si]) return;
+  MEMBERS.forEach(name => sets[si].cards.push({ owned: false, note: name + ' (뒷)', img: null }));
+  setUnpoSets(storeId, albKey, sets);
+}
 
 function addUnpoSet(storeId, albKey) {
   const store = (DB.stores || []).find(s => s.id === storeId);
@@ -1657,7 +1709,7 @@ async function pullFromGithub() {
 
   const gh = DB.settings?.github || {};
   if (!gh.token || !gh.owner || !gh.repo) { toast('GitHub 설정을 먼저 저장하세요', 'warn'); return; }
-  const setStatus = t => { const el = document.getElementById('gh-status') || document.getElementById('gh-sync-status'); if (el) el.textContent = t; };
+  const setStatus = t => { ['gh-status','gh-sync-status','sidebar-gh-status'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = t; }); };
   setStatus('불러오는 중...');
   const savedToken = gh.token || '';
   const savedPw = DB.settings?.adminPw || '';
@@ -1688,7 +1740,7 @@ async function pushToGithub() {
 
   const gh = DB.settings?.github || {};
   if (!gh.token || !gh.owner || !gh.repo) { toast('GitHub 설정을 먼저 저장하세요', 'warn'); return; }
-  const setStatus = t => { const el = document.getElementById('gh-status') || document.getElementById('gh-sync-status'); if (el) el.textContent = t; };
+  const setStatus = t => { ['gh-status','gh-sync-status','sidebar-gh-status'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = t; }); };
   setStatus('저장 중...');
   const json = dbExportForSync();
   const content = btoa(unescape(encodeURIComponent(json)));

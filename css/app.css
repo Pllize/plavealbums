@@ -205,7 +205,10 @@ tr:hover td { background: rgba(255,255,255,.02); }
 .badge-err { background: rgba(248,113,113,.12); color: var(--err); }
 .badge-info { background: var(--info2); color: var(--info); }
 .badge-gray { background: var(--sur2); color: var(--tx2); border: 1px solid var(--bd2); }
-.badge-music { background: rgba(96,165,250,.15); color: var(--info); }
+.badge-music   { background: rgba(96,165,250,.15); color: var(--info); }
+.badge-hanteo  { background: rgba(96,165,250,.15); color: var(--info); }
+.badge-board   { background: rgba(34,197,94,.12);  color: var(--ok); }
+.badge-videocall { background: rgba(var(--pk-rgb),.12); color: var(--pk); }
 
 /* ── Buttons ── */
 .btn {
