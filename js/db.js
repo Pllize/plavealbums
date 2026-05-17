@@ -181,6 +181,22 @@ function dbExportJSON() {
   return JSON.stringify(dbGet(), null, 2);
 }
 
+function dbExportForSync() {
+  const state = dbGet();
+  const safe = {
+    ...state,
+    settings: {
+      ...state.settings,
+      adminPw: undefined,
+      github: {
+        ...state.settings?.github,
+        token: undefined,
+      },
+    },
+  };
+  return JSON.stringify(safe, null, 2);
+}
+
 function dbImportJSON(json) {
   try {
     const parsed = JSON.parse(json);

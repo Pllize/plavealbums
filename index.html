@@ -659,6 +659,7 @@ async function fetchRatesIndex() {
 async function pullFromGithubIdx() {
   const gh = DB.settings?.github;
   if (!gh?.token || !gh?.owner || !gh?.repo) { toast('Admin에서 GitHub 설정을 먼저 저장하세요', 'warn'); return; }
+  const savedToken = gh.token || '';
   const [owner, repo] = gh.owner.includes('/') ? gh.owner.split('/') : [gh.owner, gh.repo];
   const filePath = gh.filePath || 'db/data.json';
   const branch = gh.branch || 'main';
@@ -669,7 +670,8 @@ async function pullFromGithubIdx() {
     const d = await r.json();
     const json = atob(d.content.replace(/\n/g, ''));
     dbImportJSON(json);
-    dbUpdateSettings({ github: { ...gh, sha: d.sha } });
+    reloadDB();
+    dbUpdateSettings({ github: { ...(DB.settings?.github || {}), token: savedToken, sha: d.sha } });
     reloadDB(); render(); closeSettings();
     toast('GitHub에서 불러오기 완료');
   } catch(e) { toast('불러오기 실패: ' + e.message, 'err'); }
@@ -681,7 +683,7 @@ async function pushToGithubIdx() {
   const [owner, repo] = gh.owner.includes('/') ? gh.owner.split('/') : [gh.owner, gh.repo];
   const filePath = gh.filePath || 'db/data.json';
   const branch = gh.branch || 'main';
-  const content = btoa(unescape(encodeURIComponent(dbExportJSON())));
+  const content = btoa(unescape(encodeURIComponent(dbExportForSync())));
   const body = { message: 'chore: update db ' + new Date().toISOString().slice(0,16), content, branch };
   if (gh.sha) body.sha = gh.sha;
   const url = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;

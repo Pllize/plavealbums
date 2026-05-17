@@ -1659,6 +1659,8 @@ async function pullFromGithub() {
   if (!gh.token || !gh.owner || !gh.repo) { toast('GitHub 설정을 먼저 저장하세요', 'warn'); return; }
   const setStatus = t => { const el = document.getElementById('gh-status') || document.getElementById('gh-sync-status'); if (el) el.textContent = t; };
   setStatus('불러오는 중...');
+  const savedToken = gh.token || '';
+  const savedPw = DB.settings?.adminPw || '';
   const url = `https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${gh.filePath}?ref=${gh.branch || 'main'}`;
   try {
     const r = await fetch(url, { headers: { Authorization: `token ${gh.token}`, Accept: 'application/vnd.github.v3+json' } });
@@ -1666,8 +1668,9 @@ async function pullFromGithub() {
     const d = await r.json();
     const json = decodeURIComponent(escape(atob(d.content.replace(/\n/g, ''))));
     const parsed = JSON.parse(json);
-    dbUpdateSettings({ github: { ...gh, sha: d.sha } });
     dbImportJSON(JSON.stringify(parsed));
+    reloadDB();
+    dbUpdateSettings({ adminPw: savedPw, github: { ...(DB.settings?.github || {}), token: savedToken, sha: d.sha } });
     reloadDB(); buildCatFilters(); renderPage();
     setStatus('불러오기 완료 ✓ (' + new Date().toLocaleTimeString('ko-KR') + ')');
     toast('GitHub에서 불러오기 완료');
@@ -1687,7 +1690,7 @@ async function pushToGithub() {
   if (!gh.token || !gh.owner || !gh.repo) { toast('GitHub 설정을 먼저 저장하세요', 'warn'); return; }
   const setStatus = t => { const el = document.getElementById('gh-status') || document.getElementById('gh-sync-status'); if (el) el.textContent = t; };
   setStatus('저장 중...');
-  const json = dbExportJSON();
+  const json = dbExportForSync();
   const content = btoa(unescape(encodeURIComponent(json)));
   const url = `https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${gh.filePath}`;
   const body = {
