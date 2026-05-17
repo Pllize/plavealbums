@@ -15,57 +15,69 @@
       "id": "alb_photobook",
       "categoryId": "cat_caligopt2",
       "name": "포토북",
-      "key": "PHOTOBOOK",
+      "key": "ALB_1779038838207",
       "sortOrder": 1,
       "countryPrices": {
         "KR": 20000,
         "JP": 3245,
         "CN": 156,
         "US": 18,
-        "TW": 560
-      }
+        "TW": 560,
+        "HK": 0
+      },
+      "nameEn": "PHOTOBOOK",
+      "shortName": "포토북"
     },
     {
       "id": "alb_pocaalbum",
       "categoryId": "cat_caligopt2",
       "name": "포카앨범",
-      "key": "POCAALBUM",
+      "key": "ALB_1779038847739",
       "sortOrder": 2,
       "countryPrices": {
         "KR": 8200,
         "JP": 1320,
         "CN": 46,
         "US": 8,
-        "TW": 230
-      }
+        "TW": 230,
+        "HK": 0
+      },
+      "nameEn": "POCAALBUm",
+      "shortName": "포카"
     },
     {
       "id": "alb_idpass",
       "categoryId": "cat_caligopt2",
       "name": "아이디패스",
-      "key": "ID_PASS",
+      "key": "ALB_1779038855533",
       "sortOrder": 3,
       "countryPrices": {
         "KR": 14900,
         "JP": 2420,
         "CN": 78,
         "US": 14,
-        "TW": 415
-      }
+        "TW": 415,
+        "HK": 0
+      },
+      "nameEn": "ID PASS",
+      "shortName": "아이디"
     },
     {
       "id": "alb_inventory",
       "categoryId": "cat_caligopt2",
       "name": "인벤토리",
-      "key": "INVENTORY",
+      "key": "ALB_1779038864675",
       "sortOrder": 4,
       "countryPrices": {
         "KR": 17100,
         "JP": 2750,
         "CN": 88,
         "US": 16,
-        "TW": 470
-      }
+        "TW": 470,
+        "HK": 0
+      },
+      "nameEn": "INVENTORY",
+      "shortName": "인벤"
     }
   ],
   "distributors": [
@@ -1509,7 +1521,7 @@
       "repo": "myalbums",
       "branch": "main",
       "filePath": "db/data.json",
-      "sha": ""
+      "sha": "671afab67fabc1ba8e3ef8db1f22c11c11d91953"
     }
   }
 }
