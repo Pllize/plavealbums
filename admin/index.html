@@ -83,6 +83,7 @@
   <div class="nav-section">시스템</div>
   <button class="nav-item" onclick="showPage('settings')" data-page="settings">⚙ 설정</button>
   <button class="nav-item" onclick="showPage('export')" data-page="export">⬇ 내보내기</button>
+  <button class="nav-item" onclick="showPage('github')" data-page="github">🔗 GitHub 동기화</button>
 
   <div style="margin-top:auto"></div>
   <a class="nav-item" href="../" style="margin-top:16px">← 메인으로</a>
@@ -124,7 +125,7 @@
     </select>
   </div>
   <div class="card"><table id="alb-table">
-    <thead><tr><th>분류</th><th>앨범명</th><th>키</th><th>국내가격</th><th>순서</th><th></th></tr></thead>
+    <thead><tr><th>분류</th><th>앨범명</th><th>영문명</th><th>짧은 이름</th><th>키</th><th>국내가격</th><th>순서</th><th></th></tr></thead>
     <tbody id="alb-tbody"></tbody>
   </table></div>
 </div>
@@ -259,6 +260,34 @@
   </div>
 </div>
 
+<!-- ─── GITHUB ─── -->
+<div class="page" id="page-github">
+  <div class="page-header">
+    <div><div class="page-title">GitHub 동기화</div><div class="page-sub">DB를 GitHub 저장소와 동기화</div></div>
+  </div>
+  <div class="card" id="gh-sync-status-card" style="margin-bottom:12px">
+    <div class="card-title">동기화 상태</div>
+    <div id="gh-sync-status" style="font-size:13px;color:var(--tx2);margin-bottom:12px">설정을 먼저 완료하세요.</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-info" onclick="pullFromGithub()">⬇ GitHub에서 불러오기</button>
+      <button class="btn btn-p" onclick="pushToGithub()">⬆ GitHub에 저장</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">GitHub 설정</div>
+    <div style="font-size:12px;color:var(--tx2);margin-bottom:12px">repo 권한의 Personal Access Token이 필요합니다.</div>
+    <div class="form-row cols-2">
+      <div><label>GitHub Token</label><input type="password" id="gh-token2" placeholder="ghp_..."></div>
+      <div><label>Owner/Repo</label><input type="text" id="gh-repo2" placeholder="Pllize/myalbums"></div>
+    </div>
+    <div class="form-row cols-2">
+      <div><label>Branch</label><input type="text" id="gh-branch2" placeholder="main" value="main"></div>
+      <div><label>파일 경로</label><input type="text" id="gh-filepath2" value="db/albumapp_v1.json"></div>
+    </div>
+    <button class="btn btn-ghost" style="margin-top:8px" onclick="saveGithubSettings2()">설정 저장</button>
+  </div>
+</div>
+
 </main>
 </div>
 
@@ -275,16 +304,17 @@
       </div>
       <div class="form-row cols-2">
         <div><label>선공개 날짜</label><input type="date" id="mc-prerelease"></div>
-        <div><label>디지털 발매일 (초동 기준)</label><input type="date" id="mc-digitalrelease"></div>
+        <div><label>디지털 발매일</label><input type="date" id="mc-digitalrelease"></div>
       </div>
       <div class="form-row cols-2">
-        <div><label>실물 앨범 발매일</label><input type="date" id="mc-physicalrelease"></div>
+        <div><label>실물발매일 (= 발매일)</label><input type="date" id="mc-physicalrelease"></div>
+        <div><label>초동 기준일 (차트 집계 시작)</label><input type="date" id="mc-chodongbase"></div>
+      </div>
+      <div class="form-row cols-2">
         <div><label>초동 마감일 (직접 지정)</label><input type="date" id="mc-chodongend"></div>
-      </div>
-      <div class="form-row cols-2">
-        <div><label>발매일 (기존)</label><input type="date" id="mc-release"></div>
         <div><label>설명</label><input type="text" id="mc-desc" placeholder="예: 4th Mini Album"></div>
       </div>
+      <input type="hidden" id="mc-release">
     </div>
     <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeModal('modal-cat')">취소</button>
@@ -463,6 +493,7 @@ function renderPage() {
     notices: renderNotices,
     settings: renderSettings,
     export: renderExport,
+    github: renderGithubPage,
   };
   (map[ADM.page] || renderDashboard)();
 }
@@ -577,6 +608,7 @@ function openCatModal(id) {
   document.getElementById('mc-prerelease').value = c?.preReleaseDate || '';
   document.getElementById('mc-digitalrelease').value = c?.digitalReleaseDate || '';
   document.getElementById('mc-physicalrelease').value = c?.physicalReleaseDate || '';
+  document.getElementById('mc-chodongbase').value = c?.chodongBaseDate || '';
   document.getElementById('mc-chodongend').value = c?.chodongEndDate || '';
   openModal('modal-cat');
 }
@@ -584,13 +616,15 @@ function openCatModal(id) {
 function saveCat() {
   const name = document.getElementById('mc-name').value.trim();
   if (!name) { toast('분류명을 입력하세요', 'warn'); return; }
+  const physicalReleaseDate = document.getElementById('mc-physicalrelease').value;
   const data = {
     name,
     artist: document.getElementById('mc-artist').value.trim(),
-    releaseDate: document.getElementById('mc-release').value,
+    releaseDate: physicalReleaseDate || document.getElementById('mc-release').value,
     preReleaseDate: document.getElementById('mc-prerelease').value,
     digitalReleaseDate: document.getElementById('mc-digitalrelease').value,
-    physicalReleaseDate: document.getElementById('mc-physicalrelease').value,
+    physicalReleaseDate,
+    chodongBaseDate: document.getElementById('mc-chodongbase').value,
     chodongEndDate: document.getElementById('mc-chodongend').value,
     description: document.getElementById('mc-desc').value.trim(),
     sortOrder: Date.now(),
@@ -625,6 +659,8 @@ function renderAlbums() {
   document.getElementById('alb-tbody').innerHTML = albs.map(a => `<tr>
     <td>${catName(a.categoryId)}</td>
     <td><span class="fw-600">${a.name}</span></td>
+    <td class="text-xs text-muted">${a.nameEn || '—'}</td>
+    <td class="text-xs text-muted">${a.shortName || '—'}</td>
     <td><code>${a.key}</code></td>
     <td>${a.countryPrices?.KR ? fKRW(a.countryPrices.KR) : '—'}</td>
     <td>${a.sortOrder || 0}</td>
@@ -632,7 +668,7 @@ function renderAlbums() {
       <button class="btn btn-ghost btn-xs" onclick="openAlbModal('${a.id}')">편집</button>
       <button class="btn btn-err btn-xs" onclick="deleteAlb('${a.id}')">삭제</button>
     </td>
-  </tr>`).join('') || '<tr><td colspan="6" class="empty">앨범 없음</td></tr>';
+  </tr>`).join('') || '<tr><td colspan="8" class="empty">앨범 없음</td></tr>';
 }
 
 function openAlbModal(id) {
@@ -650,8 +686,12 @@ function openAlbModal(id) {
       <div><label>순서</label><input type="number" id="ma-sort" value="${a?.sortOrder || 1}" min="1"></div>
     </div>
     <div class="form-row cols-2">
-      <div><label>앨범명 *</label><input type="text" id="ma-name" value="${a?.name || ''}" placeholder="포토북"></div>
-      <div><label>키 (영문) *</label><input type="text" id="ma-key" value="${a?.key || ''}" placeholder="PHOTOBOOK"></div>
+      <div><label>앨범명 *</label><input type="text" id="ma-name" value="${a?.name || ''}" placeholder="포토북" oninput="autoFillAlbKey()"></div>
+      <div><label>키 (영문) <span style="font-size:10px;color:var(--tx3)">비워두면 자동 생성</span></label><input type="text" id="ma-key" value="${a?.key || ''}" placeholder="자동생성"></div>
+    </div>
+    <div class="form-row cols-2">
+      <div><label>영문명</label><input type="text" id="ma-name-en" value="${a?.nameEn || ''}" placeholder="PLAVE Photo Book"></div>
+      <div><label>짧은 이름</label><input type="text" id="ma-shortname" value="${a?.shortName || ''}" placeholder="포카"></div>
     </div>
     <div style="font-size:12px;color:var(--tx2);margin-bottom:10px">국가별 정가 (판매처 priceMode=country 시 기준가)</div>
     <div class="form-row cols-3">
@@ -668,13 +708,24 @@ function openAlbModal(id) {
   openModal('modal-alb');
 }
 
+function autoFillAlbKey() {
+  const keyEl = document.getElementById('ma-key');
+  if (!keyEl || keyEl._userEdited) return;
+  // Auto-fill only if key is still empty (not edited by user)
+}
+
 function saveAlb() {
   const name = document.getElementById('ma-name').value.trim();
-  const key = document.getElementById('ma-key').value.trim().toUpperCase().replace(/\s+/g, '_');
-  if (!name || !key) { toast('앨범명과 키를 입력하세요', 'warn'); return; }
+  if (!name) { toast('앨범명을 입력하세요', 'warn'); return; }
+  let key = document.getElementById('ma-key').value.trim().toUpperCase().replace(/\s+/g, '_');
+  if (!key || key === '자동생성') {
+    key = 'ALB_' + Date.now();
+  }
   const data = {
     categoryId: document.getElementById('ma-cat').value,
     name,
+    nameEn: document.getElementById('ma-name-en')?.value.trim() || '',
+    shortName: document.getElementById('ma-shortname')?.value.trim() || '',
     key,
     sortOrder: parseInt(document.getElementById('ma-sort').value || '1'),
     countryPrices: {
