@@ -57,6 +57,12 @@
       <button class="btn btn-ghost btn-sm" onclick="document.getElementById('import-file').click()">⬆ 불러오기</button>
       <input type="file" id="import-file" accept=".json" style="display:none" onchange="importDB(this)">
     </div>
+    <div class="section-divider">GitHub 동기화</div>
+    <div id="settings-gh-info" style="font-size:11px;color:var(--tx2);margin-bottom:8px">미설정</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm" onclick="pullFromGithubIdx()">⬇ 불러오기</button>
+      <button class="btn btn-ghost btn-sm" onclick="pushToGithubIdx()">⬆ 저장</button>
+    </div>
   </div>
 </div>
 <div class="settings-overlay" id="settings-overlay" onclick="closeSettings()"></div>
@@ -611,6 +617,10 @@ function renderSettingsRates() {
         onchange="saveRateFromSettings('${k}',this.value)">
     </div>`;
   }).join('');
+  // Update GitHub info
+  const gh = DB.settings?.github || {};
+  const ghInfo = document.getElementById('settings-gh-info');
+  if (ghInfo) ghInfo.textContent = (gh.owner && gh.repo) ? `${gh.owner}/${gh.repo} · ${gh.filePath || 'db/data.json'}` : '미설정 (Admin에서 설정)';
 }
 
 function saveRateFromSettings(cur, val) {
@@ -644,6 +654,45 @@ async function fetchRatesIndex() {
   } catch(e) {
     toast('환율 가져오기 실패: ' + e.message, 'err');
   }
+}
+
+async function pullFromGithubIdx() {
+  const gh = DB.settings?.github;
+  if (!gh?.token || !gh?.owner || !gh?.repo) { toast('Admin에서 GitHub 설정을 먼저 저장하세요', 'warn'); return; }
+  const [owner, repo] = gh.owner.includes('/') ? gh.owner.split('/') : [gh.owner, gh.repo];
+  const filePath = gh.filePath || 'db/data.json';
+  const branch = gh.branch || 'main';
+  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}?ref=${branch}`;
+  try {
+    const r = await fetch(url, { headers: { Authorization: `token ${gh.token}`, Accept: 'application/vnd.github.v3+json' } });
+    if (!r.ok) throw new Error(await r.text());
+    const d = await r.json();
+    const json = atob(d.content.replace(/\n/g, ''));
+    dbImportJSON(json);
+    dbUpdateSettings({ github: { ...gh, sha: d.sha } });
+    reloadDB(); render(); closeSettings();
+    toast('GitHub에서 불러오기 완료');
+  } catch(e) { toast('불러오기 실패: ' + e.message, 'err'); }
+}
+
+async function pushToGithubIdx() {
+  const gh = DB.settings?.github;
+  if (!gh?.token || !gh?.owner || !gh?.repo) { toast('Admin에서 GitHub 설정을 먼저 저장하세요', 'warn'); return; }
+  const [owner, repo] = gh.owner.includes('/') ? gh.owner.split('/') : [gh.owner, gh.repo];
+  const filePath = gh.filePath || 'db/data.json';
+  const branch = gh.branch || 'main';
+  const content = btoa(unescape(encodeURIComponent(dbExportJSON())));
+  const body = { message: 'chore: update db ' + new Date().toISOString().slice(0,16), content, branch };
+  if (gh.sha) body.sha = gh.sha;
+  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
+  try {
+    const r = await fetch(url, { method: 'PUT', headers: { Authorization: `token ${gh.token}`, 'Content-Type': 'application/json', Accept: 'application/vnd.github.v3+json' }, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error(await r.text());
+    const d = await r.json();
+    dbUpdateSettings({ github: { ...gh, sha: d.content.sha } });
+    reloadDB();
+    toast('GitHub에 저장 완료 ✓');
+  } catch(e) { toast('저장 실패: ' + e.message, 'err'); }
 }
 
 function exportDB() {
@@ -1496,7 +1545,7 @@ function renderProxyTab() {
       <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd)">
         <div style="flex:1;min-width:0">
           <span class="fw-600 text-sm">${e.albName}</span>
-          <span class="text-muted text-sm"> · ${e.storeName} · ${e.qty}장</span>
+          <span class="text-muted text-sm"> · <span style="cursor:pointer;color:var(--pk);text-decoration:underline" onclick="navToPurchase('${e.purchId}')">${e.storeName}</span> · ${e.qty}장</span>
         </div>
         <button class="btn btn-xs ${e.paid ? 'btn-ok' : 'btn-ghost'}" onclick="toggleProxyPaid('${e.purchId}','${e.albKey}',${e.entryIdx})">
           ${e.paid ? '✓ 입금' : '미입금'}
@@ -1539,6 +1588,22 @@ function renderProxyTab() {
   document.getElementById('purch-proxy-content').innerHTML = html;
 }
 
+function navToPurchase(purchId) {
+  S.purchSubTab = 'list';
+  nav('purch');
+  setTimeout(() => {
+    const p = (DB.purchases||[]).find(x => x.id === purchId);
+    if (!p) return;
+    document.getElementById('modal-detail-title').textContent = storeName(p.storeId) + ' 구매 상세';
+    document.getElementById('modal-detail-body').innerHTML = renderPurchCard(p);
+    document.getElementById('modal-detail-foot').innerHTML = `
+      <button class="btn btn-ghost" onclick="closeModal('modal-detail')">닫기</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-detail');editPurch('${purchId}')">편집</button>
+    `;
+    openModal('modal-detail');
+  }, 100);
+}
+
 function renderPurchCard(p) {
   const store = DB.stores?.find(s => s.id === p.storeId);
   const cat = store ? getCat(store.categoryId) : null;
@@ -1548,8 +1613,10 @@ function renderPurchCard(p) {
   const ovs = store ? isOvs(store) : false;
   const cur = store ? getStoreCur(store) : 'KRW';
 
-  const STATUS_STEPS = ['planned', 'waiting', 'ordered', 'preparing', 'shipped', 'delivered'];
-  const stepIdx = STATUS_STEPS.indexOf(p.status || 'waiting');
+  const STATUS_STEPS = ['waiting', 'ordered', 'shipped', 'delivered'];
+  const statusAlias = { planned: 'waiting', preparing: 'shipped' };
+  const mappedStatus = statusAlias[p.status] || p.status || 'waiting';
+  const stepIdx = STATUS_STEPS.indexOf(mappedStatus);
 
   const itemsHtml = (p.items || []).map(it => {
     const alb = DB.albumTypes?.find(a => a.key === it.albKey);
@@ -1573,12 +1640,12 @@ function renderPurchCard(p) {
 
   const delivSteps = p.status === 'cancelled' ? '' : `
     <div class="delivery-steps" style="margin:10px 0">
-      ${STATUS_STEPS.slice(1).map((st, i) => {
-        const done = stepIdx > i + 1;
-        const current = stepIdx === i + 1;
-        return `<div class="delivery-step ${done ? 'done' : current ? 'current' : ''}" style="cursor:pointer" onclick="setPurchStatus('${p.id}','${st}')" title="${STATUS_MAP[st].lb}으로 변경">
+      ${STATUS_STEPS.map((st, i) => {
+        const done = stepIdx > i;
+        const current = stepIdx === i;
+        return `<div class="delivery-step ${done ? 'done' : current ? 'current' : ''}" style="cursor:pointer" onclick="setPurchStatus('${p.id}','${st}')" title="${STATUS_MAP[st]?.lb||st}으로 변경">
           <div class="delivery-dot"></div>
-          <div class="delivery-label">${STATUS_MAP[st].lb}</div>
+          <div class="delivery-label">${STATUS_MAP[st]?.lb||st}</div>
         </div>`;
       }).join('')}
     </div>`;
@@ -1642,8 +1709,8 @@ function renderPurchCard(p) {
     ${p.memo ? `<div style="margin-top:8px;font-size:12px;color:var(--tx2);white-space:pre-wrap">${p.memo}</div>` : ''}
 
     <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
-      ${['ordered','preparing','shipped','delivered'].map(st =>
-        `<button class="btn btn-ghost btn-xs" style="${(p.status||'waiting')===st?'border-color:var(--pk2);color:var(--pk)':''}" onclick="setPurchStatus('${p.id}','${st}')">${STATUS_MAP[st].lb}</button>`
+      ${['waiting','ordered','shipped','delivered'].map(st =>
+        `<button class="btn btn-ghost btn-xs" style="${mappedStatus===st?'border-color:var(--pk2);color:var(--pk)':''}" onclick="setPurchStatus('${p.id}','${st}')">${STATUS_MAP[st]?.lb||st}</button>`
       ).join('')}
     </div>
   </div>`;
@@ -1733,6 +1800,7 @@ function buildPurchModal(p) {
 
   // Track per-album proxy entry count for DOM id generation
   window._proxyCounters = {};
+  window._proxyNewCounter = 0;
 
   const itemRows = albums.map(a => {
     const item = existingItems.find(it => it.albKey === a.key) || { qty: 0, unitPrice: 0, proxyQty: 0, proxyDetails: [] };
@@ -1742,24 +1810,14 @@ function buildPurchModal(p) {
     const existProxy = item.proxyDetails || [];
     window._proxyCounters[a.key] = existProxy.length;
 
-    const proxyEntryRows = existProxy.map((e, idx) =>
-      buildProxyEntryHTML(a.key, idx, e.name||'', e.qty||0, e.paid||false, e.delivered||false)
-    ).join('');
-
     return `<tr${isUnpo ? ' style="background:rgba(168,85,247,.07)"' : ''}>
       <td style="padding:6px 8px;font-size:13px">
         ${a.name}${isUnpo ? ' <span class="badge badge-pk" style="font-size:9px">미공포</span>' : ''}
+        <div id="item-proxy-sum-${a.key}" style="font-size:10px;color:var(--warn)"></div>
       </td>
       <td style="padding:6px 4px"><input type="number" min="0" value="${item.qty || 0}" style="width:55px" id="item-qty-${a.key}" oninput="updatePurchItemSub('${a.key}');updatePurchTotal()"></td>
       <td style="padding:6px 4px"><input type="number" min="0" value="${item.unitPrice > 0 ? item.unitPrice : (price || '')}" placeholder="${price || '가격입력'}" style="width:85px" id="item-price-${a.key}" oninput="updatePurchItemSub('${a.key}');updatePurchTotal()"></td>
       <td style="padding:6px 4px;font-size:11px;color:var(--tx2);min-width:60px" id="item-sub-${a.key}">${sub>0?`${ovs?cur+' ':fKRW(0).slice(0,-1)}${Number(sub).toLocaleString()}${ovs?'':'원'}`:''}</td>
-      <td style="padding:4px 4px;min-width:160px">
-        <div id="proxy-entries-${a.key}">${proxyEntryRows}</div>
-        <div style="display:flex;align-items:center;gap:6px;margin-top:${existProxy.length?'4':'0'}px">
-          <button type="button" class="btn btn-ghost btn-xs" onclick="addProxyEntry('${a.key}')">+ 대리</button>
-          <span id="proxy-total-${a.key}" style="font-size:11px;color:var(--warn);font-weight:600">${existProxy.length?'총 '+existProxy.reduce((s,e)=>s+(e.qty||0),0)+'장':''}</span>
-        </div>
-      </td>
     </tr>`;
   }).join('');
 
@@ -1791,7 +1849,10 @@ function buildPurchModal(p) {
       <div>
         <label>상태</label>
         <select id="mp-status">
-          ${Object.entries(STATUS_MAP).map(([k,v]) => `<option value="${k}" ${(p?.status||'waiting')===k?'selected':''}>${v.lb}</option>`).join('')}
+          ${[{k:'waiting',lb:'구매대기'},{k:'ordered',lb:'구매완료'},{k:'shipped',lb:'배송중'},{k:'delivered',lb:'배송완료'},{k:'cancelled',lb:'취소'}].map(({k,lb}) => {
+            const currentStatus = (['planned','waiting'].includes(p?.status||'waiting')) ? 'waiting' : (['preparing','shipped'].includes(p?.status)) ? 'shipped' : (p?.status||'waiting');
+            return `<option value="${k}" ${currentStatus===k?'selected':''}>${lb}</option>`;
+          }).join('')}
         </select>
       </div>
     </div>
@@ -1803,10 +1864,15 @@ function buildPurchModal(p) {
         <th style="padding:6px 8px;font-size:11px;text-align:left">수량</th>
         <th style="padding:6px 8px;font-size:11px;text-align:left">단가 (${ovs ? cur : '₩'})</th>
         <th style="padding:6px 8px;font-size:11px;text-align:left">소계</th>
-        <th style="padding:6px 8px;font-size:11px;text-align:left">대리구매</th>
       </tr></thead>
       <tbody id="mp-items">${itemRows}</tbody>
     </table>
+
+    <div class="section-divider" style="margin-top:16px">대리구매 내역</div>
+    <div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px;margin-bottom:12px">
+      <div id="mp-proxy-entries" style="margin-bottom:6px"></div>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="addProxyEntryNew()">+ 대리구매 추가</button>
+    </div>
 
     <div class="section-divider">배송 및 추가비용</div>
     ${ovs ? `
@@ -1870,11 +1936,74 @@ function buildPurchModal(p) {
       <div><label>메모</label><textarea id="mp-memo" rows="2">${p?.memo || ''}</textarea></div>
     </div>
   `;
+  // Restore existing proxy entries from p.items
+  if (p) {
+    (p.items || []).forEach(it => {
+      (it.proxyDetails || []).forEach(e => {
+        addProxyEntryNew(it.albKey, e.name, e.qty, e.paid, e.delivered, e.type);
+      });
+    });
+  }
   updatePurchTotal();
 }
 
 // ═══════════════════════════════════════════
-// PROXY ENTRY HELPERS
+// PROXY ENTRY HELPERS (NEW - separate box)
+// ═══════════════════════════════════════════
+function addProxyEntryNew(albKey, name, qty, paid, delivered, type) {
+  window._proxyNewCounter = window._proxyNewCounter || 0;
+  const idx = window._proxyNewCounter++;
+  const storeId = document.getElementById('mp-store')?.value || S.storeFromId || S.editStoreId;
+  const store = DB.stores?.find(s => s.id === storeId);
+  const albums = store ? (DB.albumTypes||[]).filter(a => a.categoryId === store.categoryId) : (DB.albumTypes || []);
+  const container = document.getElementById('mp-proxy-entries');
+  if (!container) return;
+  const div = document.createElement('div');
+  div.id = 'proxy-new-' + idx;
+  div.style.cssText = 'display:flex;gap:6px;align-items:center;margin-bottom:6px;padding:6px;background:var(--sur);border-radius:4px;flex-wrap:wrap';
+  div.innerHTML = `
+    <select id="pn-alb-${idx}" style="flex:1;min-width:80px;font-size:12px" onchange="updateProxyTotals()">
+      ${albums.map(a => `<option value="${a.key}" ${(albKey===a.key)?'selected':''}>${a.name}</option>`).join('')}
+    </select>
+    <input id="pn-name-${idx}" type="text" placeholder="이름" style="width:70px;font-size:12px" value="${name||''}">
+    <input id="pn-qty-${idx}" type="number" min="0" style="width:50px;font-size:12px" placeholder="수량" value="${qty||''}" oninput="updateProxyTotals()">
+    <select id="pn-type-${idx}" style="width:70px;font-size:11px">
+      <option value="receive" ${(type!=='give')?'selected':''}>받는것</option>
+      <option value="give" ${(type==='give')?'selected':''}>해주는것</option>
+    </select>
+    <label style="font-size:11px;white-space:nowrap"><input type="checkbox" id="pn-paid-${idx}" ${paid?'checked':''}> 입금</label>
+    <label style="font-size:11px;white-space:nowrap"><input type="checkbox" id="pn-deliv-${idx}" ${delivered?'checked':''}> 배송</label>
+    <button type="button" class="btn btn-err btn-xs" onclick="removeProxyEntryNew(${idx})">✕</button>
+  `;
+  container.appendChild(div);
+}
+
+function removeProxyEntryNew(idx) {
+  const el = document.getElementById('proxy-new-' + idx);
+  if (el) el.remove();
+  updateProxyTotals();
+}
+
+function updateProxyTotals() {
+  const counter = window._proxyNewCounter || 0;
+  const proxyMap = {};
+  for (let i = 0; i < counter; i++) {
+    const qtyEl = document.getElementById('pn-qty-' + i);
+    const albEl = document.getElementById('pn-alb-' + i);
+    if (!qtyEl || !albEl || !document.getElementById('proxy-new-' + i)) continue;
+    const qty = parseInt(qtyEl.value) || 0;
+    const key = albEl.value;
+    if (qty) proxyMap[key] = (proxyMap[key] || 0) + qty;
+  }
+  (DB.albumTypes || []).forEach(a => {
+    const el = document.getElementById('item-proxy-sum-' + a.key);
+    if (el) el.textContent = proxyMap[a.key] ? `대리 ${proxyMap[a.key]}장` : '';
+  });
+  updatePurchTotal();
+}
+
+// ═══════════════════════════════════════════
+// PROXY ENTRY HELPERS (LEGACY - inline per album)
 // ═══════════════════════════════════════════
 function buildProxyEntryHTML(albKey, idx, name, qty, paid, delivered) {
   return `<div style="display:flex;gap:3px;align-items:center;flex-wrap:wrap;margin-bottom:3px" id="proxy-row-${albKey}-${idx}">
@@ -2031,7 +2160,24 @@ function updatePurchTotal() {
     const discount = parseFloat(document.getElementById('mp-discount')?.value || '0');
     total = itemsTotal + domShip - discount;
   }
-  el.textContent = fKRW(Math.max(0, total));
+  // Calculate proxy subtotal from proxy entries
+  let proxySubtotal = 0;
+  const pCounter = window._proxyNewCounter || 0;
+  for (let i = 0; i < pCounter; i++) {
+    const qtyEl = document.getElementById('pn-qty-' + i);
+    const albEl = document.getElementById('pn-alb-' + i);
+    if (!qtyEl || !albEl || !document.getElementById('proxy-new-' + i)) continue;
+    const qty = parseInt(qtyEl.value) || 0;
+    const albKey = albEl.value;
+    const priceEl = document.getElementById('item-price-' + albKey);
+    const unitPrice = parseFloat(priceEl?.value) || 0;
+    proxySubtotal += qty * unitPrice;
+  }
+
+  if (el) {
+    el.innerHTML = fKRW(Math.max(0, total)) +
+      (proxySubtotal > 0 ? `<span style="display:block;font-size:11px;color:var(--warn);margin-top:2px">대리구매 ${fKRW(proxySubtotal)}</span>` : '');
+  }
 }
 
 function savePurch() {
@@ -2041,17 +2187,37 @@ function savePurch() {
   const store = DB.stores?.find(s => s.id === storeId);
   const albums = getCatAlbums();
 
+  // Collect all proxy entries from new proxy box
+  const allProxyEntries = [];
+  const pCounter = window._proxyNewCounter || 0;
+  for (let i = 0; i < pCounter; i++) {
+    const qtyEl = document.getElementById('pn-qty-' + i);
+    const albEl = document.getElementById('pn-alb-' + i);
+    if (!qtyEl || !albEl || !document.getElementById('proxy-new-' + i)) continue;
+    const qty = parseInt(qtyEl.value) || 0;
+    const nameVal = document.getElementById('pn-name-' + i)?.value || '';
+    if (!qty && !nameVal) continue;
+    allProxyEntries.push({
+      albKey: albEl.value,
+      name: nameVal,
+      qty,
+      paid: document.getElementById('pn-paid-' + i)?.checked || false,
+      delivered: document.getElementById('pn-deliv-' + i)?.checked || false,
+      type: document.getElementById('pn-type-' + i)?.value || 'receive',
+    });
+  }
+
   const items = albums.map(a => {
-    const proxyDetails = collectProxyEntries(a.key);
-    const proxyQty = proxyDetails.reduce((s, e) => s + (e.qty||0), 0);
+    const itemProxies = allProxyEntries.filter(e => e.albKey === a.key);
+    const proxyQty = itemProxies.reduce((s, e) => s + (e.qty||0), 0);
     return {
       albKey: a.key,
       qty: parseInt(document.getElementById('item-qty-' + a.key)?.value || '0'),
       unitPrice: parseFloat(document.getElementById('item-price-' + a.key)?.value || '0'),
       proxyQty,
-      proxyDetails,
+      proxyDetails: itemProxies,
     };
-  }).filter(it => it.qty > 0);
+  }).filter(it => it.qty > 0 || it.proxyQty > 0 || it.proxyDetails.length > 0);
 
   const purch = {
     storeId,
@@ -2120,7 +2286,10 @@ function renderStores() {
   }
 
   let stores = catStores();
-  if (search) stores = stores.filter(s => s.name.toLowerCase().includes(search));
+  if (search) stores = stores.filter(s => {
+    const distN = distName(s.distId).toLowerCase();
+    return s.name.toLowerCase().includes(search) || distN.includes(search);
+  });
   if (countryF) stores = stores.filter(s => s.country === countryF);
   if (albF) stores = stores.filter(s => getStoreUnpoKeys(s).includes(albF) || (s.priceMode === 'country') || (s.customPrices && albF in s.customPrices && s.customPrices[albF] !== null));
   if (!showEnded) stores = stores.filter(s => !isExpired(s));
@@ -2197,21 +2366,22 @@ function showStoreDetail(storeId) {
   const country = COUNTRIES[s.country];
   const albums = getCatAlbums(s.categoryId);
 
+  const storeIsOvs = isOvs(s);
   const priceTable = `<table style="width:100%;border-collapse:collapse;font-size:13px">
     <thead><tr style="background:var(--sur2)">
       <th style="padding:6px 8px;text-align:left">앨범</th>
       <th style="padding:6px 8px;text-align:right">가격</th>
-      <th style="padding:6px 8px;text-align:right">원화환산</th>
+      ${storeIsOvs ? '<th style="padding:6px 8px;text-align:right">원화환산</th>' : ''}
     </tr></thead>
     <tbody>
       ${albums.map(a => {
         const pr = storePrice(s, a.key);
         const cur = getStoreCur(s);
-        const prKRW = pr !== null ? (isOvs(s) ? toKRW(pr, cur) : pr) : null;
+        const prKRW = pr !== null ? (storeIsOvs ? toKRW(pr, cur) : pr) : null;
         return `<tr>
           <td style="padding:6px 8px">${a.name}</td>
-          <td style="padding:6px 8px;text-align:right">${pr !== null ? (isOvs(s) ? cur + ' ' + Number(pr).toLocaleString() : fKRW(pr)) : '미판매'}</td>
-          <td style="padding:6px 8px;text-align:right">${prKRW !== null ? fKRW(prKRW) : '—'}</td>
+          <td style="padding:6px 8px;text-align:right">${pr !== null ? (storeIsOvs ? cur + ' ' + Number(pr).toLocaleString() : fKRW(pr)) : '<span class="text-muted">미판매</span>'}</td>
+          ${storeIsOvs ? `<td style="padding:6px 8px;text-align:right">${prKRW !== null ? fKRW(prKRW) : '—'}</td>` : ''}
         </tr>`;
       }).join('')}
     </tbody>
@@ -2500,6 +2670,41 @@ function renderCal() {
     </div>`;
   }
   document.getElementById('cal-body').innerHTML = cells;
+
+  // Event grouping list below calendar
+  const TYPE_ORDER = ['release','pre-release','physical-release','chodong-end','purchase','offline','delivery'];
+  const TYPE_LABELS = {
+    'release':'🎵 발매', 'pre-release':'🎶 선공개', 'physical-release':'💿 실물발매',
+    'chodong-end':'📊 초동마감', 'purchase':'🛒 판매기간', 'offline':'🏪 오프라인', 'delivery':'📦 배송'
+  };
+  const grouped = {};
+  Object.entries(events).forEach(([date, evs]) => {
+    evs.forEach(ev => {
+      if (!grouped[ev.type]) grouped[ev.type] = [];
+      grouped[ev.type].push({ date, label: ev.label });
+    });
+  });
+  const hasGroupedEvents = TYPE_ORDER.some(t => grouped[t]);
+  if (hasGroupedEvents) {
+    const listEl = document.getElementById('cal-event-list') || (() => {
+      const d = document.createElement('div');
+      d.id = 'cal-event-list';
+      document.getElementById('cal-calendar-view')?.appendChild(d);
+      return d;
+    })();
+    listEl.innerHTML = `<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--bd)">
+      ${TYPE_ORDER.filter(t => grouped[t]).map(t => {
+        const sorted = [...grouped[t]].sort((a,b) => a.date.localeCompare(b.date));
+        return `<div style="margin-bottom:10px">
+          <div class="fw-600 text-sm" style="margin-bottom:4px">${TYPE_LABELS[t]}</div>
+          ${sorted.map(e => `<div style="font-size:12px;color:var(--tx2);padding:1px 0">${e.date} <span class="text-muted">·</span> ${e.label.replace(/^[^\s]+\s/, '')}</div>`).join('')}
+        </div>`;
+      }).join('')}
+    </div>`;
+  } else {
+    const listEl = document.getElementById('cal-event-list');
+    if (listEl) listEl.innerHTML = '';
+  }
 
   // Day detail
   if (S.calDay && events[S.calDay]) {

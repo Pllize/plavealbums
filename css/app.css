@@ -898,12 +898,16 @@ code { font: 12px 'Menlo','Monaco',monospace; background: var(--sur2); padding: 
 }
 .settings-panel-body { padding: 14px 18px 40px; }
 
-/* ── Calendar extended ── */
-.cal-cell.pre-release { background: rgba(168,85,247,.18); border-color: #a855f7 !important; }
-.cal-cell.physical-release { background: rgba(52,211,153,.12); border-color: var(--ok) !important; }
-.cal-cell.chodong-end { background: rgba(248,113,113,.18); border: 2px solid var(--err) !important; }
+/* ── Calendar highlight colors — harmonized ── */
+.cal-cell { overflow: hidden; min-width: 0; }
+.cal-cell.chodong-release { background: rgba(99,102,241,.18); border-top: 3px solid var(--ac); }
+.cal-cell.pre-release { background: rgba(168,85,247,.1); border-top: 2px solid rgba(168,85,247,.4); }
+.cal-cell.physical-release { background: rgba(168,85,247,.18); border-top: 2px solid rgba(168,85,247,.7); }
+.cal-cell.chodong { background: rgba(245,158,11,.1); }
+.cal-cell.chodong-dday { background: rgba(239,68,68,.12); border-top: 2px solid var(--err); }
+.cal-cell.chodong-end { background: rgba(239,68,68,.18); border: 2px solid var(--err); }
 .cal-legend-item.pre-release { background: rgba(168,85,247,.2); color: #a855f7; }
-.cal-legend-item.physical-release { background: rgba(52,211,153,.15); color: var(--ok); }
+.cal-legend-item.physical-release { background: rgba(168,85,247,.25); color: #7c3aed; }
 .cal-legend-item.chodong-end { background: rgba(248,113,113,.18); color: var(--err); }
 
 /* ── Store popup unpo highlight ── */
