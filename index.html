@@ -210,8 +210,19 @@
     </button>
   </div>
 
-  <div id="purch-total-bar" style="margin-bottom:12px"></div>
-  <div id="purch-list"></div>
+  <div class="section-tabs" id="purch-subtabs" style="margin-bottom:12px">
+    <button class="section-tab active" data-pubtab="list" onclick="S.purchSubTab='list';render()">구매목록</button>
+    <button class="section-tab" data-pubtab="proxy" onclick="S.purchSubTab='proxy';render()">대리구매</button>
+  </div>
+
+  <div id="purch-list-view">
+    <div id="purch-total-bar" style="margin-bottom:12px"></div>
+    <div id="purch-list"></div>
+  </div>
+
+  <div id="purch-proxy-view" style="display:none">
+    <div id="purch-proxy-content"></div>
+  </div>
 </div>
 
 <!-- ════════════════════════════════════════
@@ -491,6 +502,7 @@ let S = {
   showProxy: false,
   hideExpired: true,
   purchSort: 'date',
+  purchSubTab: 'list',
   storeSort: 'amount',
   dashStatusFilter: null,
   editPurchId: null,
@@ -937,7 +949,7 @@ function renderDash() {
       albCounts[it.albKey] = (albCounts[it.albKey]||0) + (it.qty||0);
       albProxy[it.albKey] = (albProxy[it.albKey]||0) + (it.proxyQty||0);
     }));
-    albGrid.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;padding:4px 0">
+    albGrid.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:8px;padding:4px 0">
       ${albums.map(a => {
         const total = albCounts[a.key]||0, proxy = albProxy[a.key]||0;
         return `<div class="alb-count-card${total?'':' empty'}"${total?` onclick="showAlbumDetail('${a.key}')" style="cursor:pointer"`:''}">
@@ -1022,6 +1034,7 @@ function renderDash() {
               <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
                 <span class="fw-600">${store?.name || '?'}</span>
                 ${store?.isMusicStreamTeam ? '<span class="music-tag">🎵</span>' : ''}
+                ${store?.hanteoChart ? '<span style="font-size:10px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">한터</span>' : ''}
                 ${stBadge(p.status || 'waiting')}
               </div>
               <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
@@ -1307,6 +1320,14 @@ function openStorePopup(storeId) {
 // PURCHASE LIST
 // ═══════════════════════════════════════════
 function renderPurch() {
+  // Sub-tab state
+  const subtabs = document.querySelectorAll('#purch-subtabs .section-tab');
+  subtabs.forEach(btn => btn.classList.toggle('active', btn.dataset.pubtab === S.purchSubTab));
+  document.getElementById('purch-list-view').style.display = S.purchSubTab === 'list' ? '' : 'none';
+  document.getElementById('purch-proxy-view').style.display = S.purchSubTab === 'proxy' ? '' : 'none';
+
+  if (S.purchSubTab === 'proxy') { renderProxyTab(); return; }
+
   const search = document.getElementById('purch-search')?.value.toLowerCase() || '';
   const statusF = document.getElementById('purch-status-filter')?.value || '';
   const catF = document.getElementById('purch-cat-filter')?.value || '';
@@ -1353,6 +1374,93 @@ function renderPurch() {
     : '<div class="empty">구매 기록이 없습니다.<br><br><button class="btn btn-p" onclick="addPurchModal()">+ 구매 추가</button></div>';
 }
 
+function renderProxyTab() {
+  const purches = (DB.purchases || []).filter(p => {
+    if (!S.catId) return true;
+    const st = DB.stores?.find(s => s.id === p.storeId);
+    return st?.categoryId === S.catId;
+  });
+
+  // Aggregate all proxyDetails across purchases, grouped by person name
+  const byPerson = {}; // name -> [{ purchId, storeId, albKey, albName, qty, paid, delivered, entryIdx }]
+
+  purches.forEach(p => {
+    (p.items || []).forEach(it => {
+      if (!it.proxyDetails?.length) return;
+      const alb = DB.albumTypes?.find(a => a.key === it.albKey);
+      it.proxyDetails.forEach((e, ei) => {
+        if (!e.name && !e.qty) return;
+        const name = e.name || '(이름 없음)';
+        if (!byPerson[name]) byPerson[name] = [];
+        byPerson[name].push({
+          purchId: p.id,
+          storeId: p.storeId,
+          albKey: it.albKey,
+          albName: alb?.name || it.albKey,
+          qty: e.qty || 0,
+          paid: !!e.paid,
+          delivered: !!e.delivered,
+          entryIdx: ei,
+          storeName: storeName(p.storeId),
+        });
+      });
+    });
+  });
+
+  const names = Object.keys(byPerson).sort((a, b) => a.localeCompare(b, 'ko'));
+
+  if (!names.length) {
+    document.getElementById('purch-proxy-content').innerHTML =
+      '<div class="empty">대리구매 기록이 없습니다.<br><small style="color:var(--tx3)">구매 추가 시 앨범 행에서 + 대리 버튼으로 입력하세요.</small></div>';
+    return;
+  }
+
+  const html = names.map(name => {
+    const entries = byPerson[name];
+    const totalQty = entries.reduce((s, e) => s + e.qty, 0);
+    const allPaid = entries.every(e => e.paid);
+    const allDelivered = entries.every(e => e.delivered);
+    const unpaidCount = entries.filter(e => !e.paid).length;
+    const undeliveredCount = entries.filter(e => e.paid && !e.delivered).length;
+
+    const rows = entries.map(e => `
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd)">
+        <div style="flex:1;min-width:0">
+          <span class="fw-600 text-sm">${e.albName}</span>
+          <span class="text-muted text-sm"> · ${e.storeName} · ${e.qty}장</span>
+        </div>
+        <button class="btn btn-xs ${e.paid ? 'btn-ok' : 'btn-ghost'}" onclick="toggleProxyPaid('${e.purchId}','${e.albKey}',${e.entryIdx})">
+          ${e.paid ? '✓ 입금' : '미입금'}
+        </button>
+        <button class="btn btn-xs ${e.delivered ? 'btn-ok' : 'btn-ghost'}" onclick="toggleProxyDelivered('${e.purchId}','${e.albKey}',${e.entryIdx})">
+          ${e.delivered ? '✓ 배송완료' : '미배송'}
+        </button>
+      </div>`).join('');
+
+    return `<div class="card" style="margin-bottom:10px">
+      <div class="card-header">
+        <div>
+          <span class="fw-600">${name}</span>
+          <span class="text-muted text-sm" style="margin-left:8px">총 ${totalQty}장</span>
+        </div>
+        <div style="display:flex;gap:4px">
+          ${unpaidCount ? `<span class="badge badge-warn">${unpaidCount}건 미입금</span>` : '<span class="badge badge-ok">입금완료</span>'}
+          ${undeliveredCount ? `<span class="badge" style="background:rgba(99,102,241,.15);color:var(--ac)">${undeliveredCount}건 배송대기</span>` : (allPaid && allDelivered ? '<span class="badge badge-ok">배송완료</span>' : '')}
+        </div>
+      </div>
+      <div style="padding:0 4px">${rows}</div>
+    </div>`;
+  }).join('');
+
+  const unpaidPersons = names.filter(n => byPerson[n].some(e => !e.paid)).length;
+  const summary = `<div style="padding:8px 12px;background:var(--sur);border:1px solid var(--bd);border-radius:var(--r-sm);margin-bottom:12px;display:flex;gap:16px">
+    <span class="text-muted text-sm">${names.length}명</span>
+    ${unpaidPersons ? `<span class="text-sm" style="color:var(--warn)">미입금 ${unpaidPersons}명</span>` : '<span class="text-sm" style="color:var(--ok)">전원 입금완료</span>'}
+  </div>`;
+
+  document.getElementById('purch-proxy-content').innerHTML = summary + html;
+}
+
 function renderPurchCard(p) {
   const store = DB.stores?.find(s => s.id === p.storeId);
   const cat = store ? getCat(store.categoryId) : null;
@@ -1372,7 +1480,16 @@ function renderPurchCard(p) {
       <td>${alb?.name || it.albKey}</td>
       <td>${it.qty || 0}장</td>
       <td>${pr ? (ovs ? (COUNTRIES[store.country]?.cur?.slice(0,2) || '') + Number(pr).toLocaleString() : fKRW(pr * (it.qty || 0))) : '—'}</td>
-      ${it.proxyQty ? `<td class="text-warn">${it.proxyQty}장 대리</td>` : '<td>-</td>'}
+      ${(it.proxyDetails?.length)
+        ? `<td style="padding:4px 6px">${it.proxyDetails.map((e,ei) => `
+            <div style="display:flex;align-items:center;gap:4px;font-size:11px;margin-bottom:2px">
+              <span style="color:var(--warn);font-weight:600">${e.name||'?'} ${e.qty}장</span>
+              <button class="btn btn-xs" style="padding:1px 4px;font-size:9px;background:${e.paid?'rgba(52,211,153,.15)':'rgba(248,113,113,.15)'};color:${e.paid?'var(--ok)':'var(--err)'};border-color:${e.paid?'var(--ok)':'var(--err)'}"
+                onclick="event.stopPropagation();toggleProxyPaid('${p.id}','${it.albKey}',${ei})">${e.paid?'입금✓':'입금?'}</button>
+              <button class="btn btn-xs" style="padding:1px 4px;font-size:9px;background:${e.delivered?'rgba(52,211,153,.15)':'var(--sur2)'};color:${e.delivered?'var(--ok)':'var(--tx3)'};border-color:${e.delivered?'var(--ok)':'var(--bd)'}"
+                onclick="event.stopPropagation();toggleProxyDelivered('${p.id}','${it.albKey}',${ei})">${e.delivered?'배송✓':'배송'}</button>
+            </div>`).join('')}</td>`
+        : it.proxyQty ? `<td class="text-warn" style="font-size:12px">${it.proxyQty}장</td>` : '<td style="color:var(--tx3);font-size:12px">-</td>'}
     </tr>`;
   }).join('');
 
@@ -1391,7 +1508,7 @@ function renderPurchCard(p) {
   return `<div class="purch-card">
     <div class="purch-card-header">
       <div>
-        <div class="purch-store-name">${store?.name || '?'} ${store?.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : ''}</div>
+        <div class="purch-store-name">${store?.name || '?'} ${store?.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : ''} ${store?.hanteoChart ? '<span style="font-size:10px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">한터</span>' : ''}</div>
         <div class="purch-meta">
           ${cat ? cat.name + ' · ' : ''}
           ${p.orderDate ? fDate(p.orderDate) : '날짜미입력'}
@@ -1534,13 +1651,23 @@ function buildPurchModal(p) {
   const cur = selectedStore ? getStoreCur(selectedStore) : 'KRW';
   const unpoKeys = selectedStore ? getStoreUnpoKeys(selectedStore) : [];
 
-  const existingItems = p?.items || albums.map(a => ({ albKey: a.key, qty: 0, unitPrice: 0, proxyQty: 0 }));
+  const existingItems = p?.items || albums.map(a => ({ albKey: a.key, qty: 0, unitPrice: 0, proxyQty: 0, proxyDetails: [] }));
+
+  // Track per-album proxy entry count for DOM id generation
+  window._proxyCounters = {};
 
   const itemRows = albums.map(a => {
-    const item = existingItems.find(it => it.albKey === a.key) || { qty: 0, unitPrice: 0, proxyQty: 0 };
+    const item = existingItems.find(it => it.albKey === a.key) || { qty: 0, unitPrice: 0, proxyQty: 0, proxyDetails: [] };
     const price = selectedStore ? storePrice(selectedStore, a.key) : null;
     const isUnpo = unpoKeys.includes(a.key);
     const sub = (item.qty||0) * (item.unitPrice > 0 ? item.unitPrice : (price||0));
+    const existProxy = item.proxyDetails || [];
+    window._proxyCounters[a.key] = existProxy.length;
+
+    const proxyEntryRows = existProxy.map((e, idx) =>
+      buildProxyEntryHTML(a.key, idx, e.name||'', e.qty||0, e.paid||false, e.delivered||false)
+    ).join('');
+
     return `<tr${isUnpo ? ' style="background:rgba(168,85,247,.07)"' : ''}>
       <td style="padding:6px 8px;font-size:13px">
         ${a.name}${isUnpo ? ' <span class="badge badge-pk" style="font-size:9px">미공포</span>' : ''}
@@ -1548,7 +1675,13 @@ function buildPurchModal(p) {
       <td style="padding:6px 4px"><input type="number" min="0" value="${item.qty || 0}" style="width:55px" id="item-qty-${a.key}" oninput="updatePurchItemSub('${a.key}');updatePurchTotal()"></td>
       <td style="padding:6px 4px"><input type="number" min="0" value="${item.unitPrice > 0 ? item.unitPrice : (price || '')}" placeholder="${price || '가격입력'}" style="width:85px" id="item-price-${a.key}" oninput="updatePurchItemSub('${a.key}');updatePurchTotal()"></td>
       <td style="padding:6px 4px;font-size:11px;color:var(--tx2);min-width:60px" id="item-sub-${a.key}">${sub>0?`${ovs?cur+' ':fKRW(0).slice(0,-1)}${Number(sub).toLocaleString()}${ovs?'':'원'}`:''}</td>
-      <td style="padding:6px 4px"><input type="number" min="0" value="${item.proxyQty || 0}" style="width:50px" id="item-proxy-${a.key}" oninput="updatePurchTotal()"></td>
+      <td style="padding:4px 4px;min-width:160px">
+        <div id="proxy-entries-${a.key}">${proxyEntryRows}</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:${existProxy.length?'4':'0'}px">
+          <button type="button" class="btn btn-ghost btn-xs" onclick="addProxyEntry('${a.key}')">+ 대리</button>
+          <span id="proxy-total-${a.key}" style="font-size:11px;color:var(--warn);font-weight:600">${existProxy.length?'총 '+existProxy.reduce((s,e)=>s+(e.qty||0),0)+'장':''}</span>
+        </div>
+      </td>
     </tr>`;
   }).join('');
 
@@ -1592,7 +1725,7 @@ function buildPurchModal(p) {
         <th style="padding:6px 8px;font-size:11px;text-align:left">수량</th>
         <th style="padding:6px 8px;font-size:11px;text-align:left">단가 (${ovs ? cur : '₩'})</th>
         <th style="padding:6px 8px;font-size:11px;text-align:left">소계</th>
-        <th style="padding:6px 8px;font-size:11px;text-align:left">대리수량</th>
+        <th style="padding:6px 8px;font-size:11px;text-align:left">대리구매</th>
       </tr></thead>
       <tbody id="mp-items">${itemRows}</tbody>
     </table>
@@ -1660,6 +1793,95 @@ function buildPurchModal(p) {
     </div>
   `;
   updatePurchTotal();
+}
+
+// ═══════════════════════════════════════════
+// PROXY ENTRY HELPERS
+// ═══════════════════════════════════════════
+function buildProxyEntryHTML(albKey, idx, name, qty, paid, delivered) {
+  return `<div style="display:flex;gap:3px;align-items:center;flex-wrap:wrap;margin-bottom:3px" id="proxy-row-${albKey}-${idx}">
+    <input type="text" placeholder="이름" value="${name}" style="width:56px;font-size:11px;padding:2px 4px" id="proxy-name-${albKey}-${idx}" oninput="recalcProxyQty('${albKey}')">
+    <input type="number" min="0" value="${qty}" style="width:38px;font-size:11px;padding:2px 4px" id="proxy-qty-${albKey}-${idx}" oninput="recalcProxyQty('${albKey}')">
+    <label style="font-size:10px;display:flex;align-items:center;gap:2px;cursor:pointer">
+      <input type="checkbox" ${paid?'checked':''} id="proxy-paid-${albKey}-${idx}" style="width:12px;height:12px"> 입금
+    </label>
+    <label style="font-size:10px;display:flex;align-items:center;gap:2px;cursor:pointer">
+      <input type="checkbox" ${delivered?'checked':''} id="proxy-deliv-${albKey}-${idx}" style="width:12px;height:12px"> 배송
+    </label>
+    <button type="button" onclick="removeProxyEntry('${albKey}',${idx})" style="background:none;border:none;color:var(--err);font-size:12px;cursor:pointer;padding:0 2px">✕</button>
+  </div>`;
+}
+
+function addProxyEntry(albKey) {
+  if (!window._proxyCounters) window._proxyCounters = {};
+  const idx = window._proxyCounters[albKey] || 0;
+  window._proxyCounters[albKey] = idx + 1;
+  const container = document.getElementById('proxy-entries-' + albKey);
+  if (!container) return;
+  const div = document.createElement('div');
+  div.innerHTML = buildProxyEntryHTML(albKey, idx, '', 0, false, false);
+  container.appendChild(div.firstChild);
+  recalcProxyQty(albKey);
+}
+
+function removeProxyEntry(albKey, idx) {
+  const row = document.getElementById(`proxy-row-${albKey}-${idx}`);
+  if (row) row.remove();
+  recalcProxyQty(albKey);
+}
+
+function recalcProxyQty(albKey) {
+  const container = document.getElementById('proxy-entries-' + albKey);
+  if (!container) return;
+  let total = 0;
+  container.querySelectorAll('[id^="proxy-qty-' + albKey + '-"]').forEach(el => {
+    total += parseInt(el.value || '0') || 0;
+  });
+  const label = document.getElementById('proxy-total-' + albKey);
+  if (label) label.textContent = total > 0 ? '총 ' + total + '장' : '';
+  updatePurchTotal();
+}
+
+function collectProxyEntries(albKey) {
+  const container = document.getElementById('proxy-entries-' + albKey);
+  if (!container) return [];
+  const entries = [];
+  container.querySelectorAll('[id^="proxy-row-' + albKey + '-"]').forEach(row => {
+    const idParts = row.id.split('-');
+    const idx = idParts[idParts.length - 1];
+    const name = document.getElementById(`proxy-name-${albKey}-${idx}`)?.value?.trim() || '';
+    const qty = parseInt(document.getElementById(`proxy-qty-${albKey}-${idx}`)?.value || '0') || 0;
+    const paid = document.getElementById(`proxy-paid-${albKey}-${idx}`)?.checked || false;
+    const delivered = document.getElementById(`proxy-deliv-${albKey}-${idx}`)?.checked || false;
+    if (name || qty > 0) entries.push({ name, qty, paid, delivered });
+  });
+  return entries;
+}
+
+function toggleProxyPaid(purchId, albKey, entryIdx) {
+  const s = dbGet();
+  const p = (s.purchases || []).find(x => x.id === purchId);
+  if (!p) return;
+  const items = JSON.parse(JSON.stringify(p.items || []));
+  const item = items.find(it => it.albKey === albKey);
+  if (!item?.proxyDetails?.[entryIdx]) return;
+  item.proxyDetails[entryIdx].paid = !item.proxyDetails[entryIdx].paid;
+  dbUpdateItem('purchases', purchId, { items });
+  DB = dbGet();
+  render();
+}
+
+function toggleProxyDelivered(purchId, albKey, entryIdx) {
+  const s = dbGet();
+  const p = (s.purchases || []).find(x => x.id === purchId);
+  if (!p) return;
+  const items = JSON.parse(JSON.stringify(p.items || []));
+  const item = items.find(it => it.albKey === albKey);
+  if (!item?.proxyDetails?.[entryIdx]) return;
+  item.proxyDetails[entryIdx].delivered = !item.proxyDetails[entryIdx].delivered;
+  dbUpdateItem('purchases', purchId, { items });
+  DB = dbGet();
+  render();
 }
 
 function updatePurchPrices() {
@@ -1741,12 +1963,17 @@ function savePurch() {
   const store = DB.stores?.find(s => s.id === storeId);
   const albums = getCatAlbums();
 
-  const items = albums.map(a => ({
-    albKey: a.key,
-    qty: parseInt(document.getElementById('item-qty-' + a.key)?.value || '0'),
-    unitPrice: parseFloat(document.getElementById('item-price-' + a.key)?.value || '0'),
-    proxyQty: parseInt(document.getElementById('item-proxy-' + a.key)?.value || '0'),
-  })).filter(it => it.qty > 0);
+  const items = albums.map(a => {
+    const proxyDetails = collectProxyEntries(a.key);
+    const proxyQty = proxyDetails.reduce((s, e) => s + (e.qty||0), 0);
+    return {
+      albKey: a.key,
+      qty: parseInt(document.getElementById('item-qty-' + a.key)?.value || '0'),
+      unitPrice: parseFloat(document.getElementById('item-price-' + a.key)?.value || '0'),
+      proxyQty,
+      proxyDetails,
+    };
+  }).filter(it => it.qty > 0);
 
   const purch = {
     storeId,
@@ -1866,6 +2093,7 @@ function renderStoreCard(s, isCheapest = false) {
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
         ${s.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : ''}
+        ${s.hanteoChart ? '<span style="font-size:10px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">한터</span>' : ''}
         ${s.round ? `<span class="badge badge-info">${s.round}차</span>` : ''}
         ${unpoKeys.map(k=>`<span class="badge badge-pk" style="font-size:10px">${k} 미공포</span>`).join('')}
         ${s.videocall ? '<span title="영통" style="font-size:14px">📞</span>' : ''}

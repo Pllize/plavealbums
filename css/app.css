@@ -68,7 +68,7 @@ button { cursor: pointer; font-family: inherit; }
 }
 .main-content {
   margin-left: var(--nav-w);
-  padding: 28px 32px;
+  padding: 60px 32px 28px;
   min-height: 100vh;
   overflow-y: auto;
 }
@@ -572,7 +572,7 @@ code { font: 12px 'Menlo','Monaco',monospace; background: var(--sur2); padding: 
   .menu-btn { display: none; }
   .sidebar { display: none !important; }
   .sidebar-overlay { display: none !important; }
-  .main-content { margin-left: 0; padding: 14px 12px 74px; }
+  .main-content { margin-left: 0; padding: 60px 12px 74px; }
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .form-row.cols-3, .form-row.cols-4 { grid-template-columns: 1fr 1fr; }
   .page-header { flex-wrap: wrap; }
@@ -755,7 +755,7 @@ code { font: 12px 'Menlo','Monaco',monospace; background: var(--sur2); padding: 
   transition: border-color .15s;
 }
 .alb-count-card:not(.empty):hover { border-color: var(--bd2); }
-.alb-count-label { font-size: 10px; color: var(--tx2); margin-bottom: 4px; }
+.alb-count-label { font-size: 10px; color: var(--tx2); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .alb-count-num { font-weight: 700; font-size: 20px; color: var(--tx3); }
 .alb-count-num.ok { color: var(--ok); }
 .alb-count-unit { font-size: 10px; color: var(--tx3); }
