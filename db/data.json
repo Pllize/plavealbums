@@ -119,7 +119,7 @@
     },
     {
       "id": "dcs1774619329527",
-      "name": "케타포"
+      "name": "Ktown4U"
     },
     {
       "id": "dcs1774544809341",
@@ -139,7 +139,7 @@
     },
     {
       "id": "d6",
-      "name": "Tower Records Japan"
+      "name": "TowerRecords JP"
     },
     {
       "id": "dcs1774543391747",
@@ -191,13 +191,10 @@
       "country": "KR",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "POCAALBUM",
+      "unpoAlbumKey": "ALB_1779038847739",
       "unpoSets": 1,
       "unpoBack": false,
-      "sharedWith": {
-        "ak": "ID_PASS",
-        "bn": "무신사"
-      },
+      "sharedWith": null,
       "priceMode": "country",
       "customPrices": {},
       "purchaseStart": "2026-04-20T15:00",
@@ -207,14 +204,42 @@
       "offlineEnd": "2026-04-20",
       "offlineHours": "15:00 - 23:00",
       "offlineAddress": "서대문구 연희로11가길 48-23",
-      "offlineNote": "모든 버전 구매시 A2T DRAW (십카페 럭드) 와 동일한 포카 중 랜덤 1종 증정\n럭드 포토카드중 친필사인 포토카드 랜덤 제공",
+      "offlineNote": "모든 버전 구매시 A2T DRAW (십카페 럭드) 와 동일한 포카 중 랜덤 1종 증정럭드 포토카드중 친필사인 포토카드 랜덤 제공",
       "offlineLuckyDraw": true,
       "defDomShip": 0,
       "defOvsShip": 0,
       "defDeliveryDate": "",
       "url": "https://caligopt2popup.oopy.io/32d4cacd-15c9-80d4-91e3-e505275bb65c",
       "videocall": false,
-      "memo": ""
+      "memo": "",
+      "unpoAlbumKeys": [
+        "ALB_1779038847739"
+      ],
+      "offlineEvents": [
+        {
+          "id": "oe0",
+          "start": "2026-04-20",
+          "end": "2026-04-20",
+          "addressName": "",
+          "addressDetail": "서대문구 연희로11가길 48-23",
+          "hoursMap": {
+            "0": "",
+            "1": "",
+            "2": "",
+            "3": "",
+            "4": "",
+            "5": "",
+            "6": ""
+          },
+          "note": "모든 버전 구매시 A2T DRAW (십카페 럭드) 와 동일한 포카 중 랜덤 1종 증정럭드 포토카드중 친필사인 포토카드 랜덤 제공",
+          "luckyDraw": true
+        }
+      ],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "서대문구 연희로11가길 48-23",
+      "hanteoChart": true,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "cs1774546314667",
@@ -224,7 +249,7 @@
       "country": "KR",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "POCAALBUM",
+      "unpoAlbumKey": "ALB_1779038847739",
       "unpoSets": 1,
       "unpoBack": false,
       "sharedWith": null,
@@ -237,14 +262,42 @@
       "offlineEnd": "2026-04-19",
       "offlineHours": "(화-목) 10:30 - 20:00 ; (금-일) 10:30 - 20:30",
       "offlineAddress": "더현대서울 5F",
-      "offlineNote": "https://caligopt2popup.oopy.io/32d4cacd-15c9-80e1-b7b5-d07592ac0481\n모든 버전 구매시 더현대럭키드로우 포토카드 5종중 랜덤 증정",
+      "offlineNote": "https://caligopt2popup.oopy.io/32d4cacd-15c9-80e1-b7b5-d07592ac0481모든 버전 구매시 더현대럭키드로우 포토카드 5종중 랜덤 증정",
       "offlineLuckyDraw": true,
       "defDomShip": 0,
       "defOvsShip": 0,
       "defDeliveryDate": "",
       "url": "https://caligopt2popup.oopy.io/32d4cacd-15c9-80e1-b7b5-d07592ac0481",
       "videocall": false,
-      "memo": ""
+      "memo": "",
+      "unpoAlbumKeys": [
+        "ALB_1779038847739"
+      ],
+      "offlineEvents": [
+        {
+          "id": "oe0",
+          "start": "2026-04-14",
+          "end": "2026-04-19",
+          "addressName": "",
+          "addressDetail": "더현대서울 5F",
+          "hoursMap": {
+            "0": "",
+            "1": "",
+            "2": "",
+            "3": "",
+            "4": "",
+            "5": "",
+            "6": ""
+          },
+          "note": "https://caligopt2popup.oopy.io/32d4cacd-15c9-80e1-b7b5-d07592ac0481모든 버전 구매시 더현대럭키드로우 포토카드 5종중 랜덤 증정",
+          "luckyDraw": true
+        }
+      ],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "더현대서울 5F",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "s3",
@@ -254,7 +307,7 @@
       "country": "KR",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "POCAALBUM",
+      "unpoAlbumKey": "ALB_1779038847739",
       "unpoSets": 1,
       "unpoBack": true,
       "sharedWith": null,
@@ -274,17 +327,45 @@
       "defDeliveryDate": "",
       "url": "https://www.makestar.com/product/16439",
       "videocall": false,
-      "memo": "POCAALBUM ver. 구매 시 미공개 포토카드 1매 랜덤 증정\n*총 5종, 앨범 1매 당 랜덤 1매\n*한 주문 건에서 앨범 2매 이상 구매 시 포토카드 중복없이 증정"
+      "memo": "POCAALBUM ver. 구매 시 미공개 포토카드 1매 랜덤 증정\n*총 5종, 앨범 1매 당 랜덤 1매\n*한 주문 건에서 앨범 2매 이상 구매 시 포토카드 중복없이 증정",
+      "unpoAlbumKeys": [
+        "ALB_1779038847739"
+      ],
+      "offlineEvents": [
+        {
+          "id": "oe0",
+          "start": "2026-04-14",
+          "end": "2026-04-20",
+          "addressName": "",
+          "addressDetail": "서울시 학동로23길 29 B1",
+          "hoursMap": {
+            "0": "",
+            "1": "",
+            "2": "",
+            "3": "",
+            "4": "",
+            "5": "",
+            "6": ""
+          },
+          "note": "[강남] MAKESTAR SPACE GANGNAM",
+          "luckyDraw": false
+        }
+      ],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "서울시 학동로23길 29 B1",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "s4",
       "categoryId": "cat_caligopt2",
-      "name": "무신사 (1차)",
+      "name": "무신사",
       "distId": "d3",
       "country": "KR",
       "round": 1,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "ID_PASS",
+      "unpoAlbumKey": "ALB_1779038855533",
       "unpoSets": 2,
       "unpoBack": false,
       "sharedWith": null,
@@ -304,17 +385,26 @@
       "defDeliveryDate": "",
       "url": "https://www.musinsa.com/search/goods?keyword=PLAVE+4th+Mini+Album+Caligo+Pt.2",
       "videocall": false,
-      "memo": "구매 수량에 맞춰 1:1 랜덤 증정\n온라인: 한 주문번호 내 앨범 2장 구매 시 중복없이 증정\n오프라인 (무신사 성수): 앨범 2장 이상 구매 시 중복없이 증정"
+      "memo": "구매 수량에 맞춰 1:1 랜덤 증정\n온라인: 한 주문번호 내 앨범 2장 구매 시 중복없이 증정\n오프라인 (무신사 성수): 앨범 2장 이상 구매 시 중복없이 증정",
+      "unpoAlbumKeys": [
+        "ALB_1779038855533"
+      ],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "s5",
       "categoryId": "cat_caligopt2",
-      "name": "무신사 (2차)",
+      "name": "무신사",
       "distId": "d3",
       "country": "KR",
       "round": 2,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "ID_PASS",
+      "unpoAlbumKey": "ALB_1779038855533",
       "unpoSets": 2,
       "unpoBack": false,
       "sharedWith": null,
@@ -327,14 +417,42 @@
       "offlineEnd": "2026-04-20",
       "offlineHours": "11:00~10:00",
       "offlineAddress": "",
-      "offlineNote": "무신사 온라인: ASTERUM 433-10 (십카페럭드)와 동일\n무신사 스토어 성수 (연무장길 83 1F) - 무신사 1차럭드와 동일\n무신사 스토어 명동 (명동길 13) - ASTERUM 433-10 (십카페럭드)와 동일",
+      "offlineNote": "무신사 온라인: ASTERUM 433-10 (십카페럭드)와 동일무신사 스토어 성수 (연무장길 83 1F) - 무신사 1차럭드와 동일무신사 스토어 명동 (명동길 13) - ASTERUM 433-10 (십카페럭드)와 동일",
       "offlineLuckyDraw": false,
       "defDomShip": 0,
       "defOvsShip": 0,
       "defDeliveryDate": "",
       "url": "https://www.musinsa.com/search/goods?keyword=PLAVE+4th+Mini+Album+Caligo+Pt.2&gf=A&keywordType=keyword",
       "videocall": false,
-      "memo": "ID PASS 구매 시 미공포 (온오프동일)\n구매수량에 맞춰 1:1 랜덤증정"
+      "memo": "ID PASS 구매 시 미공포 (온오프동일)\n구매수량에 맞춰 1:1 랜덤증정",
+      "unpoAlbumKeys": [
+        "ALB_1779038855533"
+      ],
+      "offlineEvents": [
+        {
+          "id": "oe0",
+          "start": "2026-04-14",
+          "end": "2026-04-20",
+          "addressName": "",
+          "addressDetail": "",
+          "hoursMap": {
+            "0": "",
+            "1": "",
+            "2": "",
+            "3": "",
+            "4": "",
+            "5": "",
+            "6": ""
+          },
+          "note": "무신사 온라인: ASTERUM 433-10 (십카페럭드)와 동일무신사 스토어 성수 (연무장길 83 1F) - 무신사 1차럭드와 동일무신사 스토어 명동 (명동길 13) - ASTERUM 433-10 (십카페럭드)와 동일",
+          "luckyDraw": false
+        }
+      ],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "s10",
@@ -344,17 +462,12 @@
       "country": "KR",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "ID_PASS",
+      "unpoAlbumKey": "ALB_1779038855533",
       "unpoSets": 1,
       "unpoBack": true,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": null,
-        "POCAALBUM": null,
-        "ID_PASS": 14900,
-        "INVENTORY": null
-      },
+      "customPrices": {},
       "purchaseStart": "2026-03-24T11:00",
       "purchaseEnd": "2026-04-08T23:59",
       "purchaseEndTxt": "특전 소진시까지",
@@ -362,14 +475,42 @@
       "offlineEnd": "2026-05-31",
       "offlineHours": "",
       "offlineAddress": "애니메이트 홍대점, 잠실롯데점, 부산점",
-      "offlineNote": "그라떼 7천원 / 아이싱쿠키 6,500원\n랜덤아크릴코스터 7,500원",
+      "offlineNote": "그라떼 7천원 / 아이싱쿠키 6,500원랜덤아크릴코스터 7,500원",
       "offlineLuckyDraw": false,
       "defDomShip": 0,
       "defOvsShip": 0,
       "defDeliveryDate": "",
       "url": "https://animate-onlineshop.co.kr/goods/goods_view.php?goodsNo=1000089045",
       "videocall": false,
-      "memo": "특전: 포토카드 (전 5종 1세트 증정)【미공개 포토카드】\n※특전은 소진 시 종료됩니다.\n포토북, 인벤, 포카앨범 구매 시 특전엽서 1매 증정 (일본애니메이트샵)"
+      "memo": "특전: 포토카드 (전 5종 1세트 증정)【미공개 포토카드】\n※특전은 소진 시 종료됩니다.\n포토북, 인벤, 포카앨범 구매 시 특전엽서 1매 증정 (일본애니메이트샵)",
+      "unpoAlbumKeys": [
+        "ALB_1779038855533"
+      ],
+      "offlineEvents": [
+        {
+          "id": "oe0",
+          "start": "2026-04-14",
+          "end": "2026-05-31",
+          "addressName": "",
+          "addressDetail": "애니메이트 홍대점, 잠실롯데점, 부산점",
+          "hoursMap": {
+            "0": "",
+            "1": "",
+            "2": "",
+            "3": "",
+            "4": "",
+            "5": "",
+            "6": ""
+          },
+          "note": "그라떼 7천원 / 아이싱쿠키 6,500원랜덤아크릴코스터 7,500원",
+          "luckyDraw": false
+        }
+      ],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "애니메이트 홍대점, 잠실롯데점, 부산점",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "s7",
@@ -379,7 +520,7 @@
       "country": "KR",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "POCAALBUM",
+      "unpoAlbumKey": "ALB_1779038847739",
       "unpoSets": 1,
       "unpoBack": false,
       "sharedWith": null,
@@ -391,7 +532,7 @@
       "offlineStart": "2026-04-14",
       "offlineEnd": "2026-04-20",
       "offlineHours": "10:00 - 22:00",
-      "offlineAddress": "the stage by Musicart (청계천로 41 영풍빌딩 B2)\n영풍문고 여의도 IFC몰점 (국제금융로 10 L2)\n영풍문고 홍대점 (양화로 161 케이스퀘어 B2)",
+      "offlineAddress": "the stage by Musicart (청계천로 41 영풍빌딩 B2)영풍문고 여의도 IFC몰점 (국제금융로 10 L2)영풍문고 홍대점 (양화로 161 케이스퀘어 B2)",
       "offlineNote": "",
       "offlineLuckyDraw": false,
       "defDomShip": 3000,
@@ -399,7 +540,35 @@
       "defDeliveryDate": "",
       "url": "http://musicart.kr/shop/shopdetail.html?branduid=3530779",
       "videocall": false,
-      "memo": "POCAALBUM 구매 시 미공포 (온오프동일)\n한 주문 번호에 2장 이상 앨범 구매 시 특전 포토카드는 중복 없이 증정됩니다."
+      "memo": "POCAALBUM 구매 시 미공포 (온오프동일)\n한 주문 번호에 2장 이상 앨범 구매 시 특전 포토카드는 중복 없이 증정됩니다.",
+      "unpoAlbumKeys": [
+        "ALB_1779038847739"
+      ],
+      "offlineEvents": [
+        {
+          "id": "oe0",
+          "start": "2026-04-14",
+          "end": "2026-04-20",
+          "addressName": "",
+          "addressDetail": "the stage by Musicart (청계천로 41 영풍빌딩 B2)영풍문고 여의도 IFC몰점 (국제금융로 10 L2)영풍문고 홍대점 (양화로 161 케이스퀘어 B2)",
+          "hoursMap": {
+            "0": "",
+            "1": "",
+            "2": "",
+            "3": "",
+            "4": "",
+            "5": "",
+            "6": ""
+          },
+          "note": "",
+          "luckyDraw": false
+        }
+      ],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "the stage by Musicart (청계천로 41 영풍빌딩 B2)영풍문고 여의도 IFC몰점 (국제금융로 10 L2)영풍문고 홍대점 (양화로 161 케이스퀘어 B2)",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "s6",
@@ -409,7 +578,7 @@
       "country": "KR",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "ID_PASS",
+      "unpoAlbumKey": "ALB_1779038847739",
       "unpoSets": 1,
       "unpoBack": false,
       "sharedWith": null,
@@ -421,7 +590,7 @@
       "offlineStart": "2026-04-14",
       "offlineEnd": "2026-04-20",
       "offlineHours": "",
-      "offlineAddress": "올리브영N 성수 (연무장7길 13) 10:00~22:00\n올리브영 홍대놀이터점 (와우산로21길 29) 10:00~22:00",
+      "offlineAddress": "올리브영N 성수 (연무장7길 13) 10:00~22:00올리브영 홍대놀이터점 (와우산로21길 29) 10:00~22:00",
       "offlineNote": "",
       "offlineLuckyDraw": false,
       "defDomShip": 0,
@@ -429,7 +598,35 @@
       "defDeliveryDate": "",
       "url": "https://www.oliveyoung.co.kr/store/planshop/getPlanShopDetail.do?dispCatNo=500000100018171",
       "videocall": false,
-      "memo": "ID PASS 구매 시 미공포 (온오프동일)"
+      "memo": "ID PASS 구매 시 미공포 (온오프동일)",
+      "unpoAlbumKeys": [
+        "ALB_1779038847739"
+      ],
+      "offlineEvents": [
+        {
+          "id": "oe0",
+          "start": "2026-04-14",
+          "end": "2026-04-20",
+          "addressName": "",
+          "addressDetail": "올리브영N 성수 (연무장7길 13) 10:00~22:00올리브영 홍대놀이터점 (와우산로21길 29) 10:00~22:00",
+          "hoursMap": {
+            "0": "",
+            "1": "",
+            "2": "",
+            "3": "",
+            "4": "",
+            "5": "",
+            "6": ""
+          },
+          "note": "",
+          "luckyDraw": false
+        }
+      ],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "올리브영N 성수 (연무장7길 13) 10:00~22:00올리브영 홍대놀이터점 (와우산로21길 29) 10:00~22:00",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "s8",
@@ -439,17 +636,12 @@
       "country": "JP",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "ID_PASS",
+      "unpoAlbumKey": "ALB_1779038855533",
       "unpoSets": 1,
       "unpoBack": true,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": 3590,
-        "POCAALBUM": 1890,
-        "ID_PASS": 2420,
-        "INVENTORY": 3490
-      },
+      "customPrices": {},
       "purchaseStart": "2026-03-24T11:00",
       "purchaseEnd": "",
       "purchaseEndTxt": "특전 소진시까지",
@@ -464,27 +656,31 @@
       "defDeliveryDate": "",
       "url": "https://tower.jp/search/item/plave%20caligo%20pt%EF%BC%8E2",
       "videocall": false,
-      "memo": ""
+      "memo": "",
+      "unpoAlbumKeys": [
+        "ALB_1779038855533"
+      ],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "cs1774546219159",
       "categoryId": "cat_caligopt2",
-      "name": "[음총] 타워레코드 (1차)",
+      "name": "타워레코드",
       "distId": "dcs1774546040116",
       "country": "KR",
       "round": 1,
       "isMusicStreamTeam": true,
-      "unpoAlbumKey": "ID_PASS",
+      "unpoAlbumKey": "",
       "unpoSets": 1,
       "unpoBack": true,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": null,
-        "POCAALBUM": null,
-        "ID_PASS": 24410,
-        "INVENTORY": null
-      },
+      "customPrices": {},
       "purchaseStart": "2026-03-24T11:00",
       "purchaseEnd": "2026-03-29T23:59",
       "purchaseEndTxt": "",
@@ -499,7 +695,14 @@
       "url": "https://x.com/Plave_Album/status/2036341423856034026?s=20",
       "defDeliveryDate": "2026-05-01",
       "videocall": false,
-      "memo": "출고 일정 : 05월 초 ~ 05월 중 예상"
+      "memo": "출고 일정 : 05월 초 ~ 05월 중 예상",
+      "unpoAlbumKeys": [],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "s11",
@@ -509,7 +712,7 @@
       "country": "US",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "ID_PASS",
+      "unpoAlbumKey": "ALB_1779038855533",
       "unpoSets": 1,
       "unpoBack": true,
       "sharedWith": null,
@@ -529,7 +732,16 @@
       "defDeliveryDate": "",
       "url": "https://hello82.com/search?q=plave&options%5Bprefix%5D=last",
       "videocall": false,
-      "memo": "\"BITE\" ver"
+      "memo": "\"BITE\" ver",
+      "unpoAlbumKeys": [
+        "ALB_1779038855533"
+      ],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "s12",
@@ -539,7 +751,7 @@
       "country": "US",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "ID_PASS",
+      "unpoAlbumKey": "ALB_1779038855533",
       "unpoSets": 1,
       "unpoBack": true,
       "sharedWith": null,
@@ -559,7 +771,16 @@
       "defDeliveryDate": "",
       "url": "https://hello82.com/search?q=plave&options%5Bprefix%5D=last",
       "videocall": false,
-      "memo": "\"LOOKUP\" ver (Pop-up exclusive)"
+      "memo": "\"LOOKUP\" ver (Pop-up exclusive)",
+      "unpoAlbumKeys": [
+        "ALB_1779038855533"
+      ],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "s9",
@@ -569,17 +790,12 @@
       "country": "JP",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "ID_PASS",
+      "unpoAlbumKey": "ALB_1779038855533",
       "unpoSets": 1,
       "unpoBack": true,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": 4070,
-        "POCAALBUM": 1979,
-        "ID_PASS": 2420,
-        "INVENTORY": 3740
-      },
+      "customPrices": {},
       "purchaseStart": "2026-03-24T11:00",
       "purchaseEnd": "",
       "purchaseEndTxt": "특전 소진시까지",
@@ -594,27 +810,31 @@
       "defDeliveryDate": "",
       "url": "https://www.hmv.co.jp/en/news/article/260317125/",
       "videocall": false,
-      "memo": "인벤토리를 제외하고 세트판매하지않음"
+      "memo": "인벤토리를 제외하고 세트판매하지않음",
+      "unpoAlbumKeys": [
+        "ALB_1779038855533"
+      ],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "cs1774546033455",
       "categoryId": "cat_caligopt2",
-      "name": "HMV (1차)",
+      "name": "HMV",
       "distId": "dcs1774546040116",
       "country": "KR",
       "round": 1,
       "isMusicStreamTeam": true,
-      "unpoAlbumKey": "ID_PASS",
+      "unpoAlbumKey": "ALB_1779038855533",
       "unpoSets": 1,
       "unpoBack": true,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": null,
-        "POCAALBUM": null,
-        "ID_PASS": 24412,
-        "INVENTORY": null
-      },
+      "customPrices": {},
       "purchaseStart": "2026-03-24T02:28",
       "purchaseEnd": "2026-03-29T23:59",
       "purchaseEndTxt": "",
@@ -629,7 +849,16 @@
       "defDeliveryDate": "",
       "url": "https://x.com/Plave_Album/status/2036341423856034026?s=20",
       "videocall": false,
-      "memo": ""
+      "memo": "",
+      "unpoAlbumKeys": [
+        "ALB_1779038855533"
+      ],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "s13",
@@ -639,7 +868,7 @@
       "country": "CN",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "PHOTOBOOK",
+      "unpoAlbumKey": "ALB_1779038838207",
       "unpoSets": 2,
       "unpoBack": false,
       "sharedWith": null,
@@ -659,27 +888,31 @@
       "defDeliveryDate": "",
       "url": "https://i2.y.qq.com/n3/cm/pages/putao/product_detail/index.html?productID=1205354113456059",
       "videocall": false,
-      "memo": "(5种随机1种，购买5张凑套)\n→ 5종 중 랜덤 1종 / 5장 구매 시 한 세트 완성"
+      "memo": "(5种随机1种，购买5张凑套)\n→ 5종 중 랜덤 1종 / 5장 구매 시 한 세트 완성",
+      "unpoAlbumKeys": [
+        "ALB_1779038838207"
+      ],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "cs1774545021788",
       "categoryId": "cat_caligopt2",
-      "name": "[음총] TME",
+      "name": "TME",
       "distId": "dcs1774544809341",
       "country": "KR",
       "round": null,
       "isMusicStreamTeam": true,
-      "unpoAlbumKey": "PHOTOBOOK",
+      "unpoAlbumKey": "",
       "unpoSets": 2,
       "unpoBack": false,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": 22683.6,
-        "POCAALBUM": null,
-        "ID_PASS": null,
-        "INVENTORY": null
-      },
+      "customPrices": {},
       "purchaseStart": "2026-03-24T11:00",
       "purchaseEnd": "2026-03-27T08:00",
       "purchaseEndTxt": "특전 소진시까지",
@@ -694,7 +927,14 @@
       "defDeliveryDate": "",
       "url": "https://x.com/Plave_Album/status/2036611347409231996?s=20",
       "videocall": false,
-      "memo": "(5种随机1种，购买5张凑套)\n→ 5종 중 랜덤 1종 / 5장 구매 시 한 세트 완성"
+      "memo": "(5种随机1种，购买5张凑套)\n→ 5종 중 랜덤 1종 / 5장 구매 시 한 세트 완성",
+      "unpoAlbumKeys": [],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "s1",
@@ -704,7 +944,7 @@
       "country": "KR",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "PHOTOBOOK",
+      "unpoAlbumKey": "ALB_1779038838207",
       "unpoSets": 2,
       "unpoBack": false,
       "sharedWith": null,
@@ -724,7 +964,16 @@
       "defDeliveryDate": "",
       "url": "https://vlastshop.com/product/search.html?banner_action=&keyword=PLAVE+Caligo+Pt.2",
       "videocall": true,
-      "memo": ""
+      "memo": "",
+      "unpoAlbumKeys": [
+        "ALB_1779038838207"
+      ],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "s2",
@@ -734,7 +983,7 @@
       "country": "KR",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "POCAALBUM",
+      "unpoAlbumKey": "ALB_1779038847739",
       "unpoSets": 1,
       "unpoBack": false,
       "sharedWith": null,
@@ -754,7 +1003,16 @@
       "defDeliveryDate": "",
       "url": "https://shop.weverse.io/ko/shop/KRW/artists/167/categories/3719",
       "videocall": false,
-      "memo": ""
+      "memo": "",
+      "unpoAlbumKeys": [
+        "ALB_1779038847739"
+      ],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "s14",
@@ -764,7 +1022,7 @@
       "country": "TW",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "POCAALBUM",
+      "unpoAlbumKey": "ALB_1779038847739",
       "unpoSets": 1,
       "unpoBack": true,
       "sharedWith": null,
@@ -784,27 +1042,31 @@
       "defDeliveryDate": "",
       "url": "https://www.willmusic.com.tw/SalePage/Index/11651010",
       "videocall": false,
-      "memo": ""
+      "memo": "",
+      "unpoAlbumKeys": [
+        "ALB_1779038847739"
+      ],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "cs1774545187345",
       "categoryId": "cat_caligopt2",
-      "name": "[음총] Will Music",
+      "name": "Will Music",
       "distId": "dcs1774544809341",
       "country": "KR",
       "round": null,
       "isMusicStreamTeam": true,
-      "unpoAlbumKey": "POCAALBUM",
+      "unpoAlbumKey": "ALB_1779038847739",
       "unpoSets": 1,
       "unpoBack": true,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": null,
-        "POCAALBUM": 10506,
-        "ID_PASS": null,
-        "INVENTORY": null
-      },
+      "customPrices": {},
       "purchaseStart": "2026-03-24T11:00",
       "purchaseEnd": "2026-04-13T23:59",
       "purchaseEndTxt": "",
@@ -819,12 +1081,21 @@
       "defDeliveryDate": "",
       "url": "https://x.com/Plave_Album/status/2036611347409231996?s=20",
       "videocall": false,
-      "memo": ""
+      "memo": "",
+      "unpoAlbumKeys": [
+        "ALB_1779038847739"
+      ],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "cs1774545937612",
       "categoryId": "cat_caligopt2",
-      "name": "[음총] 디어마이뮤즈",
+      "name": "디어마이뮤즈",
       "distId": "dcs1774619306510",
       "country": "KR",
       "round": null,
@@ -834,12 +1105,7 @@
       "unpoBack": false,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": 16500,
-        "POCAALBUM": 6900,
-        "ID_PASS": 1200,
-        "INVENTORY": 14200
-      },
+      "customPrices": {},
       "purchaseStart": "2026-03-24T02:25",
       "purchaseEnd": "2026-04-14T19:00",
       "purchaseEndTxt": "",
@@ -854,12 +1120,19 @@
       "defDeliveryDate": "2026-04-15",
       "url": "https://x.com/Plave_Album/status/2036340525821993312?s=20",
       "videocall": false,
-      "memo": "할인/초동 반영100%/무특전/전광판 광고/7만 무배\n특전/혜택: 디마뮤 사옥 전광판 광고 (4/14 - 4/20)"
+      "memo": "할인/초동 반영100%/무특전/전광판 광고/7만 무배\n특전/혜택: 디마뮤 사옥 전광판 광고 (4/14 - 4/20)",
+      "unpoAlbumKeys": [],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "cs1774545824537",
       "categoryId": "cat_caligopt2",
-      "name": "[음총] 버프즈",
+      "name": "버프즈",
       "distId": "dcs1774619302089",
       "country": "KR",
       "round": null,
@@ -869,12 +1142,7 @@
       "unpoBack": false,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": 19000,
-        "POCAALBUM": 7790,
-        "ID_PASS": 14155,
-        "INVENTORY": 16245
-      },
+      "customPrices": {},
       "purchaseStart": "2026-03-24T02:23",
       "purchaseEnd": "2026-04-03T23:59",
       "purchaseEndTxt": "",
@@ -889,12 +1157,19 @@
       "defDeliveryDate": "2026-04-14",
       "url": "https://x.com/Plave_Album/status/2036291046146265331?s=20",
       "videocall": false,
-      "memo": "할인/초동 반영100%/무특전/가격 상관 없이 무조건 무료배송\n앨범 발매 당일 발송 보장\n*버프즈 신규 회원 혜택\n- 총 1만원 즉시 할인 (3만원 이상 구매 시 3천원 + 7만원 이상 구매 시 7천원)"
+      "memo": "할인/초동 반영100%/무특전/가격 상관 없이 무조건 무료배송\n앨범 발매 당일 발송 보장\n*버프즈 신규 회원 혜택\n- 총 1만원 즉시 할인 (3만원 이상 구매 시 3천원 + 7만원 이상 구매 시 7천원)",
+      "unpoAlbumKeys": [],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "cs1774545708995",
       "categoryId": "cat_caligopt2",
-      "name": "[음총] 비트로드",
+      "name": "비트로드",
       "distId": "dcs1774619310313",
       "country": "KR",
       "round": null,
@@ -904,12 +1179,7 @@
       "unpoBack": false,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": 16500,
-        "POCAALBUM": 6900,
-        "ID_PASS": 12400,
-        "INVENTORY": 14200
-      },
+      "customPrices": {},
       "purchaseStart": "2026-03-24T02:21",
       "purchaseEnd": "2026-04-12T23:59",
       "purchaseEndTxt": "",
@@ -924,12 +1194,19 @@
       "defDeliveryDate": "2026-04-14",
       "url": "https://x.com/Plave_Album/status/2036292541986001367?s=20",
       "videocall": false,
-      "memo": "앨범 발매 당일부터 순차 발송 예상\n3만원 이상 무료 배송\n현재 최저가"
+      "memo": "앨범 발매 당일부터 순차 발송 예상\n3만원 이상 무료 배송\n현재 최저가",
+      "unpoAlbumKeys": [],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "cs1774545544751",
       "categoryId": "cat_caligopt2",
-      "name": "[음총] 케타포",
+      "name": "케타포",
       "distId": "dcs1774619329527",
       "country": "KR",
       "round": null,
@@ -939,12 +1216,7 @@
       "unpoBack": false,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": 16700,
-        "POCAALBUM": 7000,
-        "ID_PASS": 12500,
-        "INVENTORY": 14300
-      },
+      "customPrices": {},
       "purchaseStart": "2026-03-24T02:18",
       "purchaseEnd": "2026-04-14T17:00",
       "purchaseEndTxt": "",
@@ -959,7 +1231,14 @@
       "defDeliveryDate": "2026-04-15",
       "url": "https://kr.ktown4u.com/eventinfo?eve_no=44113596&biz_no=967",
       "videocall": false,
-      "memo": "3만원 이상 구매 시 무료배송 (3만원 미만 3,000원)"
+      "memo": "3만원 이상 구매 시 무료배송 (3만원 미만 3,000원)",
+      "unpoAlbumKeys": [],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "cs1775249000001",
@@ -969,17 +1248,12 @@
       "country": "KR",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "INVENTORY",
+      "unpoAlbumKey": "ALB_1779038864675",
       "unpoSets": 1,
       "unpoBack": false,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": null,
-        "POCAALBUM": null,
-        "ID_PASS": null,
-        "INVENTORY": 17100
-      },
+      "customPrices": {},
       "purchaseStart": "2026-04-05T11:00",
       "purchaseEnd": "2026-04-07T23:59",
       "purchaseEndTxt": "특전 소진시까지",
@@ -994,27 +1268,31 @@
       "defDeliveryDate": "",
       "url": "https://www.soundwavemusic.co.kr",
       "videocall": true,
-      "memo": "Inventory 구매 시 미공포 5종 중 랜덤 1종 증정\n영상통화 이벤트 진행"
+      "memo": "Inventory 구매 시 미공포 5종 중 랜덤 1종 증정\n영상통화 이벤트 진행",
+      "unpoAlbumKeys": [
+        "ALB_1779038864675"
+      ],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "cs1774664589091",
       "categoryId": "cat_caligopt2",
-      "name": "뮤직플랜트 (영통)",
+      "name": "뮤직플랜트",
       "distId": "dcs1774663794920",
       "country": "KR",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "INVENTORY",
+      "unpoAlbumKey": "ALB_1779038864675",
       "unpoSets": 1,
       "unpoBack": false,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": null,
-        "POCAALBUM": null,
-        "ID_PASS": null,
-        "INVENTORY": 17100
-      },
+      "customPrices": {},
       "purchaseStart": "2026-03-28T11:00",
       "purchaseEnd": "2026-03-31T23:59",
       "purchaseEndTxt": "",
@@ -1029,7 +1307,16 @@
       "defDeliveryDate": "",
       "url": "https://www.musicplant.co.kr/board/?db=gallery_1&no=1320&mari_mode=view%40view&cate=17&page=1&search=&search_str=&temp=",
       "videocall": true,
-      "memo": "응모 기간 (~3/31) 내 뮤직플랜트 온라인몰에서 Inventory 상품 구매고객중 50명 추첨하여 사인포카 증정\n영통: 2026년 4월 26일 / 시간 추후 안내"
+      "memo": "응모 기간 (~3/31) 내 뮤직플랜트 온라인몰에서 Inventory 상품 구매고객중 50명 추첨하여 사인포카 증정\n영통: 2026년 4월 26일 / 시간 추후 안내",
+      "unpoAlbumKeys": [
+        "ALB_1779038864675"
+      ],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "cs1774700960047",
@@ -1064,22 +1351,17 @@
     {
       "id": "cs1774874734719",
       "categoryId": "cat_caligopt2",
-      "name": "[음총] 타워레코드 (2차)",
+      "name": "타워레코드",
       "distId": "dcs1774546040116",
       "country": "KR",
       "round": 2,
       "isMusicStreamTeam": true,
-      "unpoAlbumKey": "ID_PASS",
+      "unpoAlbumKey": "",
       "unpoSets": 1,
       "unpoBack": true,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": null,
-        "POCAALBUM": null,
-        "ID_PASS": 24410,
-        "INVENTORY": null
-      },
+      "customPrices": {},
       "purchaseStart": "2026-03-30T11:00",
       "purchaseEnd": "2026-04-07T18:00",
       "purchaseEndTxt": "",
@@ -1094,27 +1376,29 @@
       "defDeliveryDate": "2026-05-15",
       "url": "https://09platform.com/surl/P/1312",
       "videocall": false,
-      "memo": "★ 1차 공동구매와 묶음 배송 불가능합니다 ★\n출고 일정 : 1차 물량 모두 출고 후 / 05월 중 ~ 05월 말 예상"
+      "memo": "★ 1차 공동구매와 묶음 배송 불가능합니다 ★\n출고 일정 : 1차 물량 모두 출고 후 / 05월 중 ~ 05월 말 예상",
+      "unpoAlbumKeys": [],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "cs1774874856715",
       "categoryId": "cat_caligopt2",
-      "name": "[음총] HMV (2차)",
+      "name": "HMV",
       "distId": "dcs1774546040116",
       "country": "KR",
       "round": 2,
       "isMusicStreamTeam": true,
-      "unpoAlbumKey": "ID_PASS",
+      "unpoAlbumKey": "",
       "unpoSets": 1,
       "unpoBack": true,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": null,
-        "POCAALBUM": null,
-        "ID_PASS": 24410,
-        "INVENTORY": null
-      },
+      "customPrices": {},
       "purchaseStart": "2026-03-30T11:00",
       "purchaseEnd": "2026-04-07T18:00",
       "purchaseEndTxt": "",
@@ -1129,7 +1413,14 @@
       "defDeliveryDate": "2026-05-15",
       "url": "https://09platform.com/surl/P/1312",
       "videocall": false,
-      "memo": "★ 1차 공동구매와 묶음 배송 불가능합니다 ★\n출고 일정 : 1차 물량 모두 출고 후 / 05월 중 ~ 05월 말 예상"
+      "memo": "★ 1차 공동구매와 묶음 배송 불가능합니다 ★\n출고 일정 : 1차 물량 모두 출고 후 / 05월 중 ~ 05월 말 예상",
+      "unpoAlbumKeys": [],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "cs1775049657392",
@@ -1139,17 +1430,12 @@
       "country": "CN",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "PHOTOBOOK",
+      "unpoAlbumKey": "ALB_1779038838207",
       "unpoSets": 1,
       "unpoBack": false,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": 156,
-        "POCAALBUM": 46,
-        "ID_PASS": 78,
-        "INVENTORY": 88
-      },
+      "customPrices": {},
       "purchaseStart": "2026-04-01T11:00",
       "purchaseEnd": "2026-04-04T22:59",
       "purchaseEndTxt": "",
@@ -1164,27 +1450,31 @@
       "defDeliveryDate": "",
       "url": "https://www.withfans.com/#/idolDetail?idol_id=6869",
       "videocall": true,
-      "memo": "미공포가 포함되지 않은 포카앨범은 102위안\n영통 당첨자 발표: 4월 7일 18:00 (한국시간 19시)\n영통일정: 2026년 5월 9일 (정확한 시간 추후 공지)"
+      "memo": "미공포가 포함되지 않은 포카앨범은 102위안\n영통 당첨자 발표: 4월 7일 18:00 (한국시간 19시)\n영통일정: 2026년 5월 9일 (정확한 시간 추후 공지)",
+      "unpoAlbumKeys": [
+        "ALB_1779038838207"
+      ],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "cs1775565948835",
       "categoryId": "cat_caligopt2",
-      "name": "[음총] WEVERSE JP",
+      "name": "WEVERSE JP",
       "distId": "dcs1774546040116",
       "country": "KR",
       "round": null,
       "isMusicStreamTeam": true,
-      "unpoAlbumKey": "POCAALBUM",
+      "unpoAlbumKey": "",
       "unpoSets": 1,
       "unpoBack": false,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": null,
-        "POCAALBUM": 13720,
-        "ID_PASS": null,
-        "INVENTORY": null
-      },
+      "customPrices": {},
       "purchaseStart": "2026-04-07T11:00",
       "purchaseEnd": "2026-04-30T18:00",
       "purchaseEndTxt": "조기소진 시 마감",
@@ -1199,7 +1489,14 @@
       "defDeliveryDate": "2026-06-09",
       "url": "https://09platform.com/surl/P/1314",
       "videocall": false,
-      "memo": "초동반영불가\n출고일정: 6월 말 - 7월 초"
+      "memo": "초동반영불가\n출고일정: 6월 말 - 7월 초",
+      "unpoAlbumKeys": [],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "cs1775566240225",
@@ -1274,22 +1571,17 @@
     {
       "id": "cs1775737339629",
       "categoryId": "cat_caligopt2",
-      "name": "[음총] Universal JP",
+      "name": "Universal JP",
       "distId": "dcs1774546040116",
       "country": "KR",
       "round": null,
       "isMusicStreamTeam": true,
-      "unpoAlbumKey": "PHOTOBOOK",
+      "unpoAlbumKey": "",
       "unpoSets": 1,
       "unpoBack": false,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": 32740,
-        "POCAALBUM": null,
-        "ID_PASS": null,
-        "INVENTORY": null
-      },
+      "customPrices": {},
       "purchaseStart": "2026-04-07T11:00",
       "purchaseEnd": "2026-04-11T23:59",
       "purchaseEndTxt": "",
@@ -1304,7 +1596,14 @@
       "defDeliveryDate": "2026-06-15",
       "url": "https://09platform.com/product/%EA%B0%9C%EB%B3%84-%EC%98%81%ED%86%B5-%EC%9D%91%EB%AA%A8-%EB%B6%88%EA%B0%80-%EC%9D%BC%EB%B3%B8%EC%83%B5-%ED%8A%B9%EC%A0%84-%EC%9C%A0%EB%8B%88%EB%B2%84%EC%84%A4-%ED%94%8C%EB%A0%88%EC%9D%B4%EB%B8%8C-%EC%9D%8C%EC%9B%90%EC%B4%9D%EA%B3%B5%ED%8C%80-%ED%94%8C%EB%A0%88%EC%9D%B4%EB%B8%8C-plave-4th-mini-album-caligo-pt/1315/category/1/display/3/?icid=MAIN.product_listmain_2",
       "videocall": false,
-      "memo": ""
+      "memo": "",
+      "unpoAlbumKeys": [],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "cs1775737775955",
@@ -1349,17 +1648,12 @@
       "country": "KR",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "INVENTORY",
+      "unpoAlbumKey": "ALB_1779038864675",
       "unpoSets": 1,
       "unpoBack": false,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": null,
-        "POCAALBUM": null,
-        "ID_PASS": null,
-        "INVENTORY": 17100
-      },
+      "customPrices": {},
       "purchaseStart": "2026-04-13T11:00",
       "purchaseEnd": "2026-04-16T23:59",
       "purchaseEndTxt": "",
@@ -1374,7 +1668,16 @@
       "defDeliveryDate": "",
       "url": "https://withmuu.com/goods/event_sale.php?sno=1333",
       "videocall": true,
-      "memo": "영통응모 발표 4/17 2시"
+      "memo": "영통응모 발표 4/17 2시",
+      "unpoAlbumKeys": [
+        "ALB_1779038864675"
+      ],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "cs1776085185495",
@@ -1454,7 +1757,7 @@
       "country": "KR",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "INVENTORY",
+      "unpoAlbumKey": "ALB_1779038864675",
       "unpoSets": 1,
       "unpoBack": false,
       "sharedWith": null,
@@ -1474,10 +1777,57 @@
       "defDeliveryDate": "",
       "url": "https://buffz.co.kr/article/event/8/168196/",
       "videocall": true,
-      "memo": ""
+      "memo": "",
+      "unpoAlbumKeys": [
+        "ALB_1779038864675"
+      ],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     }
   ],
-  "unpoCards": [],
+  "unpoCards": [
+    {
+      "id": "u17790397044107mj3",
+      "storeId": "cs1774546479074",
+      "albumTypeId": "ALB_1779038847739",
+      "sets": [
+        {
+          "memo": "",
+          "cards": [
+            {
+              "owned": false,
+              "note": "예준",
+              "img": null
+            },
+            {
+              "owned": false,
+              "note": "노아",
+              "img": null
+            },
+            {
+              "owned": false,
+              "note": "밤비",
+              "img": null
+            },
+            {
+              "owned": false,
+              "note": "은호",
+              "img": null
+            },
+            {
+              "owned": false,
+              "note": "하민",
+              "img": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "purchases": [],
   "notices": [],
   "settings": {
@@ -1521,7 +1871,7 @@
       "repo": "myalbums",
       "branch": "main",
       "filePath": "db/data.json",
-      "sha": "671afab67fabc1ba8e3ef8db1f22c11c11d91953"
+      "sha": "a38a6bb55c1544dc4607ba858000c1e9979c676e"
     }
   }
 }
