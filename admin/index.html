@@ -132,7 +132,7 @@
     </select>
   </div>
   <div class="card"><table id="alb-table">
-    <thead><tr><th>분류</th><th>앨범명</th><th>영문명</th><th>짧은 이름</th><th>키</th><th>국내가격</th><th>순서</th><th></th></tr></thead>
+    <thead><tr><th>분류</th><th>앨범명</th><th>영문명</th><th>짧은 이름</th><th>국내가격</th><th>순서</th><th></th></tr></thead>
     <tbody id="alb-tbody"></tbody>
   </table></div>
 </div>
@@ -549,8 +549,23 @@ function buildUnpoAlbFilter() {
 // HELPERS
 // ═══════════════════════════════════════════
 function fKRW(n) { return n == null ? '—' : Math.round(n).toLocaleString() + '원'; }
-function fDate(dt) { if (!dt) return ''; try { return new Date(dt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' }); } catch(e) { return dt; } }
-function fDateFull(dt) { if (!dt) return ''; try { return new Date(dt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch(e) { return dt; } }
+function fDate(dt) {
+  if (!dt) return '';
+  try {
+    const d = new Date(dt);
+    const M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return M[d.getMonth()] + ' ' + String(d.getDate()).padStart(2,'0');
+  } catch(e) { return dt; }
+}
+function fDateFull(dt) {
+  if (!dt) return '';
+  try {
+    const d = new Date(dt);
+    const M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const hh = String(d.getHours()).padStart(2,'0'), mm = String(d.getMinutes()).padStart(2,'0');
+    return M[d.getMonth()] + ' ' + String(d.getDate()).padStart(2,'0') + ' ' + hh + ':' + mm;
+  } catch(e) { return dt; }
+}
 function catName(catId) { return (DB.categories || []).find(c => c.id === catId)?.name || '?'; }
 function distName(distId) { return (DB.distributors || []).find(d => d.id === distId)?.name || '—'; }
 function distNameFull(distId) {
@@ -697,22 +712,36 @@ function deleteCat(id) {
 // ═══════════════════════════════════════════
 // ALBUMS
 // ═══════════════════════════════════════════
+function moveAlb(id, dir) {
+  const catF = document.getElementById('alb-cat-filter')?.value || '';
+  const albs = (DB.albumTypes||[]).filter(a => !catF || a.categoryId === catF).sort((a,b) => a.sortOrder - b.sortOrder);
+  const idx = albs.findIndex(a => a.id === id);
+  const swapIdx = idx + dir;
+  if (swapIdx < 0 || swapIdx >= albs.length) return;
+  const tmp = albs[idx].sortOrder;
+  dbUpdateItem('albumTypes', albs[idx].id, { sortOrder: albs[swapIdx].sortOrder });
+  dbUpdateItem('albumTypes', albs[swapIdx].id, { sortOrder: tmp });
+  reloadDB(); renderAlbums();
+}
+
 function renderAlbums() {
   const catF = document.getElementById('alb-cat-filter')?.value || '';
   const albs = (DB.albumTypes || []).filter(a => !catF || a.categoryId === catF).sort((a,b) => a.sortOrder - b.sortOrder);
-  document.getElementById('alb-tbody').innerHTML = albs.map(a => `<tr>
+  document.getElementById('alb-tbody').innerHTML = albs.map((a, idx) => `<tr>
     <td>${catName(a.categoryId)}</td>
     <td><span class="fw-600">${a.name}</span></td>
     <td class="text-xs text-muted">${a.nameEn || '—'}</td>
     <td class="text-xs text-muted">${a.shortName || '—'}</td>
-    <td><code>${a.key}</code></td>
     <td>${a.countryPrices?.KR ? fKRW(a.countryPrices.KR) : '—'}</td>
-    <td>${a.sortOrder || 0}</td>
+    <td class="flex gap-4" style="white-space:nowrap">
+      <button class="btn btn-ghost btn-xs" onclick="moveAlb('${a.id}',-1)" ${idx===0?'disabled':''}>▲</button>
+      <button class="btn btn-ghost btn-xs" onclick="moveAlb('${a.id}',1)" ${idx===albs.length-1?'disabled':''}>▼</button>
+    </td>
     <td class="flex gap-4">
       <button class="btn btn-ghost btn-xs" onclick="openAlbModal('${a.id}')">편집</button>
       <button class="btn btn-err btn-xs" onclick="deleteAlb('${a.id}')">삭제</button>
     </td>
-  </tr>`).join('') || '<tr><td colspan="8" class="empty">앨범 없음</td></tr>';
+  </tr>`).join('') || '<tr><td colspan="7" class="empty">앨범 없음</td></tr>';
 }
 
 function openAlbModal(id) {
@@ -731,7 +760,7 @@ function openAlbModal(id) {
     </div>
     <div class="form-row cols-2">
       <div><label>앨범명 *</label><input type="text" id="ma-name" value="${a?.name || ''}" placeholder="포토북" oninput="autoFillAlbKey()"></div>
-      <div><label>키 (영문) <span style="font-size:10px;color:var(--tx3)">비워두면 자동 생성</span></label><input type="text" id="ma-key" value="${a?.key || ''}" placeholder="자동생성"></div>
+      <div style="display:none"><input type="text" id="ma-key" value="${a?.key || ''}"></div>
     </div>
     <div class="form-row cols-2">
       <div><label>영문명</label><input type="text" id="ma-name-en" value="${a?.nameEn || ''}" placeholder="PLAVE Photo Book"></div>
@@ -1053,7 +1082,10 @@ function renderOfflineEventsList() {
       </div>
       <div class="form-row cols-2">
         <div><label>메모</label><input type="text" id="oe-note-${idx}" value="${ev.note||''}" onchange="saveOfflineEventField(${idx})"></div>
-        <div><label style="margin-top:8px"><input type="checkbox" id="oe-lucky-${idx}" ${ev.luckyDraw?'checked':''} onchange="saveOfflineEventField(${idx})"> 🎰 럭키드로우</label></div>
+        <div><label>이벤트 공지 링크</label><input type="url" id="oe-url-${idx}" value="${ev.url||''}" placeholder="https://..." onchange="saveOfflineEventField(${idx})"></div>
+      </div>
+      <div style="margin-top:4px">
+        <label style="font-size:11px"><input type="checkbox" id="oe-lucky-${idx}" ${ev.luckyDraw?'checked':''} onchange="saveOfflineEventField(${idx})"> 🎰 럭키드로우</label>
       </div>
     </div>
   `).join('') || '<div class="text-muted text-sm" style="padding:8px">오프라인 이벤트 없음</div>';
@@ -1083,6 +1115,7 @@ function saveOfflineEventField(idx) {
   ev.addressName = document.getElementById('oe-aname-'+idx)?.value || '';
   ev.addressDetail = document.getElementById('oe-adetail-'+idx)?.value || '';
   ev.note = document.getElementById('oe-note-'+idx)?.value || '';
+  ev.url = document.getElementById('oe-url-'+idx)?.value || '';
   ev.luckyDraw = document.getElementById('oe-lucky-'+idx)?.checked || false;
   ev.hoursMap = {};
   for (let di = 0; di < DAYS_N; di++) {

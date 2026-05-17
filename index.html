@@ -255,21 +255,21 @@
     <select id="store-alb-filter" onchange="render()">
       <option value="">전체 앨범</option>
     </select>
-    <label class="form-check" style="white-space:nowrap">
+    <label class="filter-chip">
       <input type="checkbox" id="store-show-ended" onchange="render()">
-      <span style="font-size:12px">마감 포함</span>
+      <span>마감 포함</span>
     </label>
-    <label class="form-check" style="white-space:nowrap">
+    <label class="filter-chip">
       <input type="checkbox" id="store-music-only" onchange="render()">
-      <span style="font-size:12px">음총만</span>
+      <span>🎵 음총</span>
     </label>
-    <label class="form-check" style="white-space:nowrap">
+    <label class="filter-chip">
       <input type="checkbox" id="store-unpo-only" onchange="render()">
-      <span style="font-size:12px">미공포</span>
+      <span>미공포</span>
     </label>
-    <label class="form-check" style="white-space:nowrap">
+    <label class="filter-chip">
       <input type="checkbox" id="store-vc-only" onchange="render()">
-      <span style="font-size:12px">영통</span>
+      <span>📞 영통</span>
     </label>
     <select id="store-country-filter2" onchange="render()" style="display:none"></select>
   </div>
@@ -768,16 +768,20 @@ function fDate(dt, time = false) {
   if (!dt) return '';
   try {
     const d = new Date(dt);
-    const opts = time
-      ? { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }
-      : { month: '2-digit', day: '2-digit' };
-    return d.toLocaleDateString('ko-KR', opts);
-  } catch (e) { return dt; }
+    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const mon = MONTHS[d.getMonth()];
+    const day = String(d.getDate()).padStart(2, '0');
+    if (!time) return `${mon} ${day}`;
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
+    return `${mon} ${day} ${hh}:${mm}`;
+  } catch(e) { return dt; }
 }
 function fDateShort(dt) {
   if (!dt) return '';
   const d = new Date(dt);
-  return (d.getMonth() + 1) + '/' + d.getDate();
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return MONTHS[d.getMonth()] + ' ' + d.getDate();
 }
 function isExpired(store) {
   if (!store.purchaseEnd) return false;
@@ -1000,7 +1004,7 @@ function renderDash() {
       albCounts[it.albKey] = (albCounts[it.albKey]||0) + (it.qty||0);
       albProxy[it.albKey] = (albProxy[it.albKey]||0) + (it.proxyQty||0);
     }));
-    albGrid.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:8px;padding:4px 0">
+    albGrid.innerHTML = `<div style="display:grid;grid-template-columns:repeat(${Math.min(albums.length, 5)},1fr);gap:6px;padding:4px 0">
       ${albums.map(a => {
         const total = albCounts[a.key]||0, proxy = albProxy[a.key]||0;
         return `<div class="alb-count-card${total?'':' empty'}"${total?` onclick="showAlbumDetail('${a.key}')" style="cursor:pointer"`:''}">
@@ -1165,7 +1169,7 @@ function renderDash() {
               ${s.isMusicStreamTeam ? '<span class="music-tag" style="flex-shrink:0">🎵</span>' : ''}
               ${s.videocall ? '<span style="font-size:13px;flex-shrink:0" title="영통">📞</span>' : ''}
               ${s.hanteoChart ? '<span style="font-size:11px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px;flex-shrink:0">한터</span>' : ''}
-              ${unpoKeys.map(k=>`<span class="badge badge-pk" style="font-size:10px;flex-shrink:0">${k}</span>`).join('')}
+              ${unpoKeys.map(k=>{const alb=(DB.albumTypes||[]).find(a=>a.key===k);return `<span class="badge badge-pk" style="font-size:10px;flex-shrink:0">${alb?.shortName||alb?.name||k}</span>`;}).join('')}
             </div>
             <div class="text-sm fw-600" style="color:${expired ? 'var(--err)' : 'var(--tx2)'};flex-shrink:0">${deadline}</div>
           </div>`;
@@ -1346,17 +1350,23 @@ function openStorePopup(storeId) {
     ${deadline ? `<div style="font-size:13px;font-weight:700;color:${deadlineColor}">${deadline}</div>` : ''}
   </div>`;
 
-  // Offline info
-  const offlineAddr = store.offlineAddressDetail || store.offlineAddress || '';
-  const offlineHtml = (store.offlineStart || store.offlineAddressName) ? `
-    <div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px;margin-bottom:10px">
-      <div class="fw-600 text-sm" style="margin-bottom:6px">🏪 오프라인 정보</div>
-      ${store.offlineStart ? `<div style="font-size:12px;margin-bottom:3px">${fDate(store.offlineStart)}${store.offlineEnd ? ' ~ ' + fDate(store.offlineEnd) : ''}</div>` : ''}
-      ${store.offlineHours ? `<div style="font-size:12px;color:var(--tx2);margin-bottom:3px">⏰ ${store.offlineHours}</div>` : ''}
-      ${store.offlineAddressName ? `<div style="font-size:12px;margin-bottom:3px">${store.offlineAddressName}</div>` : ''}
-      ${offlineAddr ? `<div style="font-size:12px"><a href="https://map.naver.com/v5/search/${encodeURIComponent(offlineAddr)}" target="_blank" style="color:var(--pk)">${offlineAddr} 🗺</a></div>` : ''}
-      ${store.offlineNote ? `<div style="font-size:11px;color:var(--tx3);margin-top:4px">${store.offlineNote}</div>` : ''}
-    </div>` : '';
+  // Offline info — support multiple events
+  const offlineEvts = store.offlineEvents?.length ? store.offlineEvents
+    : store.offlineStart ? [{ start: store.offlineStart, end: store.offlineEnd, addressName: store.offlineAddressName||'', addressDetail: store.offlineAddressDetail||store.offlineAddress||'', note: store.offlineNote||'', url: '', luckyDraw: store.offlineLuckyDraw||false, hoursMap: store.offlineHoursMap||{} }]
+    : [];
+  const DAYS_KR = ['월','화','수','목','금','토','일'];
+  const offlineHtml = offlineEvts.length ? `
+    <div class="section-divider">🏪 오프라인 정보</div>
+    ${offlineEvts.map(ev => {
+      const hrs = Object.entries(ev.hoursMap||{}).filter(([,v])=>v).map(([di,v])=>`${DAYS_KR[di]} ${v}`).join(' / ');
+      return `<div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:600">${ev.start?fDate(ev.start):''}${ev.end&&ev.end!==ev.start?' ~ '+fDate(ev.end):''}${ev.luckyDraw?' 🎰':''}</div>
+        ${ev.addressName?`<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 ${ev.addressName}${ev.addressDetail?' · '+ev.addressDetail:''}</div>`:ev.addressDetail?`<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 <a href="https://map.naver.com/v5/search/${encodeURIComponent(ev.addressDetail)}" target="_blank" style="color:var(--pk)">${ev.addressDetail} 🗺</a></div>`:''}
+        ${hrs?`<div style="font-size:11px;color:var(--tx3);margin-top:3px">${hrs}</div>`:''}
+        ${ev.note?`<div style="font-size:12px;color:var(--tx2);margin-top:4px;white-space:pre-wrap">${ev.note}</div>`:''}
+        ${ev.url?`<a href="${ev.url}" target="_blank" class="btn btn-ghost btn-xs" style="margin-top:6px;display:inline-flex">🔗 이벤트 공지</a>`:''}
+      </div>`;
+    }).join('')}` : '';
 
   // Price rows
   const hasUnpo = unpoKeys.length > 0;
@@ -1382,7 +1392,7 @@ function openStorePopup(storeId) {
       </div>
     </div>` : '';
 
-  document.getElementById('modal-detail-title').textContent = store.name;
+  document.getElementById('modal-detail-title').textContent = store.name + (country ? ` ${country.flag}` : '');
   document.getElementById('modal-detail-body').innerHTML = `
     ${topBadges ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${topBadges}</div>` : ''}
     ${periodHtml}
@@ -1962,20 +1972,24 @@ function addProxyEntryNew(albKey, name, qty, paid, delivered, type) {
   if (!container) return;
   const div = document.createElement('div');
   div.id = 'proxy-new-' + idx;
-  div.style.cssText = 'display:flex;gap:6px;align-items:center;margin-bottom:6px;padding:6px;background:var(--sur);border-radius:4px;flex-wrap:wrap';
+  div.style.cssText = 'margin-bottom:6px;padding:6px;background:var(--sur);border-radius:4px';
   div.innerHTML = `
-    <select id="pn-alb-${idx}" style="flex:1;min-width:80px;font-size:12px" onchange="updateProxyTotals()">
-      ${albums.map(a => `<option value="${a.key}" ${(albKey===a.key)?'selected':''}>${a.name}</option>`).join('')}
-    </select>
-    <input id="pn-name-${idx}" type="text" placeholder="이름" style="width:70px;font-size:12px" value="${name||''}">
-    <input id="pn-qty-${idx}" type="number" min="0" style="width:50px;font-size:12px" placeholder="수량" value="${qty||''}" oninput="updateProxyTotals()">
-    <select id="pn-type-${idx}" style="width:70px;font-size:11px">
-      <option value="receive" ${(type!=='give')?'selected':''}>받는것</option>
-      <option value="give" ${(type==='give')?'selected':''}>해주는것</option>
-    </select>
-    <label style="font-size:11px;white-space:nowrap"><input type="checkbox" id="pn-paid-${idx}" ${paid?'checked':''}> 입금</label>
-    <label style="font-size:11px;white-space:nowrap"><input type="checkbox" id="pn-deliv-${idx}" ${delivered?'checked':''}> 배송</label>
-    <button type="button" class="btn btn-err btn-xs" onclick="removeProxyEntryNew(${idx})">✕</button>
+    <div style="display:flex;gap:6px;align-items:center">
+      <select id="pn-alb-${idx}" style="flex:2;min-width:80px;font-size:12px" onchange="updateProxyTotals()">
+        ${albums.map(a => `<option value="${a.key}" ${(albKey===a.key)?'selected':''}>${a.name}</option>`).join('')}
+      </select>
+      <input id="pn-name-${idx}" type="text" placeholder="이름" style="flex:1;min-width:55px;font-size:12px" value="${name||''}">
+      <input id="pn-qty-${idx}" type="number" min="0" style="width:48px;font-size:12px" placeholder="수량" value="${qty||''}" oninput="updateProxyTotals()">
+      <button type="button" class="btn btn-err btn-xs" onclick="removeProxyEntryNew(${idx})">✕</button>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:4px;padding-left:2px">
+      <select id="pn-type-${idx}" style="font-size:11px;width:75px">
+        <option value="receive" ${(type!=='give')?'selected':''}>받는것</option>
+        <option value="give" ${(type==='give')?'selected':''}>해주는것</option>
+      </select>
+      <label style="font-size:11px;white-space:nowrap"><input type="checkbox" id="pn-paid-${idx}" ${paid?'checked':''}> 입금</label>
+      <label style="font-size:11px;white-space:nowrap"><input type="checkbox" id="pn-deliv-${idx}" ${delivered?'checked':''}> 배송</label>
+    </div>
   `;
   container.appendChild(div);
 }
@@ -2335,16 +2349,17 @@ function renderStoreCard(s, isCheapest = false) {
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
           <span class="fw-600">${s.name}</span>
+          ${country ? `<span style="font-size:11px;color:var(--tx3)">${country.flag} ${country.lb}</span>` : ''}
           ${expired ? '<span class="badge badge-gray" style="font-size:10px">마감</span>' : ''}
           ${isCheapest ? '<span class="badge badge-ok" style="font-size:10px">최저가</span>' : ''}
         </div>
-        <div class="text-sm text-muted">${dist ? dist + ' · ' : ''}${country?.flag || ''} ${country?.lb || s.country}</div>
+        <div class="text-sm text-muted">${dist || ''}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
         ${s.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : ''}
         ${s.hanteoChart ? '<span style="font-size:10px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">한터</span>' : ''}
         ${s.round ? `<span class="badge badge-info">${s.round}차</span>` : ''}
-        ${unpoKeys.map(k=>`<span class="badge badge-pk" style="font-size:10px">${k} 미공포</span>`).join('')}
+        ${unpoKeys.map(k=>{const alb=(DB.albumTypes||[]).find(a=>a.key===k);return `<span class="badge badge-pk" style="font-size:10px">${alb?.shortName||alb?.name||k} 미공포</span>`;}).join('')}
         ${s.videocall ? '<span title="영통" style="font-size:14px">📞</span>' : ''}
         ${s.offlineLuckyDraw ? '<span title="럭키드로우" style="font-size:14px">🎰</span>' : ''}
       </div>
@@ -2356,7 +2371,9 @@ function renderStoreCard(s, isCheapest = false) {
       <span style="color:var(--tx3)">${s.purchaseStart ? fDate(s.purchaseStart, true) + ' ~ ' + (s.purchaseEnd ? fDate(s.purchaseEnd, true) : (s.purchaseEndTxt || '미정')) : ''}</span>
       <span style="font-weight:700;color:${expired?'var(--tx3)':isUrgent?'var(--err)':'var(--ok)'}">${deadline}</span>
     </div>
-    ${s.offlineStart ? `<div style="font-size:11px;color:var(--warn);margin-top:3px">🏪 오프라인: ${fDate(s.offlineStart)} ~ ${fDate(s.offlineEnd)}</div>` : ''}
+    ${(s.offlineEvents?.length ? s.offlineEvents : s.offlineStart ? [{ start: s.offlineStart, end: s.offlineEnd }] : []).map(ev =>
+      `<div style="font-size:11px;color:var(--warn);margin-top:3px">🏪 ${ev.start ? fDate(ev.start) : ''}${ev.end && ev.end !== ev.start ? ' ~ ' + fDate(ev.end) : ''}</div>`
+    ).join('')}
   </div>`;
 }
 
@@ -2389,15 +2406,35 @@ function showStoreDetail(storeId) {
     </tbody>
   </table>`;
 
-  document.getElementById('modal-store-title').textContent = s.name;
+  document.getElementById('modal-store-title').textContent = s.name + (country ? ` ${country.flag}` : '');
+  const offlineEvents = s.offlineEvents?.length ? s.offlineEvents
+    : s.offlineStart ? [{ start: s.offlineStart, end: s.offlineEnd, addressName: s.offlineAddressName||'', addressDetail: s.offlineAddressDetail||s.offlineAddress||'', note: s.offlineNote||'', url: '', luckyDraw: s.offlineLuckyDraw||false, hoursMap: s.offlineHoursMap||{} }]
+    : [];
+  const offlineHtml = offlineEvents.length ? `
+    <div class="section-divider">오프라인 행사</div>
+    ${offlineEvents.map(ev => `
+      <div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:600">${ev.start ? fDate(ev.start) : ''}${ev.end && ev.end !== ev.start ? ' ~ ' + fDate(ev.end) : ''}
+          ${ev.luckyDraw ? ' 🎰' : ''}
+        </div>
+        ${ev.addressName ? `<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 ${ev.addressName}${ev.addressDetail ? ' · ' + ev.addressDetail : ''}</div>` : ev.addressDetail ? `<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 ${ev.addressDetail}</div>` : ''}
+        ${(() => {
+          const DAYS = ['월','화','수','목','금','토','일'];
+          const hrs = Object.entries(ev.hoursMap||{}).filter(([,v])=>v).map(([di,v])=>`${DAYS[di]} ${v}`).join(' / ');
+          return hrs ? `<div style="font-size:11px;color:var(--tx3);margin-top:3px">${hrs}</div>` : '';
+        })()}
+        ${ev.note ? `<div style="font-size:12px;color:var(--tx2);margin-top:4px;white-space:pre-wrap">${ev.note}</div>` : ''}
+        ${ev.url ? `<a href="${ev.url}" target="_blank" class="btn btn-ghost btn-xs" style="margin-top:6px;display:inline-flex">🔗 이벤트 공지</a>` : ''}
+      </div>
+    `).join('')}` : '';
   document.getElementById('modal-store-body').innerHTML = `
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
       ${s.isMusicStreamTeam ? '<span class="badge badge-music">🎵 음원총공팀 연계</span>' : ''}
       ${s.round ? `<span class="badge badge-info">${s.round}차</span>` : ''}
-      <span class="badge badge-gray">${country?.flag || ''} ${country?.lb || s.country}</span>
+      ${country ? `<span class="badge badge-gray">${country.flag} ${country.lb}</span>` : ''}
       ${dist ? `<span class="badge badge-gray">${dist}</span>` : ''}
       ${s.videocall ? '<span class="badge badge-pk">📞 영통</span>' : ''}
-      ${getStoreUnpoKeys(s).map(k=>`<span class="badge badge-pk">미공포: ${k}</span>`).join('')}
+      ${getStoreUnpoKeys(s).map(k=>{const alb=(DB.albumTypes||[]).find(a=>a.key===k);return `<span class="badge badge-pk">미공포 (Pre-Order Benefits): ${alb?.shortName||alb?.name||k}</span>`;}).join('')}
     </div>
 
     <div class="section-divider">가격표</div>
@@ -2407,19 +2444,10 @@ function showStoreDetail(storeId) {
     <div class="store-detail-grid">
       <div class="store-detail-row"><div class="store-detail-label">구매 시작</div><div class="store-detail-val">${s.purchaseStart ? fDate(s.purchaseStart, true) : '—'}</div></div>
       <div class="store-detail-row"><div class="store-detail-label">구매 종료</div><div class="store-detail-val">${s.purchaseEnd ? fDate(s.purchaseEnd, true) : (s.purchaseEndTxt || '미정')}</div></div>
-      <div class="store-detail-row"><div class="store-detail-label">국내배송비</div><div class="store-detail-val">${s.defDomShip > 0 ? fKRW(s.defDomShip) : '무료'}</div></div>
       <div class="store-detail-row"><div class="store-detail-label">배송예정일</div><div class="store-detail-val">${s.defDeliveryDate ? fDate(s.defDeliveryDate) : '미정'}</div></div>
     </div>
 
-    ${s.offlineStart ? `
-      <div class="section-divider">오프라인 행사</div>
-      <div class="store-detail-grid">
-        <div class="store-detail-row"><div class="store-detail-label">오프라인 기간</div><div class="store-detail-val">${fDate(s.offlineStart)} ~ ${fDate(s.offlineEnd)}</div></div>
-        <div class="store-detail-row"><div class="store-detail-label">운영시간</div><div class="store-detail-val">${s.offlineHours || '—'}</div></div>
-      </div>
-      ${s.offlineAddress ? `<div style="font-size:12px;color:var(--tx2);margin-top:6px">📍 ${s.offlineAddress}</div>` : ''}
-      ${s.offlineNote ? `<div style="font-size:12px;color:var(--tx2);margin-top:6px;white-space:pre-wrap">${s.offlineNote}</div>` : ''}
-    ` : ''}
+    ${offlineHtml}
 
     ${s.memo ? `
       <div class="section-divider">메모</div>
@@ -2686,26 +2714,28 @@ function renderCal() {
       grouped[ev.type].push({ date, label: ev.label });
     });
   });
-  const hasGroupedEvents = TYPE_ORDER.some(t => grouped[t]);
-  if (hasGroupedEvents) {
-    const listEl = document.getElementById('cal-event-list') || (() => {
-      const d = document.createElement('div');
-      d.id = 'cal-event-list';
-      document.getElementById('cal-calendar-view')?.appendChild(d);
-      return d;
-    })();
-    listEl.innerHTML = `<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--bd)">
-      ${TYPE_ORDER.filter(t => grouped[t]).map(t => {
-        const sorted = [...grouped[t]].sort((a,b) => a.date.localeCompare(b.date));
-        return `<div style="margin-bottom:10px">
-          <div class="fw-600 text-sm" style="margin-bottom:4px">${TYPE_LABELS[t]}</div>
-          ${sorted.map(e => `<div style="font-size:12px;color:var(--tx2);padding:1px 0">${e.date} <span class="text-muted">·</span> ${e.label.replace(/^[^\s]+\s/, '')}</div>`).join('')}
-        </div>`;
-      }).join('')}
+  // Show events for selected day only, grouped by category
+  const listEl = document.getElementById('cal-event-list') || (() => {
+    const d = document.createElement('div');
+    d.id = 'cal-event-list';
+    document.getElementById('cal-calendar-view')?.appendChild(d);
+    return d;
+  })();
+  if (S.calDay && events[S.calDay]) {
+    const dayEvs = events[S.calDay];
+    const dayGrouped = {};
+    dayEvs.forEach(ev => { if (!dayGrouped[ev.type]) dayGrouped[ev.type] = []; dayGrouped[ev.type].push(ev); });
+    listEl.innerHTML = `<div style="margin-top:12px;padding:10px;background:var(--sur2);border-radius:var(--r-sm)">
+      <div class="fw-600 text-sm" style="margin-bottom:8px">${S.calDay} 일정</div>
+      ${TYPE_ORDER.filter(t => dayGrouped[t]).map(t =>
+        `<div style="margin-bottom:6px">
+          <span style="font-size:11px;font-weight:600;color:var(--tx2)">${TYPE_LABELS[t]}</span>
+          ${dayGrouped[t].map(e => `<div style="font-size:12px;color:var(--tx2);padding:1px 0 1px 8px">${e.label.replace(/^[^\s]+\s/, '')}</div>`).join('')}
+        </div>`
+      ).join('')}
     </div>`;
   } else {
-    const listEl = document.getElementById('cal-event-list');
-    if (listEl) listEl.innerHTML = '';
+    listEl.innerHTML = '<div style="margin-top:8px;font-size:12px;color:var(--tx3);text-align:center">날짜를 클릭하면 해당일 일정이 표시됩니다</div>';
   }
 
   // Day detail
