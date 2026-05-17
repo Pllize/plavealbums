@@ -1650,9 +1650,15 @@ function saveGithubSettings() {
 }
 
 async function pullFromGithub() {
+  // Auto-save form fields if on github page
+  const token2 = document.getElementById('gh-token2')?.value.trim();
+  const repo2  = document.getElementById('gh-repo2')?.value.trim();
+  if (token2 && repo2) saveGithubSettings2();
+
   const gh = DB.settings?.github || {};
   if (!gh.token || !gh.owner || !gh.repo) { toast('GitHub 설정을 먼저 저장하세요', 'warn'); return; }
-  document.getElementById('gh-status').textContent = '불러오는 중...';
+  const setStatus = t => { const el = document.getElementById('gh-status') || document.getElementById('gh-sync-status'); if (el) el.textContent = t; };
+  setStatus('불러오는 중...');
   const url = `https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${gh.filePath}?ref=${gh.branch || 'main'}`;
   try {
     const r = await fetch(url, { headers: { Authorization: `token ${gh.token}`, Accept: 'application/vnd.github.v3+json' } });
@@ -1663,18 +1669,24 @@ async function pullFromGithub() {
     dbUpdateSettings({ github: { ...gh, sha: d.sha } });
     dbImportJSON(JSON.stringify(parsed));
     reloadDB(); buildCatFilters(); renderPage();
-    document.getElementById('gh-status').textContent = '불러오기 완료 ✓ (' + new Date().toLocaleTimeString('ko-KR') + ')';
+    setStatus('불러오기 완료 ✓ (' + new Date().toLocaleTimeString('ko-KR') + ')');
     toast('GitHub에서 불러오기 완료');
   } catch(e) {
-    document.getElementById('gh-status').textContent = '실패: ' + e.message;
+    setStatus('실패: ' + e.message);
     toast('불러오기 실패: ' + e.message, 'err');
   }
 }
 
 async function pushToGithub() {
+  // Auto-save form fields if on github page
+  const token2 = document.getElementById('gh-token2')?.value.trim();
+  const repo2  = document.getElementById('gh-repo2')?.value.trim();
+  if (token2 && repo2) saveGithubSettings2();
+
   const gh = DB.settings?.github || {};
   if (!gh.token || !gh.owner || !gh.repo) { toast('GitHub 설정을 먼저 저장하세요', 'warn'); return; }
-  document.getElementById('gh-status').textContent = '저장 중...';
+  const setStatus = t => { const el = document.getElementById('gh-status') || document.getElementById('gh-sync-status'); if (el) el.textContent = t; };
+  setStatus('저장 중...');
   const json = dbExportJSON();
   const content = btoa(unescape(encodeURIComponent(json)));
   const url = `https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${gh.filePath}`;
@@ -1684,20 +1696,27 @@ async function pushToGithub() {
     branch: gh.branch || 'main',
   };
   if (gh.sha) body.sha = gh.sha;
+  const headers = { Authorization: `token ${gh.token}`, 'Content-Type': 'application/json', Accept: 'application/vnd.github.v3+json' };
   try {
-    const r = await fetch(url, {
-      method: 'PUT',
-      headers: { Authorization: `token ${gh.token}`, 'Content-Type': 'application/json', Accept: 'application/vnd.github.v3+json' },
-      body: JSON.stringify(body),
-    });
-    if (!r.ok) throw new Error((await r.text()).slice(0, 200));
+    let r = await fetch(url, { method: 'PUT', headers, body: JSON.stringify(body) });
+    // If 422: file exists but we don't have the SHA — fetch it first then retry
+    if (r.status === 422 || r.status === 409) {
+      setStatus('파일 SHA 조회 중...');
+      const getR = await fetch(url + '?ref=' + (gh.branch || 'main'), { headers });
+      if (getR.ok) {
+        const existing = await getR.json();
+        body.sha = existing.sha;
+        r = await fetch(url, { method: 'PUT', headers, body: JSON.stringify(body) });
+      }
+    }
+    if (!r.ok) throw new Error((await r.text()).slice(0, 300));
     const d = await r.json();
     dbUpdateSettings({ github: { ...gh, sha: d.content.sha } });
     reloadDB();
-    document.getElementById('gh-status').textContent = '저장 완료 ✓ (' + new Date().toLocaleTimeString('ko-KR') + ')';
+    setStatus('저장 완료 ✓ (' + new Date().toLocaleTimeString('ko-KR') + ')');
     toast('GitHub에 저장 완료 ✓');
   } catch(e) {
-    document.getElementById('gh-status').textContent = '실패: ' + e.message;
+    setStatus('실패: ' + e.message);
     toast('저장 실패: ' + e.message, 'err');
   }
 }
