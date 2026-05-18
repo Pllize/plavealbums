@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>앨범 구매관리</title>
+<link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="css/app.css">
 <style>
 /* ── inline overrides ── */
@@ -554,12 +555,13 @@ async function autoSyncFromGithub() {
     const d = await r.json();
     const json = atob(d.content.replace(/\n/g, ''));
     const savedToken = gh.token || '';
+    const savedAdminPw = DB.settings?.adminPw || '';
     const savedPurchases = JSON.parse(JSON.stringify(DB.purchases || []));
     const savedUnpoCards = JSON.parse(JSON.stringify(DB.unpoCards || []));
     dbImportJSON(json);
     reloadDB();
     dbUpdate(s => ({ ...s, purchases: savedPurchases, unpoCards: savedUnpoCards }));
-    dbUpdateSettings({ github: { ...(DB.settings?.github || {}), token: savedToken, sha: d.sha } });
+    dbUpdateSettings({ adminPw: savedAdminPw, github: { ...(DB.settings?.github || {}), token: savedToken, sha: d.sha } });
     reloadDB(); buildCatBar(); buildFilters(); render();
   } catch(e) { /* silent fail on auto-sync */ }
 }
@@ -678,6 +680,7 @@ async function pullFromGithubIdx() {
   const gh = DB.settings?.github;
   if (!gh?.token || !gh?.owner || !gh?.repo) { toast('Admin에서 GitHub 설정을 먼저 저장하세요', 'warn'); return; }
   const savedToken = gh.token || '';
+  const savedAdminPw = DB.settings?.adminPw || '';
   const savedPurchases = JSON.parse(JSON.stringify(DB.purchases || []));
   const savedUnpoCards = JSON.parse(JSON.stringify(DB.unpoCards || []));
   const [owner, repo] = gh.owner.includes('/') ? gh.owner.split('/') : [gh.owner, gh.repo];
@@ -692,7 +695,7 @@ async function pullFromGithubIdx() {
     dbImportJSON(json);
     reloadDB();
     dbUpdate(s => ({ ...s, purchases: savedPurchases, unpoCards: savedUnpoCards }));
-    dbUpdateSettings({ github: { ...(DB.settings?.github || {}), token: savedToken, sha: d.sha } });
+    dbUpdateSettings({ adminPw: savedAdminPw, github: { ...(DB.settings?.github || {}), token: savedToken, sha: d.sha } });
     reloadDB(); render(); closeSettings();
     toast('GitHub에서 불러오기 완료');
   } catch(e) { toast('불러오기 실패: ' + e.message, 'err'); }
