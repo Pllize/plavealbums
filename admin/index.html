@@ -613,7 +613,6 @@ function renderDashboard() {
     <div class="stat-card"><div class="stat-num">${albs.length}</div><div class="stat-label">앨범 종류</div></div>
     <div class="stat-card"><div class="stat-num">${stores.length}</div><div class="stat-label">판매처</div></div>
     <div class="stat-card"><div class="stat-num">${dists.length}</div><div class="stat-label">배급사</div></div>
-    <div class="stat-card"><div class="stat-num">${purches.length}</div><div class="stat-label">구매 기록</div></div>
     <div class="stat-card"><div class="stat-num">${unpoEntries.length}</div><div class="stat-label">미공포 등록 판매처</div></div>
   `;
 
@@ -628,7 +627,6 @@ function renderDashboard() {
       <div class="stats-grid" style="margin-bottom:0">
         <div class="stat-card"><div class="stat-num">${totalCards}</div><div class="stat-label">총 카드 수</div></div>
         <div class="stat-card"><div class="stat-num">${withImg}</div><div class="stat-label">이미지 등록</div></div>
-        <div class="stat-card"><div class="stat-num ok">${ownedCards}</div><div class="stat-label">보유</div></div>
         <div class="stat-card"><div class="stat-num warn">${totalCards - withImg}</div><div class="stat-label">이미지 미등록</div></div>
       </div>
     </div>`;
@@ -1110,7 +1108,7 @@ function renderOfflineEventsList() {
         <div><label>이벤트 공지 링크</label><input type="url" id="oe-url-${idx}" value="${ev.url||''}" placeholder="https://..." onchange="saveOfflineEventField(${idx})"></div>
       </div>
       <div style="margin-top:4px">
-        <label style="font-size:11px"><input type="checkbox" id="oe-lucky-${idx}" ${ev.luckyDraw?'checked':''} onchange="saveOfflineEventField(${idx})"> 🃏 럭키드로우</label>
+        <label style="font-size:11px"><input type="checkbox" id="oe-lucky-${idx}" ${ev.luckyDraw?'checked':''} onchange="saveOfflineEventField(${idx})"> 럭드</label>
       </div>
     </div>
   `).join('') || '<div class="text-muted text-sm" style="padding:8px">오프라인 이벤트 없음</div>';
@@ -1421,7 +1419,7 @@ function renderUnpoSet(store, si, set) {
         <span class="text-sm fw-600">세트 ${si + 1}</span>
         <input type="text" value="${set.memo || ''}" placeholder="세트 설명 (예: Bite ver)" style="width:200px;height:28px;padding:4px 8px;font-size:12px"
           onchange="updateUnpoSetMemo('${storeId}','${albKey}',${si},this.value)">
-        ${store.offlineLuckyDraw ? `<label style="font-size:11px;white-space:nowrap"><input type="checkbox" ${set.luckyDraw?'checked':''} onchange="toggleUnpoSetLucky('${storeId}','${albKey}',${si},this.checked)"> 🃏 럭드 세트</label>` : ''}
+        ${store.offlineLuckyDraw ? `<label style="font-size:11px;white-space:nowrap"><input type="checkbox" ${set.luckyDraw?'checked':''} onchange="toggleUnpoSetLucky('${storeId}','${albKey}',${si},this.checked)"> 럭드 세트</label>` : ''}
       </div>
       <div class="flex gap-4">
         <button class="btn btn-ghost btn-sm" onclick="addUnpoCard('${storeId}','${albKey}',${si})">+ 카드</button>
