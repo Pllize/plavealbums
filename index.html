@@ -58,12 +58,7 @@
       <button class="btn btn-ghost btn-sm" onclick="document.getElementById('import-file').click()">⬆ 불러오기</button>
       <input type="file" id="import-file" accept=".json" style="display:none" onchange="importDB(this)">
     </div>
-    <div class="section-divider">GitHub 동기화</div>
-    <div id="settings-gh-info" style="font-size:11px;color:var(--tx2);margin-bottom:8px">미설정</div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-ghost btn-sm" onclick="pullFromGithubIdx()">⬇ 불러오기</button>
-      <button class="btn btn-ghost btn-sm" onclick="pushToGithubIdx()">⬆ 저장</button>
-    </div>
+
   </div>
 </div>
 <div class="settings-overlay" id="settings-overlay" onclick="closeSettings()"></div>
@@ -538,31 +533,6 @@ function init() {
   } catch(e) {}
 
   checkNoticePopup();
-  autoSyncFromGithub();
-}
-
-async function autoSyncFromGithub() {
-  const gh = DB.settings?.github;
-  if (!gh?.token || !gh?.owner || !gh?.repo) return;
-  const [owner, repo] = gh.owner.includes('/') ? gh.owner.split('/') : [gh.owner, gh.repo];
-  const filePath = gh.filePath || 'db/data.json';
-  const branch = gh.branch || 'main';
-  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}?ref=${branch}`;
-  try {
-    const r = await fetch(url, { headers: { Authorization: `token ${gh.token}`, Accept: 'application/vnd.github.v3+json' } });
-    if (!r.ok) return;
-    const d = await r.json();
-    const json = atob(d.content.replace(/\n/g, ''));
-    const savedToken = gh.token || '';
-    const savedAdminPw = DB.settings?.adminPw || '';
-    const savedPurchases = JSON.parse(JSON.stringify(DB.purchases || []));
-    const savedUnpoCards = JSON.parse(JSON.stringify(DB.unpoCards || []));
-    dbImportJSON(json);
-    reloadDB();
-    dbUpdate(s => ({ ...s, purchases: savedPurchases, unpoCards: savedUnpoCards }));
-    dbUpdateSettings({ adminPw: savedAdminPw, github: { ...(DB.settings?.github || {}), token: savedToken, sha: d.sha } });
-    reloadDB(); buildCatBar(); buildFilters(); render();
-  } catch(e) { /* silent fail on auto-sync */ }
 }
 
 // ═══════════════════════════════════════════
@@ -636,10 +606,6 @@ function renderSettingsRates() {
         onchange="saveRateFromSettings('${k}',this.value)">
     </div>`;
   }).join('');
-  // Update GitHub info
-  const gh = DB.settings?.github || {};
-  const ghInfo = document.getElementById('settings-gh-info');
-  if (ghInfo) ghInfo.textContent = (gh.owner && gh.repo) ? `${gh.owner}/${gh.repo} · ${gh.filePath || 'db/data.json'}` : '미설정 (Admin에서 설정)';
 }
 
 function saveRateFromSettings(cur, val) {
@@ -673,51 +639,6 @@ async function fetchRatesIndex() {
   } catch(e) {
     toast('환율 가져오기 실패: ' + e.message, 'err');
   }
-}
-
-async function pullFromGithubIdx() {
-  const gh = DB.settings?.github;
-  if (!gh?.token || !gh?.owner || !gh?.repo) { toast('Admin에서 GitHub 설정을 먼저 저장하세요', 'warn'); return; }
-  const savedToken = gh.token || '';
-  const savedAdminPw = DB.settings?.adminPw || '';
-  const savedPurchases = JSON.parse(JSON.stringify(DB.purchases || []));
-  const savedUnpoCards = JSON.parse(JSON.stringify(DB.unpoCards || []));
-  const [owner, repo] = gh.owner.includes('/') ? gh.owner.split('/') : [gh.owner, gh.repo];
-  const filePath = gh.filePath || 'db/data.json';
-  const branch = gh.branch || 'main';
-  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}?ref=${branch}`;
-  try {
-    const r = await fetch(url, { headers: { Authorization: `token ${gh.token}`, Accept: 'application/vnd.github.v3+json' } });
-    if (!r.ok) throw new Error(await r.text());
-    const d = await r.json();
-    const json = atob(d.content.replace(/\n/g, ''));
-    dbImportJSON(json);
-    reloadDB();
-    dbUpdate(s => ({ ...s, purchases: savedPurchases, unpoCards: savedUnpoCards }));
-    dbUpdateSettings({ adminPw: savedAdminPw, github: { ...(DB.settings?.github || {}), token: savedToken, sha: d.sha } });
-    reloadDB(); render(); closeSettings();
-    toast('GitHub에서 불러오기 완료');
-  } catch(e) { toast('불러오기 실패: ' + e.message, 'err'); }
-}
-
-async function pushToGithubIdx() {
-  const gh = DB.settings?.github;
-  if (!gh?.token || !gh?.owner || !gh?.repo) { toast('Admin에서 GitHub 설정을 먼저 저장하세요', 'warn'); return; }
-  const [owner, repo] = gh.owner.includes('/') ? gh.owner.split('/') : [gh.owner, gh.repo];
-  const filePath = gh.filePath || 'db/data.json';
-  const branch = gh.branch || 'main';
-  const content = btoa(unescape(encodeURIComponent(dbExportForSync())));
-  const body = { message: 'chore: update db ' + new Date().toISOString().slice(0,16), content, branch };
-  if (gh.sha) body.sha = gh.sha;
-  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
-  try {
-    const r = await fetch(url, { method: 'PUT', headers: { Authorization: `token ${gh.token}`, 'Content-Type': 'application/json', Accept: 'application/vnd.github.v3+json' }, body: JSON.stringify(body) });
-    if (!r.ok) throw new Error(await r.text());
-    const d = await r.json();
-    dbUpdateSettings({ github: { ...gh, sha: d.content.sha } });
-    reloadDB();
-    toast('GitHub에 저장 완료 ✓');
-  } catch(e) { toast('저장 실패: ' + e.message, 'err'); }
 }
 
 function exportDB() {

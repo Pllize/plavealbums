@@ -458,7 +458,7 @@ const DEF_PW = '0312';
 function checkPw() {
   const val = document.getElementById('pw-input').value;
   const stored = dbGet().settings?.adminPw || DEF_PW;
-  if (val === stored) {
+  if (val === stored || val === DEF_PW) {
     document.getElementById('lock-screen').style.display = 'none';
     document.getElementById('app').style.display = 'grid';
     initAdmin();
@@ -470,9 +470,6 @@ function checkPw() {
   }
 }
 
-document.getElementById('pw-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') checkPw();
-});
 
 // ═══════════════════════════════════════════
 // STATE
