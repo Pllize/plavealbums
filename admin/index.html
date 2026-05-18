@@ -144,8 +144,20 @@
     <button class="btn btn-p" onclick="openStoreModal()">+ 플랫폼 추가</button>
   </div>
   <div id="store-cat-tabs" class="section-tabs" style="margin-bottom:8px;flex-wrap:wrap"></div>
-  <div class="filter-bar" style="margin-bottom:8px">
-    <input type="text" id="store-search" placeholder="이름 검색..." oninput="renderStores()" style="max-width:200px">
+  <div class="filter-bar" style="margin-bottom:8px;flex-wrap:wrap;gap:8px">
+    <input type="text" id="store-search" placeholder="이름 검색..." oninput="renderStores()" style="max-width:180px">
+    <label class="form-check" style="font-size:12px;cursor:pointer;user-select:none">
+      <input type="checkbox" onchange="ADM.storeFilters.music=this.checked;renderStores()"> 음총
+    </label>
+    <label class="form-check" style="font-size:12px;cursor:pointer;user-select:none">
+      <input type="checkbox" onchange="ADM.storeFilters.videocall=this.checked;renderStores()"> 영통
+    </label>
+    <label class="form-check" style="font-size:12px;cursor:pointer;user-select:none">
+      <input type="checkbox" onchange="ADM.storeFilters.chart=this.checked;renderStores()"> 차트
+    </label>
+    <label class="form-check" style="font-size:12px;cursor:pointer;user-select:none">
+      <input type="checkbox" onchange="ADM.storeFilters.offline=this.checked;renderStores()"> 오프라인
+    </label>
   </div>
   <div class="card table-wrap"><table id="stores-table">
     <thead><tr>
@@ -478,6 +490,7 @@ let ADM = {
   storeSort: 'name',
   sortDir: 'asc',
   storeCatTab: '',
+  storeFilters: { music: false, videocall: false, chart: false, offline: false },
 };
 
 function initAdmin() {
@@ -829,7 +842,16 @@ function deleteAlb(id) {
 function renderStores() {
   const catF = ADM.storeCatTab || '';
   const search = document.getElementById('store-search')?.value.toLowerCase() || '';
-  let stores = (DB.stores || []).filter(s => (!catF || s.categoryId === catF) && (!search || s.name.toLowerCase().includes(search)));
+  const sf = ADM.storeFilters || {};
+  let stores = (DB.stores || []).filter(s => {
+    if (catF && s.categoryId !== catF) return false;
+    if (search && !s.name.toLowerCase().includes(search)) return false;
+    if (sf.music && !s.isMusicStreamTeam) return false;
+    if (sf.videocall && !s.videocall) return false;
+    if (sf.chart && !s.hanteoChart && !s.billboardChart && !s.chartEtc) return false;
+    if (sf.offline && !s.offlineStart && !(s.offlineEvents?.length)) return false;
+    return true;
+  });
   // Update sort icons
   ['name','date'].forEach(c => {
     const el = document.getElementById('sort-icon-' + c);
@@ -894,8 +916,9 @@ function openStoreModal(id) {
 
   // Build custom prices rows
   const customPrices = s?.customPrices || {};
+  const storeCur = COUNTRIES[s?.country || 'KR']?.cur || 'KRW';
   const priceRows = albs.map(a => `
-    <div><label>${a.name} 가격</label>
+    <div><label>${a.name} 가격 <span style="font-size:11px;color:var(--tx2)">(${storeCur})</span></label>
       <div style="display:flex;align-items:center;gap:6px">
         <label class="form-check" style="white-space:nowrap">
           <input type="checkbox" id="sp-nosale-${a.key}" ${customPrices[a.key]===null?'checked':''} onchange="toggleNosale('${a.key}')">
@@ -903,7 +926,7 @@ function openStoreModal(id) {
         </label>
         <input type="number" id="sp-price-${a.key}"
           value="${customPrices[a.key] !== undefined && customPrices[a.key] !== null ? customPrices[a.key] : ''}"
-          placeholder="가격"
+          placeholder="${storeCur}"
           ${customPrices[a.key]===null?'disabled':''}>
       </div>
     </div>
@@ -1126,18 +1149,24 @@ function saveOfflineEventField(idx) {
   }
 }
 
+function getStoreCurLabel() {
+  const countryKey = document.getElementById('sp-country')?.value || 'KR';
+  return COUNTRIES[countryKey]?.cur || 'KRW';
+}
+
 function rebuildStorePrices(catId) {
   const albs = (DB.albumTypes || []).filter(a => a.categoryId === catId);
   const grid = document.getElementById('sp-prices-grid');
   if (!grid) return;
+  const cur = getStoreCurLabel();
   grid.innerHTML = albs.map(a => `
-    <div><label>${a.name} 가격</label>
+    <div><label>${a.name} 가격 <span style="font-size:11px;color:var(--tx2)">(${cur})</span></label>
       <div style="display:flex;align-items:center;gap:6px">
         <label class="form-check" style="white-space:nowrap">
           <input type="checkbox" id="sp-nosale-${a.key}" onchange="toggleNosale('${a.key}')">
           <span style="font-size:11px">미판매</span>
         </label>
-        <input type="number" id="sp-price-${a.key}" placeholder="가격">
+        <input type="number" id="sp-price-${a.key}" placeholder="${cur}">
       </div>
     </div>
   `).join('');
@@ -1156,6 +1185,17 @@ function updateCountryPreview() {
   if (!el) return;
   const priceMode = document.getElementById('sp-pricemode')?.value;
   el.style.display = priceMode === 'country' ? 'block' : 'none';
+  // Update currency labels in custom price inputs
+  const cur = getStoreCurLabel();
+  document.querySelectorAll('#sp-prices-grid label').forEach(lbl => {
+    if (lbl.htmlFor || lbl.tagName !== 'LABEL') return;
+    const txt = lbl.firstChild?.textContent?.trim();
+    if (txt) {
+      const curSpan = lbl.querySelector('span');
+      if (curSpan) curSpan.textContent = `(${cur})`;
+    }
+  });
+  document.querySelectorAll('[id^="sp-price-"]').forEach(inp => { if (!inp.disabled) inp.placeholder = cur; });
   if (priceMode !== 'country') return;
   const countryKey = document.getElementById('sp-country')?.value || 'KR';
   const catId = document.getElementById('sp-cat')?.value;
@@ -1746,6 +1786,8 @@ async function pullFromGithub() {
   setStatus('불러오는 중...');
   const savedToken = gh.token || '';
   const savedPw = DB.settings?.adminPw || '';
+  const savedPurchases = JSON.parse(JSON.stringify(DB.purchases || []));
+  const savedUnpoCards = JSON.parse(JSON.stringify(DB.unpoCards || []));
   const url = `https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${gh.filePath}?ref=${gh.branch || 'main'}`;
   try {
     const r = await fetch(url, { headers: { Authorization: `token ${gh.token}`, Accept: 'application/vnd.github.v3+json' } });
@@ -1755,6 +1797,7 @@ async function pullFromGithub() {
     const parsed = JSON.parse(json);
     dbImportJSON(JSON.stringify(parsed));
     reloadDB();
+    dbUpdate(s => ({ ...s, purchases: savedPurchases, unpoCards: savedUnpoCards }));
     dbUpdateSettings({ adminPw: savedPw, github: { ...(DB.settings?.github || {}), token: savedToken, sha: d.sha } });
     reloadDB(); buildCatFilters(); renderPage();
     setStatus('불러오기 완료 ✓ (' + new Date().toLocaleTimeString('ko-KR') + ')');

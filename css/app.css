@@ -399,7 +399,8 @@ select option { background: var(--sur2); }
   text-overflow: ellipsis;
 }
 .cal-event.release { background: rgba(192,132,252,.25); color: var(--pk); font-weight: 700; }
-.cal-event.purchase { background: var(--info2); color: var(--info); }
+.cal-event.purchase, .cal-event.purchase-start { background: var(--info2); color: var(--info); }
+.cal-event.purchase-end { background: rgba(248,113,113,.15); color: var(--err); }
 .cal-event.offline { background: rgba(251,191,36,.15); color: var(--warn); }
 .cal-event.delivery { background: rgba(52,211,153,.15); color: var(--ok); }
 
@@ -811,7 +812,8 @@ code { font: 12px 'Menlo','Monaco',monospace; background: var(--sur2); padding: 
 .cal-legend-item.chodong-release { background: rgba(192,132,252,.25); color: var(--pk); }
 .cal-legend-item.chodong { background: rgba(245,158,11,.15); color: var(--warn); }
 .cal-legend-item.chodong-dday { background: rgba(248,113,113,.15); color: var(--err); }
-.cal-legend-item.purchase { background: var(--info2); color: var(--info); }
+.cal-legend-item.purchase, .cal-legend-item.purchase-start { background: var(--info2); color: var(--info); }
+.cal-legend-item.purchase-end { background: rgba(248,113,113,.15); color: var(--err); }
 .cal-legend-item.offline { background: rgba(251,191,36,.15); color: var(--warn); }
 .cal-legend-item.delivery { background: rgba(52,211,153,.15); color: var(--ok); }
 
