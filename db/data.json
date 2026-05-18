@@ -201,7 +201,7 @@
     {
       "id": "cs1774546479074",
       "categoryId": "cat_caligopt2",
-      "name": "길보드 (ASTERUM 433-10)",
+      "name": "길보드/유튜브",
       "distId": "",
       "country": "KR",
       "round": null,
@@ -247,7 +247,8 @@
             "6": ""
           },
           "note": "모든 버전 구매시 A2T DRAW (십카페 럭드) 와 동일한 포카 중 랜덤 1종 증정럭드 포토카드중 친필사인 포토카드 랜덤 제공",
-          "luckyDraw": true
+          "luckyDraw": true,
+          "url": ""
         }
       ],
       "offlineAddressName": "",
@@ -411,7 +412,9 @@
       "offlineAddressDetail": "",
       "hanteoChart": false,
       "billboardChart": false,
-      "chartEtc": ""
+      "chartEtc": "",
+      "sharedWithAlbs": [],
+      "sharedWithStoreIds": []
     },
     {
       "id": "s5",
@@ -462,14 +465,17 @@
             "6": ""
           },
           "note": "무신사 온라인: ASTERUM 433-10 (십카페럭드)와 동일무신사 스토어 성수 (연무장길 83 1F) - 무신사 1차럭드와 동일무신사 스토어 명동 (명동길 13) - ASTERUM 433-10 (십카페럭드)와 동일",
-          "luckyDraw": false
+          "luckyDraw": false,
+          "url": ""
         }
       ],
       "offlineAddressName": "",
       "offlineAddressDetail": "",
       "hanteoChart": false,
       "billboardChart": false,
-      "chartEtc": ""
+      "chartEtc": "",
+      "sharedWithAlbs": [],
+      "sharedWithStoreIds": []
     },
     {
       "id": "s10",
@@ -1343,7 +1349,7 @@
       "country": "KR",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "",
+      "unpoAlbumKey": "ALB_1779038864675",
       "unpoSets": 1,
       "unpoBack": false,
       "sharedWith": null,
@@ -1363,7 +1369,18 @@
       "defDeliveryDate": "",
       "url": "https://www.musicplant.co.kr/shop/search_result.php?search_str=caligo",
       "videocall": false,
-      "memo": ""
+      "memo": "",
+      "unpoAlbumKeys": [
+        "ALB_1779038864675"
+      ],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": "",
+      "sharedWithAlbs": [],
+      "sharedWithStoreIds": []
     },
     {
       "id": "cs1774874734719",
@@ -1879,7 +1896,7 @@
       "repo": "myalbums",
       "branch": "main",
       "filePath": "db/data.json",
-      "sha": "ffd8cc901a491f70d723213468523e38f45b845a"
+      "sha": "31012fb84f53ae88eef3f3f435a6727a1b7ffbe1"
     }
   }
 }
