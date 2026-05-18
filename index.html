@@ -151,25 +151,18 @@
   <div class="card">
     <div class="card-header">
       <div class="card-title">📋 구매 현황</div>
-      <button class="btn btn-ghost btn-sm" onclick="S.showProxy=!S.showProxy;render()">
-        대리구매 <span id="proxy-toggle-txt">표시</span>
-      </button>
+      <div style="display:flex;gap:4px;align-items:center">
+        <button class="btn btn-ghost btn-xs" id="dash-sort-date" onclick="S.dashSort='date';render()">날짜</button>
+        <button class="btn btn-ghost btn-xs" id="dash-sort-total" onclick="S.dashSort='total';render()">금액</button>
+        <button class="btn btn-ghost btn-xs" id="dash-sort-name" onclick="S.dashSort='name';render()">가나다</button>
+        <span style="width:1px;height:16px;background:var(--bd);margin:0 2px"></span>
+        <button class="btn btn-ghost btn-xs" onclick="S.showProxy=!S.showProxy;render()">
+          대리 <span id="proxy-toggle-txt">표시</span>
+        </button>
+      </div>
     </div>
     <div class="status-strip" id="dash-status-strip" style="margin-bottom:12px"></div>
     <div id="dash-purch-list"></div>
-  </div>
-
-  <!-- 구매처별 지출 -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title">💳 판매처별 지출</div>
-      <div style="display:flex;gap:4px">
-        <button class="btn btn-ghost btn-xs" id="sort-amount" onclick="S.storeSort='amount';render()">금액</button>
-        <button class="btn btn-ghost btn-xs" id="sort-name" onclick="S.storeSort='name';render()">가나다</button>
-        <button class="btn btn-ghost btn-xs" id="sort-status" onclick="S.storeSort='status';render()">상태</button>
-      </div>
-    </div>
-    <div id="dash-store-spend"></div>
   </div>
 
   <!-- 미구매 처 -->
@@ -510,6 +503,7 @@ let S = {
   purchSort: 'date',
   purchSubTab: 'list',
   storeSort: 'amount',
+  dashSort: 'date',
   dashStatusFilter: null,
   editPurchId: null,
   editStoreId: null,
@@ -544,6 +538,30 @@ function init() {
   } catch(e) {}
 
   checkNoticePopup();
+  autoSyncFromGithub();
+}
+
+async function autoSyncFromGithub() {
+  const gh = DB.settings?.github;
+  if (!gh?.token || !gh?.owner || !gh?.repo) return;
+  const [owner, repo] = gh.owner.includes('/') ? gh.owner.split('/') : [gh.owner, gh.repo];
+  const filePath = gh.filePath || 'db/data.json';
+  const branch = gh.branch || 'main';
+  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}?ref=${branch}`;
+  try {
+    const r = await fetch(url, { headers: { Authorization: `token ${gh.token}`, Accept: 'application/vnd.github.v3+json' } });
+    if (!r.ok) return;
+    const d = await r.json();
+    const json = atob(d.content.replace(/\n/g, ''));
+    const savedToken = gh.token || '';
+    const savedPurchases = JSON.parse(JSON.stringify(DB.purchases || []));
+    const savedUnpoCards = JSON.parse(JSON.stringify(DB.unpoCards || []));
+    dbImportJSON(json);
+    reloadDB();
+    dbUpdate(s => ({ ...s, purchases: savedPurchases, unpoCards: savedUnpoCards }));
+    dbUpdateSettings({ github: { ...(DB.settings?.github || {}), token: savedToken, sha: d.sha } });
+    reloadDB(); buildCatBar(); buildFilters(); render();
+  } catch(e) { /* silent fail on auto-sync */ }
 }
 
 // ═══════════════════════════════════════════
@@ -660,6 +678,8 @@ async function pullFromGithubIdx() {
   const gh = DB.settings?.github;
   if (!gh?.token || !gh?.owner || !gh?.repo) { toast('Admin에서 GitHub 설정을 먼저 저장하세요', 'warn'); return; }
   const savedToken = gh.token || '';
+  const savedPurchases = JSON.parse(JSON.stringify(DB.purchases || []));
+  const savedUnpoCards = JSON.parse(JSON.stringify(DB.unpoCards || []));
   const [owner, repo] = gh.owner.includes('/') ? gh.owner.split('/') : [gh.owner, gh.repo];
   const filePath = gh.filePath || 'db/data.json';
   const branch = gh.branch || 'main';
@@ -671,6 +691,7 @@ async function pullFromGithubIdx() {
     const json = atob(d.content.replace(/\n/g, ''));
     dbImportJSON(json);
     reloadDB();
+    dbUpdate(s => ({ ...s, purchases: savedPurchases, unpoCards: savedUnpoCards }));
     dbUpdateSettings({ github: { ...(DB.settings?.github || {}), token: savedToken, sha: d.sha } });
     reloadDB(); render(); closeSettings();
     toast('GitHub에서 불러오기 완료');
@@ -1065,6 +1086,12 @@ function renderDash() {
     }).join('');
   }
   document.getElementById('proxy-toggle-txt').textContent = S.showProxy ? '숨김' : '표시';
+  // Update sort button active styles
+  ['date','total','name'].forEach(v => {
+    const el = document.getElementById('dash-sort-' + v);
+    if (el) el.style.background = S.dashSort === v ? 'var(--ac)' : '';
+    if (el) el.style.color = S.dashSort === v ? '#fff' : '';
+  });
 
   // Filtered purchase list
   let fp = purches;
@@ -1072,6 +1099,11 @@ function renderDash() {
     const ds = DISP_STATUSES.find(d => d.k === activeFilter);
     if (ds) fp = purches.filter(p => ds.keys.includes(p.status || 'waiting'));
   }
+  // Sort
+  if (S.dashSort === 'total') fp = [...fp].sort((a,b) => calcPurchTotal(b) - calcPurchTotal(a));
+  else if (S.dashSort === 'name') fp = [...fp].sort((a,b) => storeName(a.storeId).localeCompare(storeName(b.storeId),'ko'));
+  else fp = [...fp].sort((a,b) => (b.orderDate||'').localeCompare(a.orderDate||''));
+
   const purchListEl = document.getElementById('dash-purch-list');
   if (purchListEl) {
     purchListEl.innerHTML = fp.length
@@ -1084,7 +1116,7 @@ function renderDash() {
             const alb = DB.albumTypes?.find(a => a.key === it.albKey);
             return `<span>${alb?.name || it.albKey} <b>${it.qty}</b>장${it.proxyQty > 0 && S.showProxy ? `<span style="color:var(--warn);font-size:10px"> (대리${it.proxyQty})</span>` : ''}</span>`;
           }).join('');
-          return `<div class="dash-purch-item">
+          return `<div class="dash-purch-item" onclick="navToPurchase('${p.id}')">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
               <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
                 <span class="fw-600">${store?.name || '?'}</span>
@@ -1099,7 +1131,7 @@ function renderDash() {
             </div>
             <div style="font-size:12px;color:var(--tx2);margin-top:5px;display:flex;gap:8px;flex-wrap:wrap">
               ${albCounts}
-              ${p.orderDate ? `<span style="color:var(--tx3)">${fDate(p.orderDate)}</span>` : ''}
+              ${p.orderDate ? `<span style="color:var(--tx3)">주문: ${fDate(p.orderDate)}</span>` : ''}
               ${proxy > 0 && S.showProxy ? `<span style="color:var(--warn)">대리 ${fKRW(proxy)}</span>` : ''}
             </div>
             ${p.trackingNumber ? `<div style="font-size:11px;color:var(--tx3);margin-top:3px">📦 ${p.carrier || ''} ${p.trackingNumber}</div>` : ''}
@@ -1107,48 +1139,6 @@ function renderDash() {
         }).join('')
       : '<div class="empty" style="padding:20px">구매 기록 없음</div>';
   }
-
-  // Store spend cards (expandable, sortable)
-  const storeSpend = {};
-  purches.forEach(p => {
-    storeSpend[p.storeId] = (storeSpend[p.storeId] || 0) + calcPurchTotal(p);
-  });
-
-  ['amount','name','status'].forEach(v => {
-    const el = document.getElementById('sort-' + v);
-    if (el) el.style.borderColor = S.storeSort === v ? 'var(--pk2)' : '';
-  });
-
-  let storeRows = Object.entries(storeSpend);
-  if (S.storeSort === 'name') {
-    storeRows.sort((a, b) => storeName(a[0]).localeCompare(storeName(b[0]), 'ko'));
-  } else if (S.storeSort === 'status') {
-    const ORDER = ['delivered','shipped','preparing','ordered','waiting','planned',''];
-    storeRows.sort((a, b) => {
-      const stA = purches.find(p => p.storeId === a[0])?.status || '';
-      const stB = purches.find(p => p.storeId === b[0])?.status || '';
-      return ORDER.indexOf(stA) - ORDER.indexOf(stB);
-    });
-  } else {
-    storeRows.sort((a, b) => b[1] - a[1]);
-  }
-
-  document.getElementById('dash-store-spend').innerHTML = storeRows.length
-    ? storeRows.map(([sid, amt]) => {
-        const lastStatus = purches.find(p => p.storeId === sid)?.status || 'waiting';
-        return `<div class="spend-card" id="sc-${sid}" onclick="toggleSpend('${sid}')">
-          <div class="spend-card-head">
-            <span class="fw-600">${storeName(sid)}</span>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span class="fw-600 text-sm">${fKRW(amt)}</span>
-              ${stBadge(lastStatus)}
-              <span style="color:var(--tx3);font-size:12px">▾</span>
-            </div>
-          </div>
-          <div class="spend-card-detail" id="scd-${sid}">${buildSpendDetail(sid, purches)}</div>
-        </div>`;
-      }).join('')
-    : '<div class="empty">지출 기록 없음</div>';
 
   // Unpurchased — list with 영통/음총/한터/deadline
   const purchasedStoreIds = new Set(purches.map(p => p.storeId));
@@ -1668,8 +1658,8 @@ function renderPurchCard(p) {
         <div class="purch-store-name">${store?.name || '?'} ${store?.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : ''} ${store?.hanteoChart ? '<span style="font-size:10px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">한터</span>' : ''}</div>
         <div class="purch-meta">
           ${cat ? cat.name + ' · ' : ''}
-          ${p.orderDate ? fDate(p.orderDate) : '날짜미입력'}
-          ${p.orderNumber ? `· <span class="mono text-xs">${p.orderNumber}</span>` : ''}
+          주문 ${p.orderDate ? fDate(p.orderDate) : '날짜미입력'}
+          ${p.orderNumber ? `· <span class="mono text-xs">#${p.orderNumber}</span>` : ''}
         </div>
       </div>
       <div class="flex gap-8 flex-1" style="justify-content:flex-end;align-items:flex-start">
@@ -2022,14 +2012,14 @@ function updateProxyTotals() {
 // PROXY ENTRY HELPERS (LEGACY - inline per album)
 // ═══════════════════════════════════════════
 function buildProxyEntryHTML(albKey, idx, name, qty, paid, delivered) {
-  return `<div style="display:flex;gap:3px;align-items:center;flex-wrap:wrap;margin-bottom:3px" id="proxy-row-${albKey}-${idx}">
-    <input type="text" placeholder="이름" value="${name}" style="width:56px;font-size:11px;padding:2px 4px" id="proxy-name-${albKey}-${idx}" oninput="recalcProxyQty('${albKey}')">
-    <input type="number" min="0" value="${qty}" style="width:38px;font-size:11px;padding:2px 4px" id="proxy-qty-${albKey}-${idx}" oninput="recalcProxyQty('${albKey}')">
-    <label style="font-size:10px;display:flex;align-items:center;gap:2px;cursor:pointer">
-      <input type="checkbox" ${paid?'checked':''} id="proxy-paid-${albKey}-${idx}" style="width:12px;height:12px"> 입금
+  return `<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin-bottom:4px" id="proxy-row-${albKey}-${idx}">
+    <input type="text" placeholder="이름" value="${name}" style="width:80px;font-size:12px;padding:4px 6px" id="proxy-name-${albKey}-${idx}" oninput="recalcProxyQty('${albKey}')">
+    <input type="number" min="0" value="${qty}" style="width:56px;font-size:12px;padding:4px 6px" id="proxy-qty-${albKey}-${idx}" oninput="recalcProxyQty('${albKey}')">
+    <label style="font-size:11px;display:flex;align-items:center;gap:3px;cursor:pointer">
+      <input type="checkbox" ${paid?'checked':''} id="proxy-paid-${albKey}-${idx}" style="width:13px;height:13px"> 입금
     </label>
-    <label style="font-size:10px;display:flex;align-items:center;gap:2px;cursor:pointer">
-      <input type="checkbox" ${delivered?'checked':''} id="proxy-deliv-${albKey}-${idx}" style="width:12px;height:12px"> 배송
+    <label style="font-size:11px;display:flex;align-items:center;gap:3px;cursor:pointer">
+      <input type="checkbox" ${delivered?'checked':''} id="proxy-deliv-${albKey}-${idx}" style="width:13px;height:13px"> 배송
     </label>
     <button type="button" onclick="removeProxyEntry('${albKey}',${idx})" style="background:none;border:none;color:var(--err);font-size:12px;cursor:pointer;padding:0 2px">✕</button>
   </div>`;
@@ -2507,13 +2497,21 @@ function renderUnpo() {
       </div>`;
     }
 
+    // Separate front and back cards; back cards shown once (shared)
+    let backCardsSrc = null; // { cards, si } from first set with back cards
     const setsHtml = unpo.sets.map((set, si) => {
-      const cards = set.cards || [];
+      const allCards = set.cards || [];
+      const frontCards = allCards.filter(c => !c.note?.endsWith('(뒷)'));
+      const backCards = allCards.filter(c => c.note?.endsWith('(뒷)'));
+      if (backCards.length && !backCardsSrc) backCardsSrc = { cards: backCards, si };
+      const cards = frontCards;
       const ownedCount = cards.filter(c => c.owned).length;
       const cardsHtml = cards.map((c, ci) => {
         if (ownedOnly && !c.owned) return '';
+        // ci is the index within frontCards; find actual index in allCards
+        const actualCi = allCards.indexOf(c);
         return `<div class="unpo-card-wrap">
-          <div class="unpo-card${c.owned ? ' owned' : ''}" onclick="toggleUnpoOwned('${s.id}','${albKey}',${si},${ci})">
+          <div class="unpo-card${c.owned ? ' owned' : ''}" onclick="toggleUnpoOwned('${s.id}','${albKey}',${si},${actualCi})">
             ${c.img ? `<img src="${c.img}" loading="lazy">` : '<div class="no-img">📷<br>미등록</div>'}
             ${c.owned ? '<div class="unpo-owned-badge">보유</div>' : ''}
           </div>
@@ -2525,9 +2523,34 @@ function renderUnpo() {
       return `<div style="margin-bottom:12px">
         ${set.memo ? `<div style="font-size:12px;color:var(--tx2);margin-bottom:6px">${set.memo}</div>` : ''}
         <div style="font-size:11px;color:var(--tx3);margin-bottom:6px">${ownedCount}/${cards.length} 보유</div>
-        <div class="unpo-grid${s.unpoBack || cards.length > 5 ? ' six' : ''}">${cardsHtml}</div>
+        <div class="unpo-grid">${cardsHtml}</div>
       </div>`;
     }).filter(Boolean).join('');
+
+    // Shared back cards section (shown once)
+    let backSectionHtml = '';
+    if (backCardsSrc) {
+      const { cards: bCards, si: bSi } = backCardsSrc;
+      const bOwnedCount = bCards.filter(c => c.owned).length;
+      const bAllCards = unpo.sets[bSi]?.cards || [];
+      const bCardsHtml = bCards.map(c => {
+        if (ownedOnly && !c.owned) return '';
+        const actualCi = bAllCards.indexOf(c);
+        return `<div class="unpo-card-wrap">
+          <div class="unpo-card${c.owned ? ' owned' : ''}" onclick="toggleUnpoOwned('${s.id}','${albKey}',${bSi},${actualCi})">
+            ${c.img ? `<img src="${c.img}" loading="lazy">` : '<div class="no-img">📷<br>미등록</div>'}
+            ${c.owned ? '<div class="unpo-owned-badge">보유</div>' : ''}
+          </div>
+          ${c.note ? `<div style="font-size:10px;color:var(--tx3);text-align:center">${c.note.replace(' (뒷)', '')}</div>` : ''}
+        </div>`;
+      }).filter(Boolean).join('');
+      if (bCardsHtml) {
+        backSectionHtml = `<div style="margin-top:4px;padding-top:10px;border-top:1px dashed var(--bd)">
+          <div style="font-size:11px;color:var(--tx2);font-weight:600;margin-bottom:6px">뒷면 공통 (${bOwnedCount}/${bCards.length})</div>
+          <div class="unpo-grid">${bCardsHtml}</div>
+        </div>`;
+      }
+    }
 
     const totalCards = unpo.sets.reduce((s, set) => s + (set.cards?.length || 0), 0);
     const ownedCards = unpo.sets.reduce((s, set) => s + (set.cards?.filter(c => c.owned).length || 0), 0);
@@ -2541,6 +2564,7 @@ function renderUnpo() {
         </div>
       </div>
       ${setsHtml || '<div class="empty">카드 정보 없음</div>'}
+      ${backSectionHtml}
     </div>`;
   }).join('');
 
@@ -2607,12 +2631,25 @@ function renderCal() {
   const stores = catStores();
   stores.forEach(s => {
     if (showPur) {
-      if (s.purchaseStart) addEvent(s.purchaseStart.slice(0,10), { type: 'purchase', label: '🛒 시작: ' + s.name });
-      if (s.purchaseEnd) addEvent(s.purchaseEnd.slice(0,10), { type: 'purchase', label: '🛒 마감: ' + s.name });
+      if (s.purchaseStart) addEvent(s.purchaseStart.slice(0,10), { type: 'purchase-start', label: '🛒 시작: ' + s.name, storeId: s.id });
+      if (s.purchaseEnd) addEvent(s.purchaseEnd.slice(0,10), { type: 'purchase-end', label: '🛒 마감: ' + s.name, storeId: s.id });
     }
     if (showOff) {
-      if (s.offlineStart) addEvent(s.offlineStart.slice(0,10), { type: 'offline', label: '🏪 오프: ' + s.name });
-      if (s.offlineEnd && s.offlineEnd !== s.offlineStart) addEvent(s.offlineEnd.slice(0,10), { type: 'offline', label: '🏪 오프끝: ' + s.name });
+      // Highlight entire offline period (every day in range)
+      const offEvents = s.offlineEvents?.length ? s.offlineEvents : (s.offlineStart ? [{ start: s.offlineStart, end: s.offlineEnd || s.offlineStart, addressName: s.offlineAddress || '' }] : []);
+      offEvents.forEach(oe => {
+        const startStr = (oe.start || '').slice(0, 10);
+        const endStr = (oe.end || startStr).slice(0, 10);
+        if (!startStr) return;
+        const start = new Date(startStr + 'T00:00:00');
+        const end = new Date(endStr + 'T00:00:00');
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+          const ds = d.toISOString().slice(0, 10);
+          const isStart = ds === startStr;
+          const isEnd = ds === endStr && endStr !== startStr;
+          addEvent(ds, { type: 'offline', label: '🏪 ' + s.name + (isStart ? ' 시작' : isEnd ? ' 종료' : ''), storeId: s.id });
+        }
+      });
     }
   });
 
@@ -2628,38 +2665,44 @@ function renderCal() {
     });
   }
 
-  // 초동기간 helper - use chodongBaseDate if set, else digitalReleaseDate, else releaseDate
+  // 초동기간 helper
+  // chodongBaseDate = when chodong counting begins (release day)
   const chodongBaseDateStr = cat?.chodongBaseDate || cat?.digitalReleaseDate || cat?.releaseDate;
   const releaseDate = chodongBaseDateStr ? new Date(chodongBaseDateStr + 'T00:00:00') : null;
-  const chodongEnd = cat?.chodongEndDate ? new Date(cat.chodongEndDate + 'T00:00:00') : null;
+  // 초동 마감일 = D-day; if not set, defaults to chodongBase + 7
+  const chodongEndDateStr = cat?.chodongEndDate || (releaseDate ? new Date(releaseDate.getTime() + 7*86400000).toISOString().slice(0,10) : null);
+  const chodongEndDate = chodongEndDateStr ? new Date(chodongEndDateStr + 'T00:00:00') : null;
   const preRelDate = cat?.preReleaseDate;
   const physRelDate = cat?.physicalReleaseDate;
 
   function chodongCls(dateStr) {
     if (preRelDate && dateStr === preRelDate) return 'pre-release';
     if (physRelDate && dateStr === physRelDate) return 'physical-release';
-    if (chodongEnd && dateStr === cat.chodongEndDate) return 'chodong-end';
-    if (!releaseDate) return '';
+    if (chodongEndDateStr && dateStr === chodongEndDateStr) return 'chodong-end';
+    if (!releaseDate || !chodongEndDate) return '';
     const d = new Date(dateStr + 'T00:00:00');
     const diff = Math.round((d - releaseDate) / 86400000);
     if (diff === 0) return 'chodong-release';
-    if (chodongEnd) {
-      if (diff > 0 && d < chodongEnd) return 'chodong';
-    } else {
-      if (diff > 0 && diff <= 6) return 'chodong';
-      if (diff === 7) return 'chodong-dday';
-    }
+    if (diff > 0 && d < chodongEndDate) return 'chodong';
     return '';
   }
+
   function ddayLabel(dateStr) {
     if (preRelDate && dateStr === preRelDate) return '<span style="font-size:9px;color:#a855f7;font-weight:700">선공개</span>';
     if (physRelDate && dateStr === physRelDate) return '<span style="font-size:9px;color:var(--ok);font-weight:700">실물</span>';
-    if (!releaseDate) return '';
+    // D-day labels: count DOWN from 초동 마감일
+    if (!chodongEndDate) {
+      if (releaseDate) {
+        const d = new Date(dateStr + 'T00:00:00');
+        if (Math.round((d - releaseDate) / 86400000) === 0) return '<span style="font-size:9px;color:var(--pk);font-weight:700">발매</span>';
+      }
+      return '';
+    }
     const d = new Date(dateStr + 'T00:00:00');
-    const diff = Math.round((d - releaseDate) / 86400000);
-    if (diff === 0) return '<span style="font-size:9px;color:var(--pk);font-weight:700">발매</span>';
-    const maxDiff = chodongEnd ? Math.round((chodongEnd - releaseDate) / 86400000) : 7;
-    if (diff > 0 && diff <= maxDiff) return `<span style="font-size:9px;color:var(--warn)">+${diff}일</span>`;
+    const diffFromEnd = Math.round((chodongEndDate - d) / 86400000);
+    if (diffFromEnd === 0) return '<span style="font-size:9px;color:var(--err);font-weight:700">D-day</span>';
+    if (diffFromEnd > 0 && diffFromEnd <= 7) return `<span style="font-size:9px;color:var(--warn)">D-${diffFromEnd}</span>`;
+    if (releaseDate && Math.round((d - releaseDate) / 86400000) === 0) return '<span style="font-size:9px;color:var(--pk);font-weight:700">발매</span>';
     return '';
   }
 
@@ -2687,7 +2730,16 @@ function renderCal() {
 
     const isToday = dateStr === today.toISOString().slice(0, 10);
     const isSelected = dateStr === S.calDay;
-    const evs = (events[dateStr] || []).slice(0, 3);
+    const dayEvs = events[dateStr] || [];
+    // Deduplicate offline events for same store on same day (show once per store)
+    const seenStores = new Set();
+    const displayEvs = dayEvs.filter(ev => {
+      if (ev.storeId && (ev.type === 'offline')) {
+        if (seenStores.has(ev.storeId + ev.type)) return false;
+        seenStores.add(ev.storeId + ev.type);
+      }
+      return true;
+    }).slice(0, 3);
     const chodong = chodongCls(dateStr);
 
     cells += `<div class="cal-cell${isOther ? ' other-month' : ''}${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}${chodong ? ' ' + chodong : ''}"
@@ -2695,73 +2747,35 @@ function renderCal() {
       <div class="cal-day-num" style="display:flex;justify-content:space-between;align-items:center">
         <span>${day}</span>${ddayLabel(dateStr)}
       </div>
-      ${evs.map(ev => `<div class="cal-event ${ev.type}">${ev.label}</div>`).join('')}
-      ${(events[dateStr] || []).length > 3 ? `<div style="font-size:9px;color:var(--tx3)">+${(events[dateStr]||[]).length-3}</div>` : ''}
+      ${displayEvs.map(ev => {
+        const clickHandler = ev.storeId ? `onclick="event.stopPropagation();openStorePopup('${ev.storeId}')"` : '';
+        return `<div class="cal-event ${ev.type}"${clickHandler} style="${ev.storeId?'cursor:pointer':''}">${ev.label.replace(/^[🛒🏪📦🎵]\s*/,'')}</div>`;
+      }).join('')}
+      ${dayEvs.length > 3 ? `<div style="font-size:9px;color:var(--tx3)">+${dayEvs.length-3}</div>` : ''}
     </div>`;
   }
   document.getElementById('cal-body').innerHTML = cells;
 
-  // Event grouping list below calendar
-  const TYPE_ORDER = ['release','pre-release','physical-release','chodong-end','purchase','offline','delivery'];
-  const TYPE_LABELS = {
-    'release':'🎵 발매', 'pre-release':'🎶 선공개', 'physical-release':'💿 실물발매',
-    'chodong-end':'📊 초동마감', 'purchase':'🛒 판매기간', 'offline':'🏪 오프라인', 'delivery':'📦 배송'
-  };
-  const grouped = {};
-  Object.entries(events).forEach(([date, evs]) => {
-    evs.forEach(ev => {
-      if (!grouped[ev.type]) grouped[ev.type] = [];
-      grouped[ev.type].push({ date, label: ev.label });
-    });
-  });
-  // Show events for selected day only, grouped by category
-  const listEl = document.getElementById('cal-event-list') || (() => {
-    const d = document.createElement('div');
-    d.id = 'cal-event-list';
-    document.getElementById('cal-calendar-view')?.appendChild(d);
-    return d;
-  })();
-  if (S.calDay && events[S.calDay]) {
-    const dayEvs = events[S.calDay];
-    const dayGrouped = {};
-    dayEvs.forEach(ev => { if (!dayGrouped[ev.type]) dayGrouped[ev.type] = []; dayGrouped[ev.type].push(ev); });
-    listEl.innerHTML = `<div style="margin-top:12px;padding:10px;background:var(--sur2);border-radius:var(--r-sm)">
-      <div class="fw-600 text-sm" style="margin-bottom:8px">${S.calDay} 일정</div>
-      ${TYPE_ORDER.filter(t => dayGrouped[t]).map(t =>
-        `<div style="margin-bottom:6px">
-          <span style="font-size:11px;font-weight:600;color:var(--tx2)">${TYPE_LABELS[t]}</span>
-          ${dayGrouped[t].map(e => `<div style="font-size:12px;color:var(--tx2);padding:1px 0 1px 8px">${e.label.replace(/^[^\s]+\s/, '')}</div>`).join('')}
-        </div>`
-      ).join('')}
-    </div>`;
-  } else {
-    listEl.innerHTML = '<div style="margin-top:8px;font-size:12px;color:var(--tx3);text-align:center">날짜를 클릭하면 해당일 일정이 표시됩니다</div>';
-  }
+  // Remove any existing event list (no longer shown)
+  const oldList = document.getElementById('cal-event-list');
+  if (oldList) oldList.remove();
 
-  // Day detail
-  if (S.calDay && events[S.calDay]) {
-    const dayEvents = events[S.calDay];
-    document.getElementById('cal-day-detail').innerHTML = `
-      <div class="cal-day-panel">
-        <div class="fw-600" style="margin-bottom:8px">${S.calDay} 일정 (${dayEvents.length}건)</div>
-        ${dayEvents.map(ev => `<div class="cal-event ${ev.type}" style="font-size:12px;margin-bottom:4px">${ev.label}</div>`).join('')}
-      </div>
-      ${buildCalLegend(cat)}`;
-  } else {
-    document.getElementById('cal-day-detail').innerHTML = buildCalLegend(cat);
-  }
+  // Legend only
+  document.getElementById('cal-day-detail').innerHTML = buildCalLegend(cat);
 }
 
 function buildCalLegend(cat) {
   if (!cat) return '';
-  const hasRelease = cat.digitalReleaseDate || cat.releaseDate;
+  const hasRelease = cat.chodongBaseDate || cat.digitalReleaseDate || cat.releaseDate;
+  const chodongEndStr = cat.chodongEndDate || (hasRelease ? new Date(new Date(hasRelease + 'T00:00:00').getTime() + 7*86400000).toISOString().slice(0,10) : null);
   return `<div class="cal-legend">
     ${cat.preReleaseDate ? '<span class="cal-legend-item pre-release">선공개</span>' : ''}
-    ${hasRelease ? '<span class="cal-legend-item chodong-release">발매일(디지털)</span>' : ''}
+    ${hasRelease ? '<span class="cal-legend-item chodong-release">발매일</span>' : ''}
     ${cat.physicalReleaseDate ? '<span class="cal-legend-item physical-release">실물발매</span>' : ''}
-    ${hasRelease ? '<span class="cal-legend-item chodong">초동기간</span>' : ''}
-    ${cat.chodongEndDate ? '<span class="cal-legend-item chodong-end">초동마감</span>' : (hasRelease ? '<span class="cal-legend-item chodong-dday">초동마감(+7)</span>' : '')}
-    <span class="cal-legend-item purchase">구매기간</span>
+    ${hasRelease ? '<span class="cal-legend-item chodong">초동기간 (D-7~D-1)</span>' : ''}
+    ${chodongEndStr ? '<span class="cal-legend-item chodong-end">초동마감 (D-day)</span>' : ''}
+    <span class="cal-legend-item purchase-start">구매 시작</span>
+    <span class="cal-legend-item purchase-end">구매 마감</span>
     <span class="cal-legend-item offline">오프라인</span>
     <span class="cal-legend-item delivery">배송예정</span>
   </div>`;

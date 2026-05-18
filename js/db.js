@@ -185,6 +185,8 @@ function dbExportForSync() {
   const state = dbGet();
   const safe = {
     ...state,
+    purchases: undefined,   // personal data — not synced to GitHub
+    unpoCards: undefined,   // personal data — not synced to GitHub
     settings: {
       ...state.settings,
       adminPw: undefined,
