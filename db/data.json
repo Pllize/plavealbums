@@ -439,7 +439,7 @@
       "offlineEnd": "2026-04-20",
       "offlineHours": "11:00~10:00",
       "offlineAddress": "",
-      "offlineNote": "무신사 온라인: ASTERUM 433-10 (십카페럭드)와 동일무신사 스토어 성수 (연무장길 83 1F) - 무신사 1차럭드와 동일무신사 스토어 명동 (명동길 13) - ASTERUM 433-10 (십카페럭드)와 동일",
+      "offlineNote": "무신사 온라인: ASTERUM 433-10 (십카페럭드)와 동일\n무신사 스토어 성수 (연무장길 83 1F) - 무신사 1차럭드와 동일\n무신사 스토어 명동 (명동길 13) - ASTERUM 433-10 (십카페럭드)와 동일",
       "offlineLuckyDraw": false,
       "defDomShip": 0,
       "defOvsShip": 0,
@@ -466,7 +466,7 @@
             "5": "",
             "6": ""
           },
-          "note": "무신사 온라인: ASTERUM 433-10 (십카페럭드)와 동일무신사 스토어 성수 (연무장길 83 1F) - 무신사 1차럭드와 동일무신사 스토어 명동 (명동길 13) - ASTERUM 433-10 (십카페럭드)와 동일",
+          "note": "무신사 온라인: ASTERUM 433-10 (십카페럭드)와 동일\n무신사 스토어 성수 (연무장길 83 1F) - 무신사 1차럭드와 동일\n무신사 스토어 명동 (명동길 13) - ASTERUM 433-10 (십카페럭드)와 동일",
           "luckyDraw": false,
           "url": ""
         }
@@ -477,7 +477,9 @@
       "billboardChart": false,
       "chartEtc": "",
       "sharedWithAlbs": [],
-      "sharedWithStoreIds": []
+      "sharedWithStoreIds": [],
+      "vcStart": "",
+      "vcEnd": ""
     },
     {
       "id": "s10",
@@ -1898,7 +1900,7 @@
       "repo": "myalbums",
       "branch": "main",
       "filePath": "db/data.json",
-      "sha": "04a300481d119240568a77821d2bd50994b55b4d"
+      "sha": "eab536f940f79c71bfc9a11bf9493baaefc09f4e"
     }
   }
 }
