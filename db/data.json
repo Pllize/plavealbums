@@ -33,7 +33,7 @@
     {
       "id": "alb_photobook",
       "categoryId": "cat_caligopt2",
-      "name": "포토북",
+      "name": "í¬í ë¶",
       "key": "ALB_1779038838207",
       "sortOrder": 1,
       "countryPrices": {
@@ -45,12 +45,12 @@
         "HK": 0
       },
       "nameEn": "PHOTOBOOK",
-      "shortName": "포토북"
+      "shortName": "í¬í ë¶"
     },
     {
       "id": "alb_pocaalbum",
       "categoryId": "cat_caligopt2",
-      "name": "포카앨범",
+      "name": "í¬ì¹´ì¨ë²",
       "key": "ALB_1779038847739",
       "sortOrder": 2,
       "countryPrices": {
@@ -62,12 +62,12 @@
         "HK": 0
       },
       "nameEn": "POCAALBUm",
-      "shortName": "포카"
+      "shortName": "í¬ì¹´"
     },
     {
       "id": "alb_idpass",
       "categoryId": "cat_caligopt2",
-      "name": "아이디패스",
+      "name": "ìì´ëí¨ì¤",
       "key": "ALB_1779038855533",
       "sortOrder": 3,
       "countryPrices": {
@@ -79,12 +79,12 @@
         "HK": 0
       },
       "nameEn": "ID PASS",
-      "shortName": "아이디"
+      "shortName": "ìì´ë"
     },
     {
       "id": "alb_inventory",
       "categoryId": "cat_caligopt2",
-      "name": "인벤토리",
+      "name": "ì¸ë²¤í ë¦¬",
       "key": "ALB_1779038864675",
       "sortOrder": 4,
       "countryPrices": {
@@ -96,45 +96,45 @@
         "HK": 0
       },
       "nameEn": "INVENTORY",
-      "shortName": "인벤"
+      "shortName": "ì¸ë²¤"
     }
   ],
   "distributors": [
     {
       "id": "dcs1774546040116",
-      "name": "공구플랫폼"
+      "name": "ê³µêµ¬íë«í¼"
     },
     {
       "id": "dcs1774619306510",
-      "name": "디어마이뮤즈"
+      "name": "ëì´ë§ì´ë®¤ì¦"
     },
     {
       "id": "d2",
-      "name": "메이크스타"
+      "name": "ë©ì´í¬ì¤í"
     },
     {
       "id": "d3",
-      "name": "무신사"
+      "name": "ë¬´ì ì¬"
     },
     {
       "id": "dcs1774619302089",
-      "name": "버프즈"
+      "name": "ë²íì¦"
     },
     {
       "id": "dcs1774619310313",
-      "name": "비트로드"
+      "name": "ë¹í¸ë¡ë"
     },
     {
       "id": "d8",
-      "name": "애니메이트"
+      "name": "ì ëë©ì´í¸"
     },
     {
       "id": "d5",
-      "name": "영풍문고 / MusicArt"
+      "name": "ìíë¬¸ê³  / MusicArt"
     },
     {
       "id": "d4",
-      "name": "올리브영"
+      "name": "ì¬ë¦¬ë¸ì"
     },
     {
       "id": "dcs1774619329527",
@@ -142,7 +142,7 @@
     },
     {
       "id": "dcs1774544809341",
-      "name": "훗타운"
+      "name": "ííì´"
     },
     {
       "id": "d9",
@@ -154,7 +154,7 @@
     },
     {
       "id": "d10",
-      "name": "TME (腾讯音乐)"
+      "name": "TME (è¾è®¯é³ä¹)"
     },
     {
       "id": "d6",
@@ -174,15 +174,15 @@
     },
     {
       "id": "dcs1775249000000",
-      "name": "사운드웨이브"
+      "name": "ì¬ì´ëì¨ì´ë¸"
     },
     {
       "id": "dcs1774663794920",
-      "name": "뮤직플랜트"
+      "name": "ë®¤ì§íëí¸"
     },
     {
       "id": "dcs1775049442175",
-      "name": "이즈위 (一直娱)"
+      "name": "ì´ì¦ì (ä¸ç´å¨±)"
     },
     {
       "id": "dcs1775566277516",
@@ -190,7 +190,7 @@
     },
     {
       "id": "dcs1776084976682",
-      "name": "위드뮤"
+      "name": "ìëë®¤"
     },
     {
       "id": "dcs1776085087300",
@@ -198,14 +198,14 @@
     },
     {
       "id": "dcs1776402077701",
-      "name": "버프즈"
+      "name": "ë²íì¦"
     }
   ],
   "stores": [
     {
       "id": "cs1774546479074",
       "categoryId": "cat_caligopt2",
-      "name": "길보드 (ASTERUM 433-10)",
+      "name": "ê¸¸ë³´ë (ASTERUM 433-10)",
       "distId": "",
       "country": "KR",
       "round": null,
@@ -222,8 +222,8 @@
       "offlineStart": "2026-04-20",
       "offlineEnd": "2026-04-20",
       "offlineHours": "15:00 - 23:00",
-      "offlineAddress": "서대문구 연희로11가길 48-23",
-      "offlineNote": "모든 버전 구매시 A2T DRAW (십카페 럭드) 와 동일한 포카 중 랜덤 1종 증정럭드 포토카드중 친필사인 포토카드 랜덤 제공",
+      "offlineAddress": "ìëë¬¸êµ¬ ì°í¬ë¡11ê°ê¸¸ 48-23",
+      "offlineNote": "ëª¨ë  ë²ì  êµ¬ë§¤ì A2T DRAW (ì­ì¹´í ë­ë) ì ëì¼í í¬ì¹´ ì¤ ëë¤ 1ì¢ ì¦ì ë­ë í¬í ì¹´ëì¤ ì¹íì¬ì¸ í¬í ì¹´ë ëë¤ ì ê³µ",
       "offlineLuckyDraw": true,
       "defDomShip": 0,
       "defOvsShip": 0,
@@ -240,7 +240,7 @@
           "start": "2026-04-20",
           "end": "2026-04-20",
           "addressName": "",
-          "addressDetail": "서대문구 연희로11가길 48-23",
+          "addressDetail": "ìëë¬¸êµ¬ ì°í¬ë¡11ê°ê¸¸ 48-23",
           "hoursMap": {
             "0": "",
             "1": "",
@@ -250,12 +250,12 @@
             "5": "",
             "6": ""
           },
-          "note": "모든 버전 구매시 A2T DRAW (십카페 럭드) 와 동일한 포카 중 랜덤 1종 증정럭드 포토카드중 친필사인 포토카드 랜덤 제공",
+          "note": "ëª¨ë  ë²ì  êµ¬ë§¤ì A2T DRAW (ì­ì¹´í ë­ë) ì ëì¼í í¬ì¹´ ì¤ ëë¤ 1ì¢ ì¦ì ë­ë í¬í ì¹´ëì¤ ì¹íì¬ì¸ í¬í ì¹´ë ëë¤ ì ê³µ",
           "luckyDraw": true
         }
       ],
       "offlineAddressName": "",
-      "offlineAddressDetail": "서대문구 연희로11가길 48-23",
+      "offlineAddressDetail": "ìëë¬¸êµ¬ ì°í¬ë¡11ê°ê¸¸ 48-23",
       "hanteoChart": true,
       "billboardChart": false,
       "chartEtc": "",
@@ -265,7 +265,7 @@
     {
       "id": "cs1774546314667",
       "categoryId": "cat_caligopt2",
-      "name": "더현대서울",
+      "name": "ëíëìì¸",
       "distId": "",
       "country": "KR",
       "round": null,
@@ -281,9 +281,9 @@
       "purchaseEndTxt": "",
       "offlineStart": "2026-04-14",
       "offlineEnd": "2026-04-19",
-      "offlineHours": "(화-목) 10:30 - 20:00 ; (금-일) 10:30 - 20:30",
-      "offlineAddress": "더현대서울 5F",
-      "offlineNote": "https://caligopt2popup.oopy.io/32d4cacd-15c9-80e1-b7b5-d07592ac0481모든 버전 구매시 더현대럭키드로우 포토카드 5종중 랜덤 증정",
+      "offlineHours": "(í-ëª©) 10:30 - 20:00 ; (ê¸-ì¼) 10:30 - 20:30",
+      "offlineAddress": "ëíëìì¸ 5F",
+      "offlineNote": "https://caligopt2popup.oopy.io/32d4cacd-15c9-80e1-b7b5-d07592ac0481ëª¨ë  ë²ì  êµ¬ë§¤ì ëíëë­í¤ëë¡ì° í¬í ì¹´ë 5ì¢ì¤ ëë¤ ì¦ì ",
       "offlineLuckyDraw": true,
       "defDomShip": 0,
       "defOvsShip": 0,
@@ -300,7 +300,7 @@
           "start": "2026-04-14",
           "end": "2026-04-19",
           "addressName": "",
-          "addressDetail": "더현대서울 5F",
+          "addressDetail": "ëíëìì¸ 5F",
           "hoursMap": {
             "0": "",
             "1": "",
@@ -310,12 +310,12 @@
             "5": "",
             "6": ""
           },
-          "note": "https://caligopt2popup.oopy.io/32d4cacd-15c9-80e1-b7b5-d07592ac0481모든 버전 구매시 더현대럭키드로우 포토카드 5종중 랜덤 증정",
+          "note": "https://caligopt2popup.oopy.io/32d4cacd-15c9-80e1-b7b5-d07592ac0481ëª¨ë  ë²ì  êµ¬ë§¤ì ëíëë­í¤ëë¡ì° í¬í ì¹´ë 5ì¢ì¤ ëë¤ ì¦ì ",
           "luckyDraw": true
         }
       ],
       "offlineAddressName": "",
-      "offlineAddressDetail": "더현대서울 5F",
+      "offlineAddressDetail": "ëíëìì¸ 5F",
       "hanteoChart": false,
       "billboardChart": false,
       "chartEtc": ""
@@ -323,7 +323,7 @@
     {
       "id": "s3",
       "categoryId": "cat_caligopt2",
-      "name": "메이크스타",
+      "name": "ë©ì´í¬ì¤í",
       "distId": "d2",
       "country": "KR",
       "round": null,
@@ -339,16 +339,16 @@
       "purchaseEndTxt": "",
       "offlineStart": "2026-04-14",
       "offlineEnd": "2026-04-20",
-      "offlineHours": "매일 12:00~20:00",
-      "offlineAddress": "서울시 학동로23길 29 B1",
-      "offlineNote": "[강남] MAKESTAR SPACE GANGNAM",
+      "offlineHours": "ë§¤ì¼ 12:00~20:00",
+      "offlineAddress": "ìì¸ì íëë¡23ê¸¸ 29 B1",
+      "offlineNote": "[ê°ë¨] MAKESTAR SPACE GANGNAM",
       "offlineLuckyDraw": false,
       "defDomShip": 3000,
       "defOvsShip": 0,
       "defDeliveryDate": "",
       "url": "https://www.makestar.com/product/16439",
       "videocall": false,
-      "memo": "POCAALBUM ver. 구매 시 미공개 포토카드 1매 랜덤 증정\n*총 5종, 앨범 1매 당 랜덤 1매\n*한 주문 건에서 앨범 2매 이상 구매 시 포토카드 중복없이 증정",
+      "memo": "POCAALBUM ver. êµ¬ë§¤ ì ë¯¸ê³µê° í¬í ì¹´ë 1ë§¤ ëë¤ ì¦ì \n*ì´ 5ì¢, ì¨ë² 1ë§¤ ë¹ ëë¤ 1ë§¤\n*í ì£¼ë¬¸ ê±´ìì ì¨ë² 2ë§¤ ì´ì êµ¬ë§¤ ì í¬í ì¹´ë ì¤ë³µìì´ ì¦ì ",
       "unpoAlbumKeys": [
         "ALB_1779038847739"
       ],
@@ -358,7 +358,7 @@
           "start": "2026-04-14",
           "end": "2026-04-20",
           "addressName": "",
-          "addressDetail": "서울시 학동로23길 29 B1",
+          "addressDetail": "ìì¸ì íëë¡23ê¸¸ 29 B1",
           "hoursMap": {
             "0": "",
             "1": "",
@@ -368,12 +368,12 @@
             "5": "",
             "6": ""
           },
-          "note": "[강남] MAKESTAR SPACE GANGNAM",
+          "note": "[ê°ë¨] MAKESTAR SPACE GANGNAM",
           "luckyDraw": false
         }
       ],
       "offlineAddressName": "",
-      "offlineAddressDetail": "서울시 학동로23길 29 B1",
+      "offlineAddressDetail": "ìì¸ì íëë¡23ê¸¸ 29 B1",
       "hanteoChart": false,
       "billboardChart": false,
       "chartEtc": ""
@@ -381,7 +381,7 @@
     {
       "id": "s4",
       "categoryId": "cat_caligopt2",
-      "name": "무신사",
+      "name": "ë¬´ì ì¬",
       "distId": "d3",
       "country": "KR",
       "round": 1,
@@ -406,7 +406,7 @@
       "defDeliveryDate": "",
       "url": "https://www.musinsa.com/search/goods?keyword=PLAVE+4th+Mini+Album+Caligo+Pt.2",
       "videocall": false,
-      "memo": "구매 수량에 맞춰 1:1 랜덤 증정\n온라인: 한 주문번호 내 앨범 2장 구매 시 중복없이 증정\n오프라인 (무신사 성수): 앨범 2장 이상 구매 시 중복없이 증정",
+      "memo": "êµ¬ë§¤ ìëì ë§ì¶° 1:1 ëë¤ ì¦ì \nì¨ë¼ì¸: í ì£¼ë¬¸ë²í¸ ë´ ì¨ë² 2ì¥ êµ¬ë§¤ ì ì¤ë³µìì´ ì¦ì \nì¤íë¼ì¸ (ë¬´ì ì¬ ì±ì): ì¨ë² 2ì¥ ì´ì êµ¬ë§¤ ì ì¤ë³µìì´ ì¦ì ",
       "unpoAlbumKeys": [
         "ALB_1779038855533"
       ],
@@ -420,7 +420,7 @@
     {
       "id": "s5",
       "categoryId": "cat_caligopt2",
-      "name": "무신사",
+      "name": "ë¬´ì ì¬",
       "distId": "d3",
       "country": "KR",
       "round": 2,
@@ -438,14 +438,14 @@
       "offlineEnd": "2026-04-20",
       "offlineHours": "11:00~10:00",
       "offlineAddress": "",
-      "offlineNote": "무신사 온라인: ASTERUM 433-10 (십카페럭드)와 동일무신사 스토어 성수 (연무장길 83 1F) - 무신사 1차럭드와 동일무신사 스토어 명동 (명동길 13) - ASTERUM 433-10 (십카페럭드)와 동일",
+      "offlineNote": "ë¬´ì ì¬ ì¨ë¼ì¸: ASTERUM 433-10 (ì­ì¹´íë­ë)ì ëì¼ë¬´ì ì¬ ì¤í ì´ ì±ì (ì°ë¬´ì¥ê¸¸ 83 1F) - ë¬´ì ì¬ 1ì°¨ë­ëì ëì¼ë¬´ì ì¬ ì¤í ì´ ëªë (ëªëê¸¸ 13) - ASTERUM 433-10 (ì­ì¹´íë­ë)ì ëì¼",
       "offlineLuckyDraw": false,
       "defDomShip": 0,
       "defOvsShip": 0,
       "defDeliveryDate": "",
       "url": "https://www.musinsa.com/search/goods?keyword=PLAVE+4th+Mini+Album+Caligo+Pt.2&gf=A&keywordType=keyword",
       "videocall": false,
-      "memo": "ID PASS 구매 시 미공포 (온오프동일)\n구매수량에 맞춰 1:1 랜덤증정",
+      "memo": "ID PASS êµ¬ë§¤ ì ë¯¸ê³µí¬ (ì¨ì¤íëì¼)\nêµ¬ë§¤ìëì ë§ì¶° 1:1 ëë¤ì¦ì ",
       "unpoAlbumKeys": [
         "ALB_1779038855533"
       ],
@@ -465,7 +465,7 @@
             "5": "",
             "6": ""
           },
-          "note": "무신사 온라인: ASTERUM 433-10 (십카페럭드)와 동일무신사 스토어 성수 (연무장길 83 1F) - 무신사 1차럭드와 동일무신사 스토어 명동 (명동길 13) - ASTERUM 433-10 (십카페럭드)와 동일",
+          "note": "ë¬´ì ì¬ ì¨ë¼ì¸: ASTERUM 433-10 (ì­ì¹´íë­ë)ì ëì¼ë¬´ì ì¬ ì¤í ì´ ì±ì (ì°ë¬´ì¥ê¸¸ 83 1F) - ë¬´ì ì¬ 1ì°¨ë­ëì ëì¼ë¬´ì ì¬ ì¤í ì´ ëªë (ëªëê¸¸ 13) - ASTERUM 433-10 (ì­ì¹´íë­ë)ì ëì¼",
           "luckyDraw": false
         }
       ],
@@ -478,7 +478,7 @@
     {
       "id": "s10",
       "categoryId": "cat_caligopt2",
-      "name": "애니메이트",
+      "name": "ì ëë©ì´í¸",
       "distId": "d8",
       "country": "KR",
       "round": null,
@@ -491,19 +491,19 @@
       "customPrices": {},
       "purchaseStart": "2026-03-24T11:00",
       "purchaseEnd": "2026-04-08T23:59",
-      "purchaseEndTxt": "특전 소진시까지",
+      "purchaseEndTxt": "í¹ì  ìì§ìê¹ì§",
       "offlineStart": "2026-04-14",
       "offlineEnd": "2026-05-31",
       "offlineHours": "",
-      "offlineAddress": "애니메이트 홍대점, 잠실롯데점, 부산점",
-      "offlineNote": "그라떼 7천원 / 아이싱쿠키 6,500원랜덤아크릴코스터 7,500원",
+      "offlineAddress": "ì ëë©ì´í¸ íëì , ì ì¤ë¡¯ë°ì , ë¶ì°ì ",
+      "offlineNote": "ê·¸ë¼ë¼ 7ì²ì / ìì´ì±ì¿ í¤ 6,500ìëë¤ìí¬ë¦´ì½ì¤í° 7,500ì",
       "offlineLuckyDraw": false,
       "defDomShip": 0,
       "defOvsShip": 0,
       "defDeliveryDate": "",
       "url": "https://animate-onlineshop.co.kr/goods/goods_view.php?goodsNo=1000089045",
       "videocall": false,
-      "memo": "특전: 포토카드 (전 5종 1세트 증정)【미공개 포토카드】\n※특전은 소진 시 종료됩니다.\n포토북, 인벤, 포카앨범 구매 시 특전엽서 1매 증정 (일본애니메이트샵)",
+      "memo": "í¹ì : í¬í ì¹´ë (ì  5ì¢ 1ì¸í¸ ì¦ì )ãë¯¸ê³µê° í¬í ì¹´ëã\nâ»í¹ì ì ìì§ ì ì¢ë£ë©ëë¤.\ní¬í ë¶, ì¸ë²¤, í¬ì¹´ì¨ë² êµ¬ë§¤ ì í¹ì ì½ì 1ë§¤ ì¦ì  (ì¼ë³¸ì ëë©ì´í¸ìµ)",
       "unpoAlbumKeys": [
         "ALB_1779038855533"
       ],
@@ -513,7 +513,7 @@
           "start": "2026-04-14",
           "end": "2026-05-31",
           "addressName": "",
-          "addressDetail": "애니메이트 홍대점, 잠실롯데점, 부산점",
+          "addressDetail": "ì ëë©ì´í¸ íëì , ì ì¤ë¡¯ë°ì , ë¶ì°ì ",
           "hoursMap": {
             "0": "",
             "1": "",
@@ -523,12 +523,12 @@
             "5": "",
             "6": ""
           },
-          "note": "그라떼 7천원 / 아이싱쿠키 6,500원랜덤아크릴코스터 7,500원",
+          "note": "ê·¸ë¼ë¼ 7ì²ì / ìì´ì±ì¿ í¤ 6,500ìëë¤ìí¬ë¦´ì½ì¤í° 7,500ì",
           "luckyDraw": false
         }
       ],
       "offlineAddressName": "",
-      "offlineAddressDetail": "애니메이트 홍대점, 잠실롯데점, 부산점",
+      "offlineAddressDetail": "ì ëë©ì´í¸ íëì , ì ì¤ë¡¯ë°ì , ë¶ì°ì ",
       "hanteoChart": false,
       "billboardChart": false,
       "chartEtc": ""
@@ -536,7 +536,7 @@
     {
       "id": "s7",
       "categoryId": "cat_caligopt2",
-      "name": "영풍문고 (뮤직아트)",
+      "name": "ìíë¬¸ê³  (ë®¤ì§ìí¸)",
       "distId": "d5",
       "country": "KR",
       "round": null,
@@ -553,7 +553,7 @@
       "offlineStart": "2026-04-14",
       "offlineEnd": "2026-04-20",
       "offlineHours": "10:00 - 22:00",
-      "offlineAddress": "the stage by Musicart (청계천로 41 영풍빌딩 B2)영풍문고 여의도 IFC몰점 (국제금융로 10 L2)영풍문고 홍대점 (양화로 161 케이스퀘어 B2)",
+      "offlineAddress": "the stage by Musicart (ì²­ê³ì²ë¡ 41 ìíë¹ë© B2)ìíë¬¸ê³  ì¬ìë IFCëª°ì  (êµ­ì ê¸ìµë¡ 10 L2)ìíë¬¸ê³  íëì  (ìíë¡ 161 ì¼ì´ì¤íì´ B2)",
       "offlineNote": "",
       "offlineLuckyDraw": false,
       "defDomShip": 3000,
@@ -561,7 +561,7 @@
       "defDeliveryDate": "",
       "url": "http://musicart.kr/shop/shopdetail.html?branduid=3530779",
       "videocall": false,
-      "memo": "POCAALBUM 구매 시 미공포 (온오프동일)\n한 주문 번호에 2장 이상 앨범 구매 시 특전 포토카드는 중복 없이 증정됩니다.",
+      "memo": "POCAALBUM êµ¬ë§¤ ì ë¯¸ê³µí¬ (ì¨ì¤íëì¼)\ní ì£¼ë¬¸ ë²í¸ì 2ì¥ ì´ì ì¨ë² êµ¬ë§¤ ì í¹ì  í¬í ì¹´ëë ì¤ë³µ ìì´ ì¦ì ë©ëë¤.",
       "unpoAlbumKeys": [
         "ALB_1779038847739"
       ],
@@ -571,7 +571,7 @@
           "start": "2026-04-14",
           "end": "2026-04-20",
           "addressName": "",
-          "addressDetail": "the stage by Musicart (청계천로 41 영풍빌딩 B2)영풍문고 여의도 IFC몰점 (국제금융로 10 L2)영풍문고 홍대점 (양화로 161 케이스퀘어 B2)",
+          "addressDetail": "the stage by Musicart (ì²­ê³ì²ë¡ 41 ìíë¹ë© B2)ìíë¬¸ê³  ì¬ìë IFCëª°ì  (êµ­ì ê¸ìµë¡ 10 L2)ìíë¬¸ê³  íëì  (ìíë¡ 161 ì¼ì´ì¤íì´ B2)",
           "hoursMap": {
             "0": "",
             "1": "",
@@ -586,7 +586,7 @@
         }
       ],
       "offlineAddressName": "",
-      "offlineAddressDetail": "the stage by Musicart (청계천로 41 영풍빌딩 B2)영풍문고 여의도 IFC몰점 (국제금융로 10 L2)영풍문고 홍대점 (양화로 161 케이스퀘어 B2)",
+      "offlineAddressDetail": "the stage by Musicart (ì²­ê³ì²ë¡ 41 ìíë¹ë© B2)ìíë¬¸ê³  ì¬ìë IFCëª°ì  (êµ­ì ê¸ìµë¡ 10 L2)ìíë¬¸ê³  íëì  (ìíë¡ 161 ì¼ì´ì¤íì´ B2)",
       "hanteoChart": false,
       "billboardChart": false,
       "chartEtc": ""
@@ -594,7 +594,7 @@
     {
       "id": "s6",
       "categoryId": "cat_caligopt2",
-      "name": "올리브영",
+      "name": "ì¬ë¦¬ë¸ì",
       "distId": "d4",
       "country": "KR",
       "round": null,
@@ -611,7 +611,7 @@
       "offlineStart": "2026-04-14",
       "offlineEnd": "2026-04-20",
       "offlineHours": "",
-      "offlineAddress": "올리브영N 성수 (연무장7길 13) 10:00~22:00올리브영 홍대놀이터점 (와우산로21길 29) 10:00~22:00",
+      "offlineAddress": "ì¬ë¦¬ë¸ìN ì±ì (ì°ë¬´ì¥7ê¸¸ 13) 10:00~22:00ì¬ë¦¬ë¸ì íëëì´í°ì  (ìì°ì°ë¡21ê¸¸ 29) 10:00~22:00",
       "offlineNote": "",
       "offlineLuckyDraw": false,
       "defDomShip": 0,
@@ -619,7 +619,7 @@
       "defDeliveryDate": "",
       "url": "https://www.oliveyoung.co.kr/store/planshop/getPlanShopDetail.do?dispCatNo=500000100018171",
       "videocall": false,
-      "memo": "ID PASS 구매 시 미공포 (온오프동일)",
+      "memo": "ID PASS êµ¬ë§¤ ì ë¯¸ê³µí¬ (ì¨ì¤íëì¼)",
       "unpoAlbumKeys": [
         "ALB_1779038847739"
       ],
@@ -629,7 +629,7 @@
           "start": "2026-04-14",
           "end": "2026-04-20",
           "addressName": "",
-          "addressDetail": "올리브영N 성수 (연무장7길 13) 10:00~22:00올리브영 홍대놀이터점 (와우산로21길 29) 10:00~22:00",
+          "addressDetail": "ì¬ë¦¬ë¸ìN ì±ì (ì°ë¬´ì¥7ê¸¸ 13) 10:00~22:00ì¬ë¦¬ë¸ì íëëì´í°ì  (ìì°ì°ë¡21ê¸¸ 29) 10:00~22:00",
           "hoursMap": {
             "0": "",
             "1": "",
@@ -644,7 +644,7 @@
         }
       ],
       "offlineAddressName": "",
-      "offlineAddressDetail": "올리브영N 성수 (연무장7길 13) 10:00~22:00올리브영 홍대놀이터점 (와우산로21길 29) 10:00~22:00",
+      "offlineAddressDetail": "ì¬ë¦¬ë¸ìN ì±ì (ì°ë¬´ì¥7ê¸¸ 13) 10:00~22:00ì¬ë¦¬ë¸ì íëëì´í°ì  (ìì°ì°ë¡21ê¸¸ 29) 10:00~22:00",
       "hanteoChart": false,
       "billboardChart": false,
       "chartEtc": ""
@@ -652,7 +652,7 @@
     {
       "id": "s8",
       "categoryId": "cat_caligopt2",
-      "name": "타워레코드",
+      "name": "íìë ì½ë",
       "distId": "d6",
       "country": "JP",
       "round": null,
@@ -665,7 +665,7 @@
       "customPrices": {},
       "purchaseStart": "2026-03-24T11:00",
       "purchaseEnd": "",
-      "purchaseEndTxt": "특전 소진시까지",
+      "purchaseEndTxt": "í¹ì  ìì§ìê¹ì§",
       "offlineStart": "",
       "offlineEnd": "",
       "offlineHours": "",
@@ -691,7 +691,7 @@
     {
       "id": "cs1774546219159",
       "categoryId": "cat_caligopt2",
-      "name": "타워레코드",
+      "name": "íìë ì½ë",
       "distId": "dcs1774546040116",
       "country": "KR",
       "round": 1,
@@ -716,7 +716,7 @@
       "url": "https://x.com/Plave_Album/status/2036341423856034026?s=20",
       "defDeliveryDate": "2026-05-01",
       "videocall": false,
-      "memo": "출고 일정 : 05월 초 ~ 05월 중 예상",
+      "memo": "ì¶ê³  ì¼ì  : 05ì ì´ ~ 05ì ì¤ ìì",
       "unpoAlbumKeys": [],
       "offlineEvents": [],
       "offlineAddressName": "",
@@ -728,7 +728,7 @@
     {
       "id": "s11",
       "categoryId": "cat_caligopt2",
-      "name": "Hello82 (예판)",
+      "name": "Hello82 (ìí)",
       "distId": "d9",
       "country": "US",
       "round": null,
@@ -767,7 +767,7 @@
     {
       "id": "s12",
       "categoryId": "cat_caligopt2",
-      "name": "Hello82 (팝업)",
+      "name": "Hello82 (íì)",
       "distId": "d9",
       "country": "US",
       "round": null,
@@ -819,7 +819,7 @@
       "customPrices": {},
       "purchaseStart": "2026-03-24T11:00",
       "purchaseEnd": "",
-      "purchaseEndTxt": "특전 소진시까지",
+      "purchaseEndTxt": "í¹ì  ìì§ìê¹ì§",
       "offlineStart": "",
       "offlineEnd": "",
       "offlineHours": "",
@@ -831,7 +831,7 @@
       "defDeliveryDate": "",
       "url": "https://www.hmv.co.jp/en/news/article/260317125/",
       "videocall": false,
-      "memo": "인벤토리를 제외하고 세트판매하지않음",
+      "memo": "ì¸ë²¤í ë¦¬ë¥¼ ì ì¸íê³  ì¸í¸íë§¤íì§ìì",
       "unpoAlbumKeys": [
         "ALB_1779038855533"
       ],
@@ -909,7 +909,7 @@
       "defDeliveryDate": "",
       "url": "https://i2.y.qq.com/n3/cm/pages/putao/product_detail/index.html?productID=1205354113456059",
       "videocall": false,
-      "memo": "(5种随机1种，购买5张凑套)\n→ 5종 중 랜덤 1종 / 5장 구매 시 한 세트 완성",
+      "memo": "(5ç§éæº1ç§ï¼è´­ä¹°5å¼ åå¥)\nâ 5ì¢ ì¤ ëë¤ 1ì¢ / 5ì¥ êµ¬ë§¤ ì í ì¸í¸ ìì±",
       "unpoAlbumKeys": [
         "ALB_1779038838207"
       ],
@@ -936,7 +936,7 @@
       "customPrices": {},
       "purchaseStart": "2026-03-24T11:00",
       "purchaseEnd": "2026-03-27T08:00",
-      "purchaseEndTxt": "특전 소진시까지",
+      "purchaseEndTxt": "í¹ì  ìì§ìê¹ì§",
       "offlineStart": "",
       "offlineEnd": "",
       "offlineHours": "",
@@ -948,7 +948,7 @@
       "defDeliveryDate": "",
       "url": "https://x.com/Plave_Album/status/2036611347409231996?s=20",
       "videocall": false,
-      "memo": "(5种随机1种，购买5张凑套)\n→ 5종 중 랜덤 1종 / 5장 구매 시 한 세트 완성",
+      "memo": "(5ç§éæº1ç§ï¼è´­ä¹°5å¼ åå¥)\nâ 5ì¢ ì¤ ëë¤ 1ì¢ / 5ì¥ êµ¬ë§¤ ì í ì¸í¸ ìì±",
       "unpoAlbumKeys": [],
       "offlineEvents": [],
       "offlineAddressName": "",
@@ -1116,7 +1116,7 @@
     {
       "id": "cs1774545937612",
       "categoryId": "cat_caligopt2",
-      "name": "디어마이뮤즈",
+      "name": "ëì´ë§ì´ë®¤ì¦",
       "distId": "dcs1774619306510",
       "country": "KR",
       "round": null,
@@ -1141,7 +1141,7 @@
       "defDeliveryDate": "2026-04-15",
       "url": "https://x.com/Plave_Album/status/2036340525821993312?s=20",
       "videocall": false,
-      "memo": "할인/초동 반영100%/무특전/전광판 광고/7만 무배\n특전/혜택: 디마뮤 사옥 전광판 광고 (4/14 - 4/20)",
+      "memo": "í ì¸/ì´ë ë°ì100%/ë¬´í¹ì /ì ê´í ê´ê³ /7ë§ ë¬´ë°°\ní¹ì /íí: ëë§ë®¤ ì¬ì¥ ì ê´í ê´ê³  (4/14 - 4/20)",
       "unpoAlbumKeys": [],
       "offlineEvents": [],
       "offlineAddressName": "",
@@ -1153,7 +1153,7 @@
     {
       "id": "cs1774545824537",
       "categoryId": "cat_caligopt2",
-      "name": "버프즈",
+      "name": "ë²íì¦",
       "distId": "dcs1774619302089",
       "country": "KR",
       "round": null,
@@ -1178,7 +1178,7 @@
       "defDeliveryDate": "2026-04-14",
       "url": "https://x.com/Plave_Album/status/2036291046146265331?s=20",
       "videocall": false,
-      "memo": "할인/초동 반영100%/무특전/가격 상관 없이 무조건 무료배송\n앨범 발매 당일 발송 보장\n*버프즈 신규 회원 혜택\n- 총 1만원 즉시 할인 (3만원 이상 구매 시 3천원 + 7만원 이상 구매 시 7천원)",
+      "memo": "í ì¸/ì´ë ë°ì100%/ë¬´í¹ì /ê°ê²© ìê´ ìì´ ë¬´ì¡°ê±´ ë¬´ë£ë°°ì¡\nì¨ë² ë°ë§¤ ë¹ì¼ ë°ì¡ ë³´ì¥\n*ë²íì¦ ì ê· íì íí\n- ì´ 1ë§ì ì¦ì í ì¸ (3ë§ì ì´ì êµ¬ë§¤ ì 3ì²ì + 7ë§ì ì´ì êµ¬ë§¤ ì 7ì²ì)",
       "unpoAlbumKeys": [],
       "offlineEvents": [],
       "offlineAddressName": "",
@@ -1190,7 +1190,7 @@
     {
       "id": "cs1774545708995",
       "categoryId": "cat_caligopt2",
-      "name": "비트로드",
+      "name": "ë¹í¸ë¡ë",
       "distId": "dcs1774619310313",
       "country": "KR",
       "round": null,
@@ -1215,7 +1215,7 @@
       "defDeliveryDate": "2026-04-14",
       "url": "https://x.com/Plave_Album/status/2036292541986001367?s=20",
       "videocall": false,
-      "memo": "앨범 발매 당일부터 순차 발송 예상\n3만원 이상 무료 배송\n현재 최저가",
+      "memo": "ì¨ë² ë°ë§¤ ë¹ì¼ë¶í° ìì°¨ ë°ì¡ ìì\n3ë§ì ì´ì ë¬´ë£ ë°°ì¡\níì¬ ìµì ê°",
       "unpoAlbumKeys": [],
       "offlineEvents": [],
       "offlineAddressName": "",
@@ -1227,7 +1227,7 @@
     {
       "id": "cs1774545544751",
       "categoryId": "cat_caligopt2",
-      "name": "케타포",
+      "name": "ì¼íí¬",
       "distId": "dcs1774619329527",
       "country": "KR",
       "round": null,
@@ -1252,7 +1252,7 @@
       "defDeliveryDate": "2026-04-15",
       "url": "https://kr.ktown4u.com/eventinfo?eve_no=44113596&biz_no=967",
       "videocall": false,
-      "memo": "3만원 이상 구매 시 무료배송 (3만원 미만 3,000원)",
+      "memo": "3ë§ì ì´ì êµ¬ë§¤ ì ë¬´ë£ë°°ì¡ (3ë§ì ë¯¸ë§ 3,000ì)",
       "unpoAlbumKeys": [],
       "offlineEvents": [],
       "offlineAddressName": "",
@@ -1264,7 +1264,7 @@
     {
       "id": "cs1775249000001",
       "categoryId": "cat_caligopt2",
-      "name": "사운드웨이브",
+      "name": "ì¬ì´ëì¨ì´ë¸",
       "distId": "dcs1775249000000",
       "country": "KR",
       "round": null,
@@ -1277,7 +1277,7 @@
       "customPrices": {},
       "purchaseStart": "2026-04-05T11:00",
       "purchaseEnd": "2026-04-07T23:59",
-      "purchaseEndTxt": "특전 소진시까지",
+      "purchaseEndTxt": "í¹ì  ìì§ìê¹ì§",
       "offlineStart": "",
       "offlineEnd": "",
       "offlineHours": "",
@@ -1289,7 +1289,7 @@
       "defDeliveryDate": "",
       "url": "https://www.soundwavemusic.co.kr",
       "videocall": true,
-      "memo": "Inventory 구매 시 미공포 5종 중 랜덤 1종 증정\n영상통화 이벤트 진행",
+      "memo": "Inventory êµ¬ë§¤ ì ë¯¸ê³µí¬ 5ì¢ ì¤ ëë¤ 1ì¢ ì¦ì \nììíµí ì´ë²¤í¸ ì§í",
       "unpoAlbumKeys": [
         "ALB_1779038864675"
       ],
@@ -1303,7 +1303,7 @@
     {
       "id": "cs1774664589091",
       "categoryId": "cat_caligopt2",
-      "name": "뮤직플랜트",
+      "name": "ë®¤ì§íëí¸",
       "distId": "dcs1774663794920",
       "country": "KR",
       "round": null,
@@ -1328,7 +1328,7 @@
       "defDeliveryDate": "",
       "url": "https://www.musicplant.co.kr/board/?db=gallery_1&no=1320&mari_mode=view%40view&cate=17&page=1&search=&search_str=&temp=",
       "videocall": true,
-      "memo": "응모 기간 (~3/31) 내 뮤직플랜트 온라인몰에서 Inventory 상품 구매고객중 50명 추첨하여 사인포카 증정\n영통: 2026년 4월 26일 / 시간 추후 안내",
+      "memo": "ìëª¨ ê¸°ê° (~3/31) ë´ ë®¤ì§íëí¸ ì¨ë¼ì¸ëª°ìì Inventory ìí êµ¬ë§¤ê³ ê°ì¤ 50ëª ì¶ì²¨íì¬ ì¬ì¸í¬ì¹´ ì¦ì \nìíµ: 2026ë 4ì 26ì¼ / ìê° ì¶í ìë´",
       "unpoAlbumKeys": [
         "ALB_1779038864675"
       ],
@@ -1342,7 +1342,7 @@
     {
       "id": "cs1774700960047",
       "categoryId": "cat_caligopt2",
-      "name": "뮤직플랜트",
+      "name": "ë®¤ì§íëí¸",
       "distId": "dcs1774663794920",
       "country": "KR",
       "round": null,
@@ -1372,7 +1372,7 @@
     {
       "id": "cs1774874734719",
       "categoryId": "cat_caligopt2",
-      "name": "타워레코드",
+      "name": "íìë ì½ë",
       "distId": "dcs1774546040116",
       "country": "KR",
       "round": 2,
@@ -1397,7 +1397,7 @@
       "defDeliveryDate": "2026-05-15",
       "url": "https://09platform.com/surl/P/1312",
       "videocall": false,
-      "memo": "★ 1차 공동구매와 묶음 배송 불가능합니다 ★\n출고 일정 : 1차 물량 모두 출고 후 / 05월 중 ~ 05월 말 예상",
+      "memo": "â 1ì°¨ ê³µëêµ¬ë§¤ì ë¬¶ì ë°°ì¡ ë¶ê°ë¥í©ëë¤ â\nì¶ê³  ì¼ì  : 1ì°¨ ë¬¼ë ëª¨ë ì¶ê³  í / 05ì ì¤ ~ 05ì ë§ ìì",
       "unpoAlbumKeys": [],
       "offlineEvents": [],
       "offlineAddressName": "",
@@ -1434,7 +1434,7 @@
       "defDeliveryDate": "2026-05-15",
       "url": "https://09platform.com/surl/P/1312",
       "videocall": false,
-      "memo": "★ 1차 공동구매와 묶음 배송 불가능합니다 ★\n출고 일정 : 1차 물량 모두 출고 후 / 05월 중 ~ 05월 말 예상",
+      "memo": "â 1ì°¨ ê³µëêµ¬ë§¤ì ë¬¶ì ë°°ì¡ ë¶ê°ë¥í©ëë¤ â\nì¶ê³  ì¼ì  : 1ì°¨ ë¬¼ë ëª¨ë ì¶ê³  í / 05ì ì¤ ~ 05ì ë§ ìì",
       "unpoAlbumKeys": [],
       "offlineEvents": [],
       "offlineAddressName": "",
@@ -1446,7 +1446,7 @@
     {
       "id": "cs1775049657392",
       "categoryId": "cat_caligopt2",
-      "name": "이즈위",
+      "name": "ì´ì¦ì",
       "distId": "dcs1775049442175",
       "country": "CN",
       "round": null,
@@ -1471,7 +1471,7 @@
       "defDeliveryDate": "",
       "url": "https://www.withfans.com/#/idolDetail?idol_id=6869",
       "videocall": true,
-      "memo": "미공포가 포함되지 않은 포카앨범은 102위안\n영통 당첨자 발표: 4월 7일 18:00 (한국시간 19시)\n영통일정: 2026년 5월 9일 (정확한 시간 추후 공지)",
+      "memo": "ë¯¸ê³µí¬ê° í¬í¨ëì§ ìì í¬ì¹´ì¨ë²ì 102ìì\nìíµ ë¹ì²¨ì ë°í: 4ì 7ì¼ 18:00 (íêµ­ìê° 19ì)\nìíµì¼ì : 2026ë 5ì 9ì¼ (ì íí ìê° ì¶í ê³µì§)",
       "unpoAlbumKeys": [
         "ALB_1779038838207"
       ],
@@ -1498,7 +1498,7 @@
       "customPrices": {},
       "purchaseStart": "2026-04-07T11:00",
       "purchaseEnd": "2026-04-30T18:00",
-      "purchaseEndTxt": "조기소진 시 마감",
+      "purchaseEndTxt": "ì¡°ê¸°ìì§ ì ë§ê°",
       "offlineStart": "",
       "offlineEnd": "",
       "offlineHours": "",
@@ -1510,7 +1510,7 @@
       "defDeliveryDate": "2026-06-09",
       "url": "https://09platform.com/surl/P/1314",
       "videocall": false,
-      "memo": "초동반영불가\n출고일정: 6월 말 - 7월 초",
+      "memo": "ì´ëë°ìë¶ê°\nì¶ê³ ì¼ì : 6ì ë§ - 7ì ì´",
       "unpoAlbumKeys": [],
       "offlineEvents": [],
       "offlineAddressName": "",
@@ -1540,7 +1540,7 @@
       },
       "purchaseStart": "2026-04-07T11:00",
       "purchaseEnd": "",
-      "purchaseEndTxt": "특전 소진시까지",
+      "purchaseEndTxt": "í¹ì  ìì§ìê¹ì§",
       "offlineStart": "",
       "offlineEnd": "",
       "offlineHours": "",
@@ -1552,7 +1552,7 @@
       "defDeliveryDate": "2026-06-09",
       "url": "https://shop.weverse.io/ko/shop/JPY/artists/167/categories/3719",
       "videocall": false,
-      "memo": "포토북, ID Pass: 특전 없음 / 포카앨범: 미공포 5장\n인벤토리: 엽서 1매"
+      "memo": "í¬í ë¶, ID Pass: í¹ì  ìì / í¬ì¹´ì¨ë²: ë¯¸ê³µí¬ 5ì¥\nì¸ë²¤í ë¦¬: ì½ì 1ë§¤"
     },
     {
       "id": "cs1775566533743",
@@ -1575,7 +1575,7 @@
       },
       "purchaseStart": "2026-04-07T11:00",
       "purchaseEnd": "",
-      "purchaseEndTxt": "특전 소진시까지",
+      "purchaseEndTxt": "í¹ì  ìì§ìê¹ì§",
       "offlineStart": "",
       "offlineEnd": "",
       "offlineHours": "",
@@ -1587,7 +1587,7 @@
       "defDeliveryDate": "2026-06-09",
       "url": "https://store-annex.universal-music.co.jp/product/dsku15815/",
       "videocall": false,
-      "memo": "인벤토리/포카버전 구매 시 엽서 1매 특전 증정\n포토북 구매시 미공포 증정 / 위버스재팬에서도 구매가능"
+      "memo": "ì¸ë²¤í ë¦¬/í¬ì¹´ë²ì  êµ¬ë§¤ ì ì½ì 1ë§¤ í¹ì  ì¦ì \ní¬í ë¶ êµ¬ë§¤ì ë¯¸ê³µí¬ ì¦ì  / ìë²ì¤ì¬í¬ììë êµ¬ë§¤ê°ë¥"
     },
     {
       "id": "cs1775737339629",
@@ -1629,7 +1629,7 @@
     {
       "id": "cs1775737775955",
       "categoryId": "cat_caligopt2",
-      "name": "케타포",
+      "name": "ì¼íí¬",
       "distId": "dcs1774619329527",
       "country": "KR",
       "round": null,
@@ -1645,9 +1645,9 @@
       "purchaseEndTxt": "",
       "offlineStart": "2026-04-14",
       "offlineEnd": "2026-04-20",
-      "offlineHours": "11:00 - 20:00 (15-16시 브레이크)",
-      "offlineAddress": "케타포 인사 / 케타포 코엑스",
-      "offlineNote": "포카앨범 구매 시 미공포스페셜메뉴 구매 시 컨셉포토카드 중 랜덤 1종 + 로고스티커 1종네임스티커",
+      "offlineHours": "11:00 - 20:00 (15-16ì ë¸ë ì´í¬)",
+      "offlineAddress": "ì¼íí¬ ì¸ì¬ / ì¼íí¬ ì½ìì¤",
+      "offlineNote": "í¬ì¹´ì¨ë² êµ¬ë§¤ ì ë¯¸ê³µí¬ì¤íìë©ë´ êµ¬ë§¤ ì ì»¨ìí¬í ì¹´ë ì¤ ëë¤ 1ì¢ + ë¡ê³ ì¤í°ì»¤ 1ì¢ë¤ìì¤í°ì»¤",
       "offlineLuckyDraw": false,
       "defDomShip": 0,
       "defOvsShip": 0,
@@ -1664,7 +1664,7 @@
           "start": "2026-04-14",
           "end": "2026-04-20",
           "addressName": "",
-          "addressDetail": "케타포 인사 / 케타포 코엑스",
+          "addressDetail": "ì¼íí¬ ì¸ì¬ / ì¼íí¬ ì½ìì¤",
           "hoursMap": {
             "0": "",
             "1": "",
@@ -1674,12 +1674,12 @@
             "5": "",
             "6": ""
           },
-          "note": "포카앨범 구매 시 미공포스페셜메뉴 구매 시 컨셉포토카드 중 랜덤 1종 + 로고스티커 1종네임스티커",
+          "note": "í¬ì¹´ì¨ë² êµ¬ë§¤ ì ë¯¸ê³µí¬ì¤íìë©ë´ êµ¬ë§¤ ì ì»¨ìí¬í ì¹´ë ì¤ ëë¤ 1ì¢ + ë¡ê³ ì¤í°ì»¤ 1ì¢ë¤ìì¤í°ì»¤",
           "luckyDraw": false
         }
       ],
       "offlineAddressName": "",
-      "offlineAddressDetail": "케타포 인사 / 케타포 코엑스",
+      "offlineAddressDetail": "ì¼íí¬ ì¸ì¬ / ì¼íí¬ ì½ìì¤",
       "hanteoChart": false,
       "billboardChart": false,
       "chartEtc": "",
@@ -1689,7 +1689,7 @@
     {
       "id": "cs1776085066455",
       "categoryId": "cat_caligopt2",
-      "name": "위드뮤",
+      "name": "ìëë®¤",
       "distId": "dcs1776084976682",
       "country": "KR",
       "round": null,
@@ -1714,7 +1714,7 @@
       "defDeliveryDate": "",
       "url": "https://withmuu.com/goods/event_sale.php?sno=1333",
       "videocall": true,
-      "memo": "영통응모 발표 4/17 2시",
+      "memo": "ìíµìëª¨ ë°í 4/17 2ì",
       "unpoAlbumKeys": [
         "ALB_1779038864675"
       ],
@@ -1788,7 +1788,7 @@
       "defDeliveryDate": "",
       "url": "https://vlastshop.com/product/[DRIVING-TALK-EVENT]-PLAVE-4th-Mini-Album-/'Caligo-Pt.2/'-(POCAALBUM-Ver._5%EC%A2%85-%EC%A4%91-%EB%9E%9C%EB%8D%A4%EB%B0%9C%EC%86%A1)/305/category/55/display/1/",
       "videocall": true,
-      "memo": "영통발표: 4/21 ; 드라이빙토크회: 5/31",
+      "memo": "ìíµë°í: 4/21 ; ëë¼ì´ë¹í í¬í: 5/31",
       "unpoAlbumKeys": [
         "ALB_1779038847739"
       ],
@@ -1804,7 +1804,7 @@
     {
       "id": "cs1776402107838",
       "categoryId": "cat_caligopt2",
-      "name": "버프즈",
+      "name": "ë²íì¦",
       "distId": "dcs1774619302089",
       "country": "KR",
       "round": null,
@@ -1841,46 +1841,6 @@
       "chartEtc": ""
     }
   ],
-  "unpoCards": [
-    {
-      "id": "u17790397044107mj3",
-      "storeId": "cs1774546479074",
-      "albumTypeId": "ALB_1779038847739",
-      "sets": [
-        {
-          "memo": "",
-          "cards": [
-            {
-              "owned": false,
-              "note": "예준",
-              "img": null
-            },
-            {
-              "owned": false,
-              "note": "노아",
-              "img": null
-            },
-            {
-              "owned": false,
-              "note": "밤비",
-              "img": null
-            },
-            {
-              "owned": false,
-              "note": "은호",
-              "img": null
-            },
-            {
-              "owned": false,
-              "note": "하민",
-              "img": null
-            }
-          ]
-        }
-      ]
-    }
-  ],
-  "purchases": [],
   "notices": [],
   "settings": {
     "rates": {
@@ -1912,7 +1872,7 @@
       "OTHER": {
         "rate": 1,
         "manual": true,
-        "name": "기타",
+        "name": "ê¸°í",
         "updAt": null
       }
     },
@@ -1923,7 +1883,7 @@
       "repo": "myalbums",
       "branch": "main",
       "filePath": "db/data.json",
-      "sha": "09a3efc79f6572f6eb7c8f0587911a554d95168a"
+      "sha": "300898cd729d3efea9f628832a9bb64ebb213f86"
     }
   }
 }
