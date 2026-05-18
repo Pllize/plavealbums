@@ -306,6 +306,7 @@
       <label class="form-check"><input type="checkbox" id="cal-show-pur" checked onchange="render()"><span style="font-size:12px">구매기간</span></label>
       <label class="form-check"><input type="checkbox" id="cal-show-off" checked onchange="render()"><span style="font-size:12px">오프라인</span></label>
       <label class="form-check"><input type="checkbox" id="cal-show-del" checked onchange="render()"><span style="font-size:12px">배송예정</span></label>
+      <label class="form-check"><input type="checkbox" id="cal-show-vc" checked onchange="render()"><span style="font-size:12px">영통</span></label>
     </div>
   </div>
 
@@ -492,6 +493,7 @@ let S = {
   calYear: new Date().getFullYear(),
   calMonth: new Date().getMonth(),
   calDay: null,
+  calHighlightStore: null,
   calTab: 'calendar',
   showProxy: false,
   hideExpired: true,
@@ -1268,7 +1270,7 @@ function openStorePopup(storeId) {
     store.billboardChart ? '<span style="font-size:11px;background:rgba(34,197,94,.15);color:var(--ok);padding:2px 6px;border-radius:3px">빌보드</span>' : '',
     store.chartEtc ? `<span class="badge badge-gray">${store.chartEtc}</span>` : '',
     store.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : '',
-    store.offlineLuckyDraw ? '<span title="럭키드로우">🎰 럭키드로우</span>' : '',
+    store.offlineLuckyDraw ? '<span title="럭키드로우">🃏 럭키드로우</span>' : '',
     country ? `<span class="badge badge-gray">${country.flag} ${country.lb}</span>` : '',
     store.round ? `<span class="badge badge-info">${store.round}차</span>` : '',
   ].filter(Boolean).join('');
@@ -1292,7 +1294,7 @@ function openStorePopup(storeId) {
     ${offlineEvts.map(ev => {
       const hrs = Object.entries(ev.hoursMap||{}).filter(([,v])=>v).map(([di,v])=>`${DAYS_KR[di]} ${v}`).join(' / ');
       return `<div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px;margin-bottom:8px">
-        <div style="font-size:13px;font-weight:600">${ev.start?fDate(ev.start):''}${ev.end&&ev.end!==ev.start?' ~ '+fDate(ev.end):''}${ev.luckyDraw?' 🎰':''}</div>
+        <div style="font-size:13px;font-weight:600">${ev.start?fDate(ev.start):''}${ev.end&&ev.end!==ev.start?' ~ '+fDate(ev.end):''}${ev.luckyDraw?' 🃏':''}</div>
         ${ev.addressName?`<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 ${ev.addressName}${ev.addressDetail?' · '+ev.addressDetail:''}</div>`:ev.addressDetail?`<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 <a href="https://map.naver.com/v5/search/${encodeURIComponent(ev.addressDetail)}" target="_blank" style="color:var(--pk)">${ev.addressDetail} 🗺</a></div>`:''}
         ${hrs?`<div style="font-size:11px;color:var(--tx3);margin-top:3px">${hrs}</div>`:''}
         ${ev.note?`<div style="font-size:12px;color:var(--tx2);margin-top:4px;white-space:pre-wrap">${ev.note}</div>`:''}
@@ -1349,7 +1351,10 @@ function openUnpoViewer(storeId, albKey) {
 
   const setsHtml = uc.sets.map((set, si) => `
     <div style="margin-bottom:16px">
-      <div class="text-sm fw-600" style="margin-bottom:6px">세트 ${si+1}${set.memo ? ': ' + set.memo : ''}</div>
+      <div class="text-sm fw-600" style="margin-bottom:6px;display:flex;align-items:center;gap:6px">
+        <span>세트 ${si+1}${set.memo ? ': ' + set.memo : ''}</span>
+        ${set.luckyDraw ? '<span class="badge badge-pk" style="font-size:10px">🃏 럭키드로우</span>' : ''}
+      </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px">
         ${(set.cards||[]).map((c, ci) => `
           <div class="unpo-card-wrap">
@@ -2348,7 +2353,7 @@ function showStoreDetail(storeId) {
     ${offlineEvents.map(ev => `
       <div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px;margin-bottom:8px">
         <div style="font-size:13px;font-weight:600">${ev.start ? fDate(ev.start) : ''}${ev.end && ev.end !== ev.start ? ' ~ ' + fDate(ev.end) : ''}
-          ${ev.luckyDraw ? ' 🎰' : ''}
+          ${ev.luckyDraw ? ' 🃏' : ''}
         </div>
         ${ev.addressName ? `<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 ${ev.addressName}${ev.addressDetail ? ' · ' + ev.addressDetail : ''}</div>` : ev.addressDetail ? `<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 ${ev.addressDetail}</div>` : ''}
         ${(() => {
@@ -2550,6 +2555,7 @@ function renderCal() {
   const showPur = document.getElementById('cal-show-pur')?.checked !== false;
   const showOff = document.getElementById('cal-show-off')?.checked !== false;
   const showDel = document.getElementById('cal-show-del')?.checked !== false;
+  const showVc = document.getElementById('cal-show-vc')?.checked !== false;
 
   // Days header
   const days = ['일','월','화','수','목','금','토'];
@@ -2595,6 +2601,13 @@ function renderCal() {
       });
     }
   });
+
+  if (showVc) {
+    stores.forEach(s => {
+      if (s.vcStart) addEvent(s.vcStart.slice(0,10), { type: 'vc', label: '📞 영통 시작: ' + s.name, storeId: s.id });
+      if (s.vcEnd && s.vcEnd !== s.vcStart) addEvent(s.vcEnd.slice(0,10), { type: 'vc', label: '📞 영통 마감: ' + s.name, storeId: s.id });
+    });
+  }
 
   if (showDel) {
     const purches = (DB.purchases || []).filter(p => {
@@ -2674,6 +2687,7 @@ function renderCal() {
     const isToday = dateStr === today.toISOString().slice(0, 10);
     const isSelected = dateStr === S.calDay;
     const dayEvs = events[dateStr] || [];
+    const isHighlighted = S.calHighlightStore && dayEvs.some(ev => ev.storeId === S.calHighlightStore);
     // Deduplicate offline events for same store on same day (show once per store)
     const seenStores = new Set();
     const displayEvs = dayEvs.filter(ev => {
@@ -2685,7 +2699,7 @@ function renderCal() {
     }).slice(0, 3);
     const chodong = chodongCls(dateStr);
 
-    cells += `<div class="cal-cell${isOther ? ' other-month' : ''}${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}${chodong ? ' ' + chodong : ''}"
+    cells += `<div class="cal-cell${isOther ? ' other-month' : ''}${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}${chodong ? ' ' + chodong : ''}${isHighlighted ? ' store-highlight' : ''}"
       onclick="calSelectDay('${dateStr}')">
       <div class="cal-day-num" style="display:flex;justify-content:space-between;align-items:center">
         <span>${day}</span>${ddayLabel(dateStr)}
@@ -2699,12 +2713,20 @@ function renderCal() {
   }
   document.getElementById('cal-body').innerHTML = cells;
 
-  // Remove any existing event list (no longer shown)
-  const oldList = document.getElementById('cal-event-list');
-  if (oldList) oldList.remove();
-
-  // Legend only
-  document.getElementById('cal-day-detail').innerHTML = buildCalLegend(cat);
+  // Day event detail list
+  let detailHtml = buildCalLegend(cat);
+  if (S.calDay) {
+    const dayEvs = (events[S.calDay] || []);
+    if (dayEvs.length) {
+      detailHtml += `<div style="margin-top:14px">
+        <div class="section-divider" style="margin-bottom:8px">${formatDateKo(S.calDay)} 일정 (${dayEvs.length}건)</div>
+        ${dayEvs.map(ev => buildCalDayItem(ev)).join('')}
+      </div>`;
+    } else {
+      detailHtml += `<div style="margin-top:10px;font-size:12px;color:var(--tx3);text-align:center">${formatDateKo(S.calDay)} — 일정 없음</div>`;
+    }
+  }
+  document.getElementById('cal-day-detail').innerHTML = detailHtml;
 }
 
 function buildCalLegend(cat) {
@@ -2721,6 +2743,7 @@ function buildCalLegend(cat) {
     <span class="cal-legend-item purchase-end">구매 마감</span>
     <span class="cal-legend-item offline">오프라인</span>
     <span class="cal-legend-item delivery">배송예정</span>
+    <span class="cal-legend-item vc">영통</span>
   </div>`;
 }
 
@@ -2737,7 +2760,7 @@ function renderCalEvents() {
       <div class="card-header">
         <div class="fw-600">${s.name}</div>
         <div style="display:flex;gap:4px">
-          ${s.offlineLuckyDraw ? '<span class="badge badge-pk">🎰 럭키드로우</span>' : ''}
+          ${s.offlineLuckyDraw ? '<span class="badge badge-pk">🃏 럭키드로우</span>' : ''}
           ${s.videocall ? '<span class="badge badge-info">📞 영통</span>' : ''}
         </div>
       </div>
@@ -2758,10 +2781,47 @@ function renderCalEvents() {
   `;
 }
 
-function calSelectDay(dateStr) { S.calDay = S.calDay === dateStr ? null : dateStr; render(); }
+function calSelectDay(dateStr) { S.calDay = S.calDay === dateStr ? null : dateStr; S.calHighlightStore = null; render(); }
 function calPrev() { if (S.calMonth === 0) { S.calMonth = 11; S.calYear--; } else S.calMonth--; render(); }
 function calNext() { if (S.calMonth === 11) { S.calMonth = 0; S.calYear++; } else S.calMonth++; render(); }
 function calToday() { S.calYear = new Date().getFullYear(); S.calMonth = new Date().getMonth(); S.calDay = new Date().toISOString().slice(0,10); render(); }
+
+function calHighlightStore(storeId) {
+  S.calHighlightStore = S.calHighlightStore === storeId ? null : storeId;
+  render();
+}
+
+const CAL_TYPE_LABELS = {
+  release: { icon: '🎵', label: '발매일', cls: 'release' },
+  'chodong-release': { icon: '🎵', label: '발매일', cls: 'chodong-release' },
+  'physical-release': { icon: '💿', label: '실물발매', cls: 'physical-release' },
+  'pre-release': { icon: '🎵', label: '선공개', cls: 'pre-release' },
+  'purchase-start': { icon: '🛒', label: '구매시작', cls: 'purchase-start' },
+  'purchase-end': { icon: '⏰', label: '구매마감', cls: 'purchase-end' },
+  purchase: { icon: '🛒', label: '구매', cls: 'purchase' },
+  offline: { icon: '🏪', label: '오프라인', cls: 'offline' },
+  delivery: { icon: '📦', label: '배송', cls: 'delivery' },
+  vc: { icon: '📞', label: '영통', cls: 'vc' },
+};
+
+function buildCalDayItem(ev) {
+  const meta = CAL_TYPE_LABELS[ev.type] || { icon: '•', label: ev.type, cls: ev.type };
+  const isHL = S.calHighlightStore && S.calHighlightStore === ev.storeId;
+  return `<div class="cal-day-item${isHL ? ' hl' : ''}" onclick="${ev.storeId ? `calHighlightStore('${ev.storeId}')` : ''}">
+    <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0">
+      <span class="cal-event ${meta.cls}" style="flex-shrink:0;white-space:nowrap">${meta.icon} ${meta.label}</span>
+      <span style="font-size:12px;color:var(--tx1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ev.label.replace(/^[🛒🏪📦🎵📞💿]\s*/,'')}</span>
+    </div>
+    ${ev.storeId ? `<button class="btn btn-ghost btn-xs" style="flex-shrink:0" onclick="event.stopPropagation();openStorePopup('${ev.storeId}')">상세</button>` : ''}
+  </div>`;
+}
+
+function formatDateKo(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  const days = ['일','월','화','수','목','금','토'];
+  return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+}
 
 // ═══════════════════════════════════════════
 // MODAL HELPERS

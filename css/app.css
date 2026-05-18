@@ -338,7 +338,7 @@ select option { background: var(--sur2); }
   transition: border-color .15s;
 }
 .unpo-card:hover { border-color: var(--pk); }
-.unpo-card.owned { border-color: var(--ok); }
+.unpo-card.owned { border-color: var(--ok); border-width: 3px; box-shadow: 0 0 0 1px var(--ok); }
 .unpo-card img { width: 100%; height: 100%; object-fit: cover; }
 .unpo-card .no-img {
   display: flex;
@@ -352,13 +352,14 @@ select option { background: var(--sur2); }
 }
 .unpo-owned-badge {
   position: absolute;
-  top: 3px; right: 3px;
+  top: 4px; right: 4px;
   background: var(--ok);
   color: #fff;
-  font-size: 9px;
-  padding: 1px 4px;
-  border-radius: 3px;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
   font-weight: 700;
+  letter-spacing: .3px;
 }
 
 /* ── Calendar ── */
@@ -398,11 +399,30 @@ select option { background: var(--sur2); }
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.cal-event.release { background: rgba(192,132,252,.25); color: var(--pk); font-weight: 700; }
-.cal-event.purchase, .cal-event.purchase-start { background: var(--info2); color: var(--info); }
-.cal-event.purchase-end { background: rgba(248,113,113,.15); color: var(--err); }
-.cal-event.offline { background: rgba(251,191,36,.15); color: var(--warn); }
-.cal-event.delivery { background: rgba(52,211,153,.15); color: var(--ok); }
+.cal-event.release, .cal-event.chodong-release { background: rgba(192,132,252,.3); color: var(--pk); font-weight: 700; }
+.cal-event.pre-release { background: rgba(192,132,252,.15); color: var(--pk); }
+.cal-event.physical-release { background: rgba(192,132,252,.2); color: var(--pk); font-weight: 600; }
+.cal-event.purchase, .cal-event.purchase-start { background: rgba(249,115,22,.15); color: #f97316; }
+.cal-event.purchase-end { background: rgba(248,113,113,.18); color: var(--err); }
+.cal-event.offline { background: rgba(6,182,212,.15); color: #06b6d4; }
+.cal-event.delivery { background: rgba(96,165,250,.15); color: #60a5fa; }
+.cal-event.vc { background: rgba(52,211,153,.15); color: var(--ok); }
+.cal-cell.store-highlight { background: rgba(192,132,252,.1); outline: 1px solid rgba(192,132,252,.35); }
+.cal-day-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--bd);
+  background: var(--sur);
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: background .12s;
+}
+.cal-day-item:hover { background: var(--sur2); }
+.cal-day-item.hl { background: rgba(192,132,252,.1); border-color: rgba(192,132,252,.4); }
 
 /* ── Purchase cards ── */
 .purch-card {
@@ -812,10 +832,11 @@ code { font: 12px 'Menlo','Monaco',monospace; background: var(--sur2); padding: 
 .cal-legend-item.chodong-release { background: rgba(192,132,252,.25); color: var(--pk); }
 .cal-legend-item.chodong { background: rgba(245,158,11,.15); color: var(--warn); }
 .cal-legend-item.chodong-dday { background: rgba(248,113,113,.15); color: var(--err); }
-.cal-legend-item.purchase, .cal-legend-item.purchase-start { background: var(--info2); color: var(--info); }
-.cal-legend-item.purchase-end { background: rgba(248,113,113,.15); color: var(--err); }
-.cal-legend-item.offline { background: rgba(251,191,36,.15); color: var(--warn); }
-.cal-legend-item.delivery { background: rgba(52,211,153,.15); color: var(--ok); }
+.cal-legend-item.purchase, .cal-legend-item.purchase-start { background: rgba(249,115,22,.15); color: #f97316; }
+.cal-legend-item.purchase-end { background: rgba(248,113,113,.18); color: var(--err); }
+.cal-legend-item.offline { background: rgba(6,182,212,.15); color: #06b6d4; }
+.cal-legend-item.delivery { background: rgba(96,165,250,.15); color: #60a5fa; }
+.cal-legend-item.vc { background: rgba(52,211,153,.15); color: var(--ok); }
 
 /* ── Notice popup ── */
 .notice-popup {
