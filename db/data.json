@@ -219,7 +219,7 @@
       "offlineEnd": "2026-04-20",
       "offlineHours": "15:00 - 23:00",
       "offlineAddress": "서대문구 연희로11가길 48-23",
-      "offlineNote": "모든 버전 구매시 A2T DRAW (십카페 럭드) 와 동일한 포카 중 랜덤 1종 증정럭드 포토카드중 친필사인 포토카드 랜덤 제공",
+      "offlineNote": "모든 버전 구매시 A2T DRAW (십카페 럭드) 와 동일한 포카 중 랜덤 1종 증정\n럭드 포토카드중 친필사인 포토카드 랜덤 제공",
       "offlineLuckyDraw": true,
       "defDomShip": 0,
       "defOvsShip": 0,
@@ -246,7 +246,7 @@
             "5": "",
             "6": ""
           },
-          "note": "모든 버전 구매시 A2T DRAW (십카페 럭드) 와 동일한 포카 중 랜덤 1종 증정럭드 포토카드중 친필사인 포토카드 랜덤 제공",
+          "note": "모든 버전 구매시 A2T DRAW (십카페 럭드) 와 동일한 포카 중 랜덤 1종 증정\n럭드 포토카드중 친필사인 포토카드 랜덤 제공",
           "luckyDraw": true,
           "url": ""
         }
@@ -257,7 +257,9 @@
       "billboardChart": false,
       "chartEtc": "",
       "sharedWithAlbs": [],
-      "sharedWithStoreIds": []
+      "sharedWithStoreIds": [],
+      "vcStart": "",
+      "vcEnd": ""
     },
     {
       "id": "cs1774546314667",
@@ -1858,45 +1860,45 @@
   "settings": {
     "rates": {
       "JPY": {
-        "rate": 9.4537,
+        "rate": 9.4652,
         "manual": false,
-        "updAt": null
+        "updAt": "2026-05-18T15:30:51.200Z"
       },
       "CNY": {
-        "rate": 218.3126,
+        "rate": 220.8968,
         "manual": false,
-        "updAt": null
+        "updAt": "2026-05-18T15:30:51.200Z"
       },
       "USD": {
-        "rate": 1507.7751,
+        "rate": 1504.2855,
         "manual": false,
-        "updAt": null
+        "updAt": "2026-05-18T15:30:51.200Z"
       },
       "TWD": {
-        "rate": 47.1855,
+        "rate": 47.5432,
         "manual": false,
-        "updAt": null
+        "updAt": "2026-05-18T15:30:51.200Z"
       },
       "HKD": {
-        "rate": 193.5,
+        "rate": 192.1202,
         "manual": false,
-        "updAt": null
+        "updAt": "2026-05-18T15:30:51.200Z"
       },
       "OTHER": {
         "rate": 1,
         "manual": true,
         "name": "기타",
-        "updAt": null
+        "updAt": "2026-05-18T15:30:51.200Z"
       }
     },
-    "ratesAt": null,
+    "ratesAt": "2026-05-18T15:30:47.210Z",
     "theme": "light",
     "github": {
       "owner": "pllize",
       "repo": "myalbums",
       "branch": "main",
       "filePath": "db/data.json",
-      "sha": "14446b08b85f52404ed1bdabb22c84a741b0fe53"
+      "sha": "04a300481d119240568a77821d2bd50994b55b4d"
     }
   }
 }
