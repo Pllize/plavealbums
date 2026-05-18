@@ -276,7 +276,7 @@
 <div class="page" id="page-unpo">
   <div class="page-header">
     <div>
-      <div class="page-title">미공포 (미공개 포토카드)</div>
+      <div class="page-title">미공포 (Pre-Order Benefits)</div>
       <div class="page-sub">판매처별 미공개 포토카드 보유 현황</div>
     </div>
   </div>
@@ -1066,7 +1066,7 @@ function renderDash() {
             const alb = DB.albumTypes?.find(a => a.key === it.albKey);
             return `<span>${alb?.name || it.albKey} <b>${it.qty}</b>장${it.proxyQty > 0 && S.showProxy ? `<span style="color:var(--warn);font-size:10px"> (대리${it.proxyQty})</span>` : ''}</span>`;
           }).join('');
-          return `<div class="dash-purch-item" onclick="navToPurchase('${p.id}')">
+          return `<div class="dash-purch-item">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
               <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
                 <span class="fw-600">${store?.name || '?'}</span>
@@ -1076,7 +1076,8 @@ function renderDash() {
               </div>
               <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
                 <span class="fw-600 text-sm">${fKRW(total)}</span>
-                <button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();editPurch('${p.id}')">편집</button>
+                <button class="btn btn-ghost btn-xs" onclick="viewPurchDetail('${p.id}')">상세</button>
+                <button class="btn btn-ghost btn-xs" onclick="editPurch('${p.id}')">편집</button>
               </div>
             </div>
             <div style="font-size:12px;color:var(--tx2);margin-top:5px;display:flex;gap:8px;flex-wrap:wrap">
@@ -1338,7 +1339,7 @@ function openStorePopup(storeId) {
               </div>`).join('')}
           </div>
         </div>`).join('');
-      unpoSlide = `<div class="unpo-slide${isExpanded ? ' open' : ''}" style="margin-top:6px;padding:10px;background:var(--sur2);border-radius:var(--r-sm)">${setsHtml}</div>`;
+      unpoSlide = `<div class="unpo-slide${isExpanded ? ' open' : ''}"><div style="padding:10px;background:var(--sur2);border-radius:var(--r-sm)">${setsHtml}</div></div>`;
     }
 
     const clickAttr = isUnpo ? `onclick="toggleUnpoExpand('${storeId}','${a.key}')" style="cursor:pointer"` : '';
@@ -2490,7 +2491,7 @@ function showStoreDetail(storeId) {
       ${country ? `<span class="badge badge-gray">${country.flag} ${country.lb}</span>` : ''}
       ${dist ? `<span class="badge badge-gray">${dist}</span>` : ''}
       ${s.videocall ? '<span class="badge badge-pk">📞 영통</span>' : ''}
-      ${getStoreUnpoKeys(s).map(k=>{const alb=(DB.albumTypes||[]).find(a=>a.key===k);return `<span class="badge badge-pk">미공포 (Pre-Order Benefits): ${alb?.shortName||alb?.name||k}</span>`;}).join('')}
+      ${getStoreUnpoKeys(s).map(k=>{const alb=(DB.albumTypes||[]).find(a=>a.key===k);return `<span class="badge badge-pk">미공포: ${alb?.shortName||alb?.name||k}</span>`;}).join('')}
     </div>
 
     <div class="section-divider">가격표</div>
@@ -2935,12 +2936,30 @@ const CAL_TYPE_LABELS = {
 };
 
 function buildCalDayItem(ev) {
-  const meta = CAL_TYPE_LABELS[ev.type] || { icon: '•', label: ev.type, cls: ev.type };
+  const meta = CAL_TYPE_LABELS[ev.type] || { icon: '', label: ev.type, cls: ev.type };
   const isHL = S.calHighlightStore && S.calHighlightStore === ev.storeId;
+  // Strip leading emoji+space from label (handles multi-byte emoji safely)
+  const cleanLabel = ev.label.replace(/^[\u{1F000}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]️?\s*/u, '').replace(/^[^\s:]+:\s*/, match => match.includes(':') ? '' : match);
+
+  // For offline events, show extra info inline
+  let extraInfo = '';
+  if (ev.type === 'offline' && ev.storeId) {
+    const st = DB.stores?.find(s => s.id === ev.storeId);
+    const evts = st?.offlineEvents?.length ? st.offlineEvents
+      : st?.offlineStart ? [{ start: st.offlineStart, end: st.offlineEnd, addressName: st.offlineAddressName||'', addressDetail: st.offlineAddressDetail||st.offlineAddress||'', note: st.offlineNote||'' }]
+      : [];
+    const matchEvt = evts.find(e => S.calDay >= (e.start||'') && S.calDay <= (e.end||e.start||''));
+    const loc = matchEvt?.addressName || matchEvt?.addressDetail || '';
+    if (loc) extraInfo = `<div style="font-size:11px;color:var(--tx3);margin-top:2px;margin-left:4px">📍 ${loc}</div>`;
+  }
+
   return `<div class="cal-day-item${isHL ? ' hl' : ''}" onclick="${ev.storeId ? `calHighlightStore('${ev.storeId}')` : ''}">
-    <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0">
-      <span class="cal-event ${meta.cls}" style="flex-shrink:0;white-space:nowrap">${meta.icon} ${meta.label}</span>
-      <span style="font-size:12px;color:var(--tx1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ev.label.replace(/^[🛒🏪📦🎵📞💿]\s*/,'')}</span>
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="cal-event ${meta.cls}" style="flex-shrink:0;white-space:nowrap">${meta.icon} ${meta.label}</span>
+        <span style="font-size:12px;color:var(--tx1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${cleanLabel}</span>
+      </div>
+      ${extraInfo}
     </div>
     ${ev.storeId ? `<button class="btn btn-ghost btn-xs" style="flex-shrink:0" onclick="event.stopPropagation();openStorePopup('${ev.storeId}')">상세</button>` : ''}
   </div>`;

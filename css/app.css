@@ -238,7 +238,7 @@ tr:hover td { background: rgba(255,255,255,.02); }
 .btn-ghost:hover { color: var(--tx); }
 .btn-info { background: var(--info2); color: var(--info); border: 1px solid rgba(96,165,250,.3); }
 .btn-sm { padding: 4px 10px; font-size: 12px; }
-.btn-xs { padding: 2px 7px; font-size: 11px; }
+.btn-xs { padding: 3px 9px; font-size: 12px; }
 
 /* ── Forms ── */
 .form-row { display: grid; gap: 12px; margin-bottom: 12px; }
@@ -326,8 +326,8 @@ select option { background: var(--sur2); }
 /* ── Unpo Cards ── */
 .unpo-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
 .unpo-grid.six { grid-template-columns: repeat(6, 1fr); }
-.unpo-slide { max-height: 0; overflow: hidden; transition: max-height .3s ease; }
-.unpo-slide.open { max-height: 1200px; }
+.unpo-slide { max-height: 0; overflow: hidden; transition: max-height .3s ease; margin-top: 0; }
+.unpo-slide.open { max-height: 1200px; margin-top: 6px; }
 .unpo-card-wrap { display: flex; flex-direction: column; gap: 4px; }
 .unpo-card {
   position: relative;
