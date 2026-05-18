@@ -1355,9 +1355,14 @@ function openStorePopup(storeId) {
   const myPurchHtml = myPurch ? `
     <div class="section-divider">내 구매기록</div>
     <div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px">
-      ${stBadge(myPurch.status||'waiting')} <span class="fw-600 text-sm">${fKRW(calcPurchTotal(myPurch))}</span>
-      <div style="font-size:12px;color:var(--tx2);margin-top:4px">
-        ${(myPurch.items||[]).filter(it=>it.qty>0).map(it=>{const a=DB.albumTypes?.find(a=>a.key===it.albKey);return `${a?.name||it.albKey} ${it.qty}장`;}).join(' · ')}
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+        <div>
+          ${stBadge(myPurch.status||'unpurchased')} <span class="fw-600 text-sm">${fKRW(calcPurchTotal(myPurch))}</span>
+          <div style="font-size:12px;color:var(--tx2);margin-top:4px">
+            ${(myPurch.items||[]).filter(it=>it.qty>0).map(it=>{const a=DB.albumTypes?.find(a=>a.key===it.albKey);return `${a?.name||it.albKey} ${it.qty}장`;}).join(' · ')}
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-xs" style="flex-shrink:0" onclick="closeModal('modal-detail');viewPurchDetail('${myPurch.id}')">상세</button>
       </div>
     </div>` : '';
 
@@ -2831,9 +2836,21 @@ function renderCal() {
   if (S.calDay) {
     const dayEvs = (events[S.calDay] || []);
     if (dayEvs.length) {
+      const CAL_GROUPS = [
+        { label: '🎵 앨범/발매', types: ['release','chodong-release','pre-release','physical-release'] },
+        { label: '🛒 구매', types: ['purchase-start','purchase','purchase-end'] },
+        { label: '🏪 오프라인', types: ['offline'] },
+        { label: '📦 배송', types: ['delivery'] },
+        { label: '📞 영통', types: ['vc'] },
+      ];
+      const grouped = CAL_GROUPS.map(g => ({ ...g, evs: dayEvs.filter(ev => g.types.includes(ev.type)) })).filter(g => g.evs.length);
+      const groupedHtml = grouped.map(g => `
+        <div style="font-size:11px;font-weight:600;color:var(--tx3);margin:10px 0 4px;text-transform:uppercase;letter-spacing:.4px">${g.label}</div>
+        ${g.evs.map(ev => buildCalDayItem(ev)).join('')}
+      `).join('');
       detailHtml += `<div style="margin-top:14px">
         <div class="section-divider" style="margin-bottom:8px">${formatDateKo(S.calDay)} 일정 (${dayEvs.length}건)</div>
-        ${dayEvs.map(ev => buildCalDayItem(ev)).join('')}
+        ${groupedHtml}
       </div>`;
     } else {
       detailHtml += `<div style="margin-top:10px;font-size:12px;color:var(--tx3);text-align:center">${formatDateKo(S.calDay)} — 일정 없음</div>`;

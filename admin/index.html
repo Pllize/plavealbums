@@ -1106,7 +1106,7 @@ function renderOfflineEventsList() {
         </div>
       </div>
       <div class="form-row cols-2">
-        <div><label>메모</label><textarea id="oe-note-${idx}" rows="3" style="resize:vertical" onchange="saveOfflineEventField(${idx})">${(ev.note||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea></div>
+        <div><label>메모</label><textarea id="oe-note-${idx}" rows="3" style="resize:vertical" oninput="saveOfflineEventField(${idx})">${(ev.note||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea></div>
         <div><label>이벤트 공지 링크</label><input type="url" id="oe-url-${idx}" value="${ev.url||''}" placeholder="https://..." onchange="saveOfflineEventField(${idx})"></div>
       </div>
       <div style="margin-top:4px">
