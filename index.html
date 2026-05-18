@@ -189,6 +189,7 @@
     <input type="text" id="purch-search" placeholder="판매처, 메모 검색..." oninput="render()">
     <select id="purch-status-filter" onchange="render()">
       <option value="">전체 상태</option>
+      <option value="unpurchased">미구매</option>
       <option value="planned">구매예정</option>
       <option value="waiting">구매대기</option>
       <option value="ordered">구매완료</option>
@@ -462,21 +463,23 @@ const COUNTRIES = {
 };
 
 const STATUS_MAP = {
-  planned:   { lb: '구매예정', cls: 'st-planned' },
-  waiting:   { lb: '구매대기', cls: 'st-waiting' },
-  ordered:   { lb: '구매완료', cls: 'st-ordered' },
-  preparing: { lb: '발송준비', cls: 'st-preparing' },
-  shipped:   { lb: '배송중',   cls: 'st-shipped' },
-  delivered: { lb: '배송완료', cls: 'st-delivered' },
-  cancelled: { lb: '취소',     cls: 'st-cancelled' },
+  unpurchased: { lb: '미구매',   cls: 'st-unpurchased' },
+  planned:     { lb: '구매예정', cls: 'st-planned' },
+  waiting:     { lb: '구매대기', cls: 'st-waiting' },
+  ordered:     { lb: '구매완료', cls: 'st-ordered' },
+  preparing:   { lb: '발송준비', cls: 'st-preparing' },
+  shipped:     { lb: '배송중',   cls: 'st-shipped' },
+  delivered:   { lb: '배송완료', cls: 'st-delivered' },
+  cancelled:   { lb: '취소',     cls: 'st-cancelled' },
 };
 
 const DISP_STATUSES = [
-  { k: 'none',      lb: '미구매',   cls: 'st-planned',   keys: [] },
-  { k: 'waiting',   lb: '구매대기', cls: 'st-waiting',   keys: ['planned', 'waiting'] },
-  { k: 'ordered',   lb: '구매완료', cls: 'st-ordered',   keys: ['ordered'] },
-  { k: 'shipping',  lb: '배송중',   cls: 'st-shipped',   keys: ['preparing', 'shipped'] },
-  { k: 'delivered', lb: '배송완료', cls: 'st-delivered', keys: ['delivered'] },
+  { k: 'none',         lb: '미구매(무기록)', cls: 'st-planned',     keys: [] },
+  { k: 'unpurchased',  lb: '미구매',         cls: 'st-unpurchased', keys: ['unpurchased'] },
+  { k: 'waiting',      lb: '구매대기',       cls: 'st-waiting',     keys: ['planned', 'waiting'] },
+  { k: 'ordered',      lb: '구매완료',       cls: 'st-ordered',     keys: ['ordered'] },
+  { k: 'shipping',     lb: '배송중',         cls: 'st-shipped',     keys: ['preparing', 'shipped'] },
+  { k: 'delivered',    lb: '배송완료',       cls: 'st-delivered',   keys: ['delivered'] },
 ];
 
 const MEMBERS = ['예준', '노아', '밤비', '은호', '하민'];
@@ -505,6 +508,7 @@ let S = {
   editPurchId: null,
   editStoreId: null,
   storeFromId: null,
+  unpoExpanded: null,
 };
 
 // ═══════════════════════════════════════════
@@ -536,11 +540,14 @@ function init() {
 
   checkNoticePopup();
   loadServiceData();
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') loadServiceData();
+  });
 }
 
 async function loadServiceData() {
   try {
-    const r = await fetch('./db/data.json', { cache: 'no-cache' });
+    const r = await fetch('./db/data.json?t=' + Date.now(), { cache: 'no-cache' });
     if (!r.ok) return;
     const data = await r.json();
     if (!data.categories?.length && !data.stores?.length && !data.albumTypes?.length) return;
@@ -732,21 +739,20 @@ function fKRW(n) {
 function fDate(dt, time = false) {
   if (!dt) return '';
   try {
-    const d = new Date(dt);
-    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    const mon = MONTHS[d.getMonth()];
-    const day = String(d.getDate()).padStart(2, '0');
-    if (!time) return `${mon} ${day}`;
-    const hh = String(d.getHours()).padStart(2, '0');
-    const mm = String(d.getMinutes()).padStart(2, '0');
-    return `${mon} ${day} ${hh}:${mm}`;
+    const d = new Date(dt.length === 10 ? dt + 'T00:00:00' : dt);
+    const y = d.getFullYear();
+    const mo = String(d.getMonth()+1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+    if (!time) return `${y}. ${mo}. ${day}`;
+    const hh = String(d.getHours()).padStart(2,'0');
+    const mm = String(d.getMinutes()).padStart(2,'0');
+    return `${y}. ${mo}. ${day} ${hh}:${mm}`;
   } catch(e) { return dt; }
 }
 function fDateShort(dt) {
   if (!dt) return '';
-  const d = new Date(dt);
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return MONTHS[d.getMonth()] + ' ' + d.getDate();
+  const d = new Date(dt.length === 10 ? dt + 'T00:00:00' : dt);
+  return `${d.getFullYear()}. ${String(d.getMonth()+1).padStart(2,'0')}. ${d.getDate()}`;
 }
 function isExpired(store) {
   if (!store.purchaseEnd) return false;
@@ -1309,10 +1315,39 @@ function openStorePopup(storeId) {
     if (pr === null) return '';
     const isUnpo = unpoKeys.includes(a.key);
     const prKrw = ovs ? toKRW(pr, cur) : pr;
-    const unpoClickAttr = isUnpo ? `onclick="openUnpoViewer('${storeId}','${a.key}')" style="cursor:pointer"` : '';
-    return `<div class="price-row${isUnpo ? ' unpo-highlight' : ''}" ${unpoClickAttr}>
-      <span>${a.name}${isUnpo ? ' <span class="badge badge-pk" style="font-size:10px">미공포 👁</span>' : ''}</span>
-      <span class="fw-600">${ovs ? `${cur} ${Number(pr).toLocaleString()} <span style="color:var(--tx3);font-size:11px">(${fKRW(prKrw)})</span>` : fKRW(pr)}</span>
+    const uc = isUnpo ? (DB.unpoCards || []).find(uc => uc.storeId === storeId && uc.albumTypeId === a.key) : null;
+    const isExpanded = isUnpo && S.unpoExpanded?.storeId === storeId && S.unpoExpanded?.albKey === a.key;
+
+    let unpoSlide = '';
+    if (isUnpo && uc?.sets?.length) {
+      const setsHtml = uc.sets.map((set, si) => `
+        <div style="margin-bottom:12px">
+          <div style="font-size:12px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:6px">
+            <span>세트 ${si+1}${set.memo ? ': ' + set.memo : ''}</span>
+            ${set.luckyDraw ? '<span class="badge badge-pk" style="font-size:10px">🃏 럭키드로우</span>' : ''}
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:5px">
+            ${(set.cards||[]).map((c, ci) => `
+              <div class="unpo-card-wrap">
+                <div class="unpo-card${c.owned ? ' owned' : ''}"
+                     onclick="event.stopPropagation();toggleUnpoOwned('${storeId}','${a.key}',${si},${ci});reloadDB();S.unpoExpanded={storeId:'${storeId}',albKey:'${a.key}'};openStorePopup('${storeId}')">
+                  ${c.img ? `<img src="${c.img}" loading="lazy">` : '<div class="no-img">📷</div>'}
+                  ${c.owned ? '<div class="unpo-owned-badge">보유</div>' : ''}
+                </div>
+                ${c.note ? `<div style="font-size:9px;color:var(--tx3);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.note}</div>` : ''}
+              </div>`).join('')}
+          </div>
+        </div>`).join('');
+      unpoSlide = `<div class="unpo-slide${isExpanded ? ' open' : ''}" style="margin-top:6px;padding:10px;background:var(--sur2);border-radius:var(--r-sm)">${setsHtml}</div>`;
+    }
+
+    const clickAttr = isUnpo ? `onclick="toggleUnpoExpand('${storeId}','${a.key}')" style="cursor:pointer"` : '';
+    return `<div>
+      <div class="price-row${isUnpo ? ' unpo-highlight' : ''}" ${clickAttr}>
+        <span>${a.name}${isUnpo ? ` <span class="badge badge-pk" style="font-size:10px">미공포 ${isExpanded ? '▲' : '▼'}</span>` : ''}</span>
+        <span class="fw-600">${ovs ? `${cur} ${Number(pr).toLocaleString()} <span style="color:var(--tx3);font-size:11px">(${fKRW(prKrw)})</span>` : fKRW(pr)}</span>
+      </div>
+      ${unpoSlide}
     </div>`;
   }).filter(Boolean).join('');
 
@@ -1331,7 +1366,7 @@ function openStorePopup(storeId) {
     ${topBadges ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${topBadges}</div>` : ''}
     ${periodHtml}
     ${offlineHtml}
-    <div class="section-divider">앨범 단가${hasUnpo ? ' (미공포 클릭 시 사진 보기)' : ''}</div>
+    <div class="section-divider">앨범 단가${hasUnpo ? ' (미공포 클릭 시 펼쳐보기)' : ''}</div>
     ${priceRows || '<div class="text-muted text-sm">가격 정보 없음</div>'}
     ${myPurchHtml}
   `;
@@ -1341,6 +1376,12 @@ function openStorePopup(storeId) {
     <button class="btn btn-p" onclick="closeModal('modal-detail');addPurchModal('${storeId}')">+ 구매 추가</button>
   `;
   openModal('modal-detail');
+}
+
+function toggleUnpoExpand(storeId, albKey) {
+  const same = S.unpoExpanded?.storeId === storeId && S.unpoExpanded?.albKey === albKey;
+  S.unpoExpanded = same ? null : { storeId, albKey };
+  openStorePopup(storeId);
 }
 
 function openUnpoViewer(storeId, albKey) {
@@ -1563,9 +1604,9 @@ function renderPurchCard(p) {
   const ovs = store ? isOvs(store) : false;
   const cur = store ? getStoreCur(store) : 'KRW';
 
-  const STATUS_STEPS = ['waiting', 'ordered', 'shipped', 'delivered'];
-  const statusAlias = { planned: 'waiting', preparing: 'shipped' };
-  const mappedStatus = statusAlias[p.status] || p.status || 'waiting';
+  const STATUS_STEPS = ['unpurchased', 'waiting', 'ordered', 'shipped', 'delivered'];
+  const statusAlias = { planned: 'unpurchased', preparing: 'shipped' };
+  const mappedStatus = statusAlias[p.status] || p.status || 'unpurchased';
   const stepIdx = STATUS_STEPS.indexOf(mappedStatus);
 
   const itemsHtml = (p.items || []).map(it => {
@@ -1616,6 +1657,7 @@ function renderPurchCard(p) {
           <div class="price-total">${fKRW(total)}</div>
           ${proxyTotal ? `<div class="text-xs text-muted">내 지출: ${fKRW(myTotal)}</div>` : ''}
         </div>
+        <button class="btn btn-ghost btn-xs" onclick="viewPurchDetail('${p.id}')">상세</button>
         <button class="btn btn-ghost btn-xs" onclick="editPurch('${p.id}')">편집</button>
         <button class="btn btn-err btn-xs" onclick="deletePurch('${p.id}')">삭제</button>
       </div>
@@ -1659,11 +1701,81 @@ function renderPurchCard(p) {
     ${p.memo ? `<div style="margin-top:8px;font-size:12px;color:var(--tx2);white-space:pre-wrap">${p.memo}</div>` : ''}
 
     <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
-      ${['waiting','ordered','shipped','delivered'].map(st =>
+      ${['unpurchased','waiting','ordered','shipped','delivered'].map(st =>
         `<button class="btn btn-ghost btn-xs" style="${mappedStatus===st?'border-color:var(--pk2);color:var(--pk)':''}" onclick="setPurchStatus('${p.id}','${st}')">${STATUS_MAP[st]?.lb||st}</button>`
       ).join('')}
     </div>
   </div>`;
+}
+
+function viewPurchDetail(id) {
+  const p = (DB.purchases || []).find(x => x.id === id);
+  if (!p) return;
+  const store = DB.stores?.find(s => s.id === p.storeId);
+  const cat = DB.categories?.find(c => c.id === store?.categoryId);
+  const ovs = store ? isOvs(store) : false;
+  const cur = store ? getStoreCur(store) : 'KRW';
+  const total = calcPurchTotal(p);
+  const proxyTotal = calcProxyTotal(p);
+  const myTotal = total - proxyTotal;
+
+  const itemsHtml = (p.items || []).filter(it => it.qty > 0).map(it => {
+    const alb = DB.albumTypes?.find(a => a.key === it.albKey);
+    const pr = it.unitPrice > 0 ? it.unitPrice : (store ? storePrice(store, it.albKey) : 0);
+    const sub = pr ? (ovs ? toKRW(pr, cur) * it.qty : pr * it.qty) : 0;
+    return `<div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--bd)">
+      <span>${alb?.name || it.albKey} <span style="color:var(--tx3)">× ${it.qty}장</span></span>
+      <span class="fw-600">${sub ? fKRW(sub) : '—'}</span>
+    </div>`;
+  }).join('');
+
+  const extraCosts = [
+    p.domShip && `국내배송비: ${fKRW(p.domShip)}`,
+    p.intlShip && `국제배송비: ${fKRW(p.intlShip)}`,
+    p.fwdFee && `포워딩: ${fKRW(p.fwdFee)}`,
+    p.customs && `관세: ${fKRW(p.customs)}`,
+    p.discount && `할인: -${fKRW(p.discount)}`,
+  ].filter(Boolean);
+
+  const trackingHtml = p.trackingNumber ? (() => {
+    const url = carrierTrackUrl(p.carrier, p.trackingNumber);
+    return `<div style="font-size:12px;color:var(--tx2);margin-top:8px">
+      📦 ${p.carrier || '택배'}: ${url ? `<a href="${url}" target="_blank" style="color:var(--pk)"><code>${p.trackingNumber}</code> 조회↗</a>` : `<code>${p.trackingNumber}</code>`}
+      ${p.shippedAt ? `<br>발송일: ${fDate(p.shippedAt)}` : ''}
+      ${p.deliveredAt ? `<br>수령일: ${fDate(p.deliveredAt)}` : ''}
+      ${p.estDelivery ? `<br>배송예정: ${fDate(p.estDelivery)}` : ''}
+    </div>`;
+  })() : '';
+
+  document.getElementById('modal-detail-title').textContent = `${store?.name || '?'} 구매 상세`;
+  document.getElementById('modal-detail-body').innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      ${stBadge(p.status || 'unpurchased')}
+      ${cat ? `<span style="font-size:12px;color:var(--tx3)">${cat.name}</span>` : ''}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;color:var(--tx2);margin-bottom:12px">
+      ${p.orderDate ? `<div><span style="color:var(--tx3)">주문일</span><br><span style="color:var(--tx1)">${fDate(p.orderDate)}</span></div>` : ''}
+      ${p.orderNumber ? `<div><span style="color:var(--tx3)">주문번호</span><br><code style="color:var(--tx1)">#${p.orderNumber}</code></div>` : ''}
+    </div>
+    <div class="section-divider" style="margin-bottom:8px">구매 항목</div>
+    ${itemsHtml || '<div class="text-muted text-sm">항목 없음</div>'}
+    ${extraCosts.length ? `
+      <div style="margin-top:8px;font-size:12px;color:var(--tx2)">
+        ${extraCosts.map(c=>`<div>${c}</div>`).join('')}
+      </div>` : ''}
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;font-size:14px">
+      <span class="fw-600">합계</span>
+      <span class="fw-600" style="color:var(--pk)">${fKRW(total)}</span>
+    </div>
+    ${proxyTotal ? `<div style="font-size:11px;color:var(--tx3);text-align:right">내 지출: ${fKRW(myTotal)}</div>` : ''}
+    ${trackingHtml}
+    ${p.memo ? `<div style="margin-top:10px;font-size:12px;color:var(--tx2);white-space:pre-wrap;background:var(--sur2);border-radius:var(--r-sm);padding:8px">${p.memo}</div>` : ''}
+  `;
+  document.getElementById('modal-detail-foot').innerHTML = `
+    <button class="btn btn-ghost" onclick="closeModal('modal-detail')">닫기</button>
+    <button class="btn btn-p" onclick="closeModal('modal-detail');editPurch('${id}')">편집</button>
+  `;
+  openModal('modal-detail');
 }
 
 function setPurchStatus(id, status) {
@@ -1799,8 +1911,9 @@ function buildPurchModal(p) {
       <div>
         <label>상태</label>
         <select id="mp-status">
-          ${[{k:'waiting',lb:'구매대기'},{k:'ordered',lb:'구매완료'},{k:'shipped',lb:'배송중'},{k:'delivered',lb:'배송완료'},{k:'cancelled',lb:'취소'}].map(({k,lb}) => {
-            const currentStatus = (['planned','waiting'].includes(p?.status||'waiting')) ? 'waiting' : (['preparing','shipped'].includes(p?.status)) ? 'shipped' : (p?.status||'waiting');
+          ${[{k:'unpurchased',lb:'미구매'},{k:'waiting',lb:'구매대기'},{k:'ordered',lb:'구매완료'},{k:'shipped',lb:'배송중'},{k:'delivered',lb:'배송완료'},{k:'cancelled',lb:'취소'}].map(({k,lb}) => {
+            const cs = p?.status || 'unpurchased';
+            const currentStatus = (['planned','unpurchased'].includes(cs)) ? 'unpurchased' : (['waiting'].includes(cs)) ? 'waiting' : (['preparing','shipped'].includes(cs)) ? 'shipped' : cs;
             return `<option value="${k}" ${currentStatus===k?'selected':''}>${lb}</option>`;
           }).join('')}
         </select>
