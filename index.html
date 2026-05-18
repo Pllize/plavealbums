@@ -533,6 +533,25 @@ function init() {
   } catch(e) {}
 
   checkNoticePopup();
+  loadServiceData();
+}
+
+async function loadServiceData() {
+  try {
+    const r = await fetch('./db/data.json', { cache: 'no-cache' });
+    if (!r.ok) return;
+    const data = await r.json();
+    if (!data.categories?.length && !data.stores?.length && !data.albumTypes?.length) return;
+    const savedPurchases = JSON.parse(JSON.stringify(DB.purchases || []));
+    const savedUnpoCards = JSON.parse(JSON.stringify(DB.unpoCards || []));
+    const savedAdminPw = DB.settings?.adminPw || '';
+    const savedGithub = DB.settings?.github || {};
+    dbImportJSON(JSON.stringify(data));
+    reloadDB();
+    dbUpdate(s => ({ ...s, purchases: savedPurchases, unpoCards: savedUnpoCards }));
+    dbUpdateSettings({ adminPw: savedAdminPw, github: savedGithub });
+    reloadDB(); buildCatBar(); buildFilters(); render();
+  } catch(e) {}
 }
 
 // ═══════════════════════════════════════════
