@@ -437,7 +437,6 @@
 </div>
 
 <script src="../js/db.js"></script>
-<script src="../js/seed.js"></script>
 <script>
 // ═══════════════════════════════════════════
 // CONSTANTS
@@ -495,7 +494,7 @@ let ADM = {
 };
 
 function initAdmin() {
-  DB = dbInit(seedDatabase);
+  DB = dbInit();
   const t = DB.settings?.theme || 'light';
   document.documentElement.setAttribute('data-theme', t);
   buildCatFilters();
