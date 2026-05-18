@@ -182,8 +182,14 @@ function dbExportJSON() {
 
 function dbExportForSync() {
   const state = dbGet();
-  // Strip owned flag (personal) from each unpo card; keep service fields (img, note, etc.)
-  const unpoCards = (state.unpoCards || []).map(({ owned, ...rest }) => rest);
+  // Strip owned flag (personal data at card level) from each unpo card
+  const unpoCards = (state.unpoCards || []).map(uc => ({
+    ...uc,
+    sets: (uc.sets || []).map(set => ({
+      ...set,
+      cards: (set.cards || []).map(({ owned, ...card }) => card),
+    })),
+  }));
   const safe = {
     ...state,
     purchases: undefined,   // personal data — not synced to GitHub

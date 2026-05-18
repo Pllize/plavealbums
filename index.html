@@ -553,15 +553,33 @@ async function loadServiceData() {
     const data = await r.json();
     if (!data.categories?.length && !data.stores?.length && !data.albumTypes?.length) return;
     const savedPurchases = JSON.parse(JSON.stringify(DB.purchases || []));
-    const localOwnedMap = Object.fromEntries((DB.unpoCards || []).map(c => [c.id, c.owned]));
+    // Collect owned flags per card: { ucId: { si: { ci: boolean } } }
+    const localOwnedMap = {};
+    (DB.unpoCards || []).forEach(uc => {
+      uc.sets?.forEach((set, si) => {
+        set.cards?.forEach((c, ci) => {
+          if (c.owned !== undefined) {
+            if (!localOwnedMap[uc.id]) localOwnedMap[uc.id] = {};
+            if (!localOwnedMap[uc.id][si]) localOwnedMap[uc.id][si] = {};
+            localOwnedMap[uc.id][si][ci] = c.owned;
+          }
+        });
+      });
+    });
     const savedAdminPw = DB.settings?.adminPw || '';
     const savedGithub = DB.settings?.github || {};
     dbImportJSON(JSON.stringify(data));
     reloadDB();
-    // Merge: use service card structure/images, preserve local owned flags
-    const mergedUnpoCards = (DB.unpoCards || []).map(c => ({
-      ...c,
-      owned: localOwnedMap[c.id] ?? c.owned,
+    // Merge: use service card structure/images, preserve local owned flags at card level
+    const mergedUnpoCards = (DB.unpoCards || []).map(uc => ({
+      ...uc,
+      sets: (uc.sets || []).map((set, si) => ({
+        ...set,
+        cards: (set.cards || []).map((c, ci) => ({
+          ...c,
+          owned: localOwnedMap[uc.id]?.[si]?.[ci] ?? c.owned,
+        })),
+      })),
     }));
     dbUpdate(s => ({ ...s, purchases: savedPurchases, unpoCards: mergedUnpoCards }));
     dbUpdateSettings({ adminPw: savedAdminPw, github: savedGithub });
