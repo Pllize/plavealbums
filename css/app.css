@@ -341,7 +341,9 @@ select option { background: var(--sur2); }
 }
 .unpo-card:hover { border-color: var(--pk); }
 .unpo-card.owned { border-color: var(--ok); border-width: 3px; box-shadow: 0 0 0 1px var(--ok); }
-.unpo-card img { width: 100%; height: 100%; object-fit: cover; }
+.unpo-card img { width: 100%; height: 100%; object-fit: cover; filter: blur(7px); transition: filter .2s; }
+.unpo-card:hover img { filter: blur(3px); }
+.unpo-card.owned img { filter: none; }
 .unpo-card .no-img {
   display: flex;
   flex-direction: column;

@@ -287,7 +287,7 @@
     <input type="text" id="unpo-search" placeholder="판매처 검색..." oninput="render()">
     <label class="form-check">
       <input type="checkbox" id="unpo-owned-only" onchange="render()">
-      <span style="font-size:12px">보유만</span>
+      <span style="font-size:12px">WANT만</span>
     </label>
   </div>
 
@@ -1248,6 +1248,7 @@ function showAlbumDetail(albKey) {
           </div>
           <div style="display:flex;gap:6px;align-items:center">
             ${stBadge(p.status || 'waiting')}
+            <button class="btn btn-ghost btn-xs" onclick="closeModal('modal-detail');viewPurchDetail('${p.id}')">상세</button>
             <button class="btn btn-ghost btn-xs" onclick="closeModal('modal-detail');editPurch('${p.id}')">편집</button>
           </div>
         </div>`;
@@ -1277,7 +1278,7 @@ function openStorePopup(storeId) {
     store.billboardChart ? '<span style="font-size:11px;background:rgba(34,197,94,.15);color:var(--ok);padding:2px 6px;border-radius:3px">빌보드</span>' : '',
     store.chartEtc ? `<span class="badge badge-gray">${store.chartEtc}</span>` : '',
     store.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : '',
-    store.offlineLuckyDraw ? '<span title="럭키드로우">🃏 럭키드로우</span>' : '',
+    store.offlineLuckyDraw ? '<span style="font-size:11px;background:rgba(192,132,252,.15);color:var(--pk);padding:2px 6px;border-radius:3px;font-weight:600">럭드</span>' : '',
     country ? `<span class="badge badge-gray">${country.flag} ${country.lb}</span>` : '',
     store.round ? `<span class="badge badge-info">${store.round}차</span>` : '',
   ].filter(Boolean).join('');
@@ -1301,7 +1302,7 @@ function openStorePopup(storeId) {
     ${offlineEvts.map(ev => {
       const hrs = Object.entries(ev.hoursMap||{}).filter(([,v])=>v).map(([di,v])=>`${DAYS_KR[di]} ${v}`).join(' / ');
       return `<div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px;margin-bottom:8px">
-        <div style="font-size:13px;font-weight:600">${ev.start?fDate(ev.start):''}${ev.end&&ev.end!==ev.start?' ~ '+fDate(ev.end):''}${ev.luckyDraw?' 🃏':''}</div>
+        <div style="font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px">${ev.start?fDate(ev.start):''}${ev.end&&ev.end!==ev.start?' ~ '+fDate(ev.end):''}${ev.luckyDraw?' <span style="font-size:11px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 5px;border-radius:3px;font-weight:600">럭드</span>':''}</div>
         ${ev.addressName?`<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 ${ev.addressName}${ev.addressDetail?' · '+ev.addressDetail:''}</div>`:ev.addressDetail?`<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 <a href="https://map.naver.com/v5/search/${encodeURIComponent(ev.addressDetail)}" target="_blank" style="color:var(--pk)">${ev.addressDetail} 🗺</a></div>`:''}
         ${hrs?`<div style="font-size:11px;color:var(--tx3);margin-top:3px">${hrs}</div>`:''}
         ${ev.note?`<div style="font-size:12px;color:var(--tx2);margin-top:4px;white-space:pre-wrap">${ev.note}</div>`:''}
@@ -1325,7 +1326,7 @@ function openStorePopup(storeId) {
         <div style="margin-bottom:12px">
           <div style="font-size:12px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:6px">
             <span>세트 ${si+1}${set.memo ? ': ' + set.memo : ''}</span>
-            ${set.luckyDraw ? '<span class="badge badge-pk" style="font-size:10px">🃏 럭키드로우</span>' : ''}
+            ${set.luckyDraw ? '<span style="font-size:10px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 5px;border-radius:3px;font-weight:600">럭드</span>' : ''}
           </div>
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:5px">
             ${(set.cards||[]).map((c, ci) => `
@@ -1333,7 +1334,7 @@ function openStorePopup(storeId) {
                 <div class="unpo-card${c.owned ? ' owned' : ''}"
                      onclick="event.stopPropagation();toggleUnpoOwned('${storeId}','${a.key}',${si},${ci});reloadDB();S.unpoExpanded={storeId:'${storeId}',albKey:'${a.key}'};openStorePopup('${storeId}')">
                   ${c.img ? `<img src="${c.img}" loading="lazy">` : '<div class="no-img">📷</div>'}
-                  ${c.owned ? '<div class="unpo-owned-badge">보유</div>' : ''}
+                  ${c.owned ? '<div class="unpo-owned-badge">WANT</div>' : ''}
                 </div>
                 ${c.note ? `<div style="font-size:9px;color:var(--tx3);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.note}</div>` : ''}
               </div>`).join('')}
@@ -1367,7 +1368,7 @@ function openStorePopup(storeId) {
       </div>
     </div>` : '';
 
-  document.getElementById('modal-detail-title').textContent = store.name + (country ? ` ${country.flag}` : '');
+  document.getElementById('modal-detail-title').textContent = store.name + (country ? ` ${country.flag}` : '') + (myPurch ? ' ✓' : '');
   document.getElementById('modal-detail-body').innerHTML = `
     ${topBadges ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${topBadges}</div>` : ''}
     ${periodHtml}
@@ -1400,7 +1401,7 @@ function openUnpoViewer(storeId, albKey) {
     <div style="margin-bottom:16px">
       <div class="text-sm fw-600" style="margin-bottom:6px;display:flex;align-items:center;gap:6px">
         <span>세트 ${si+1}${set.memo ? ': ' + set.memo : ''}</span>
-        ${set.luckyDraw ? '<span class="badge badge-pk" style="font-size:10px">🃏 럭키드로우</span>' : ''}
+        ${set.luckyDraw ? '<span style="font-size:10px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 5px;border-radius:3px;font-weight:600">럭드</span>' : ''}
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px">
         ${(set.cards||[]).map((c, ci) => `
@@ -1408,7 +1409,7 @@ function openUnpoViewer(storeId, albKey) {
             <div class="unpo-card${c.owned ? ' owned' : ''}"
                  onclick="toggleUnpoOwned('${storeId}','${albKey}',${si},${ci});reloadDB();openUnpoViewer('${storeId}','${albKey}')">
               ${c.img ? `<img src="${c.img}" loading="lazy">` : '<div class="no-img">📷<br>미등록</div>'}
-              ${c.owned ? '<div class="unpo-owned-badge">보유</div>' : ''}
+              ${c.owned ? '<div class="unpo-owned-badge">WANT</div>' : ''}
             </div>
             ${c.note ? `<div style="font-size:10px;color:var(--tx3);text-align:center">${c.note}</div>` : ''}
           </div>`).join('')}
@@ -1753,8 +1754,34 @@ function viewPurchDetail(id) {
     </div>`;
   })() : '';
 
+  // Build compact store info block for top of detail
+  const _storeInfoHtml = store ? (() => {
+    const _country = COUNTRIES[store.country];
+    const _ovs = isOvs(store);
+    const _deadline = fDeadline(store);
+    const _expired = isExpired(store);
+    const _offlineEvts = store.offlineEvents?.length ? store.offlineEvents
+      : store.offlineStart ? [{ start: store.offlineStart, end: store.offlineEnd, addressName: store.offlineAddressName||'', addressDetail: store.offlineAddressDetail||store.offlineAddress||'', note: store.offlineNote||'' }] : [];
+    const _badges = [
+      store.videocall ? '<span class="badge badge-pk" style="font-size:10px">📞 영통</span>' : '',
+      store.hanteoChart ? '<span style="font-size:10px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">한터</span>' : '',
+      store.offlineLuckyDraw ? '<span style="font-size:10px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 5px;border-radius:3px;font-weight:600">럭드</span>' : '',
+      _country ? `<span class="badge badge-gray" style="font-size:10px">${_country.flag} ${_country.lb}</span>` : '',
+    ].filter(Boolean).join('');
+    return `<div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
+        <div style="font-size:14px;font-weight:700">${store.name}</div>
+        <button class="btn btn-ghost btn-xs" onclick="closeModal('modal-detail');openStorePopup('${store.id}')">판매처 정보</button>
+      </div>
+      ${_badges ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">${_badges}</div>` : ''}
+      ${store.purchaseEnd ? `<div style="font-size:11px;color:${_expired?'var(--err)':'var(--tx3)'}">구매마감 ${fDate(store.purchaseEnd, true)}${_deadline ? ' · ' + _deadline : ''}</div>` : ''}
+      ${_offlineEvts.length ? `<div style="font-size:11px;color:var(--tx3);margin-top:2px">🏪 ${_offlineEvts.map(e=>fDate(e.start)+(e.end&&e.end!==e.start?' ~ '+fDate(e.end):'')).join(' / ')}</div>` : ''}
+    </div>`;
+  })() : '';
+
   document.getElementById('modal-detail-title').textContent = `${store?.name || '?'} 구매 상세`;
   document.getElementById('modal-detail-body').innerHTML = `
+    ${_storeInfoHtml}
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
       ${stBadge(p.status || 'unpurchased')}
       ${cat ? `<span style="font-size:12px;color:var(--tx3)">${cat.name}</span>` : ''}
@@ -2418,7 +2445,7 @@ function renderStoreCard(s, isCheapest = false) {
         ${s.round ? `<span class="badge badge-info">${s.round}차</span>` : ''}
         ${unpoKeys.map(k=>{const alb=(DB.albumTypes||[]).find(a=>a.key===k);return `<span class="badge badge-pk" style="font-size:10px">${alb?.shortName||alb?.name||k} 미공포</span>`;}).join('')}
         ${s.videocall ? '<span title="영통" style="font-size:14px">📞</span>' : ''}
-        ${s.offlineLuckyDraw ? '<span title="럭키드로우" style="font-size:14px">🎰</span>' : ''}
+        ${s.offlineLuckyDraw ? '<span style="font-size:11px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 5px;border-radius:3px;font-weight:600;flex-shrink:0">럭드</span>' : ''}
       </div>
     </div>
 
@@ -2472,7 +2499,7 @@ function showStoreDetail(storeId) {
     ${offlineEvents.map(ev => `
       <div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px;margin-bottom:8px">
         <div style="font-size:13px;font-weight:600">${ev.start ? fDate(ev.start) : ''}${ev.end && ev.end !== ev.start ? ' ~ ' + fDate(ev.end) : ''}
-          ${ev.luckyDraw ? ' 🃏' : ''}
+          ${ev.luckyDraw ? ' <span style="font-size:10px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 4px;border-radius:3px;font-weight:600">럭드</span>' : ''}
         </div>
         ${ev.addressName ? `<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 ${ev.addressName}${ev.addressDetail ? ' · ' + ev.addressDetail : ''}</div>` : ev.addressDetail ? `<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 ${ev.addressDetail}</div>` : ''}
         ${(() => {
@@ -2551,7 +2578,8 @@ function renderUnpo() {
       ? stBadge(storePurch.status || 'waiting') +
         (() => {
           const qty = (storePurch.items || []).filter(i => i.albKey === albKey && i.qty > 0).reduce((s, i) => s + i.qty, 0);
-          return qty ? `<span class="text-sm text-muted" style="margin-left:4px">${qty}장</span>` : '';
+          return (qty ? `<span class="text-sm text-muted" style="margin-left:4px">${qty}장</span>` : '') +
+            `<button class="btn btn-ghost btn-xs" style="margin-left:4px" onclick="viewPurchDetail('${storePurch.id}')">구매상세</button>`;
         })()
       : '<span class="badge badge-gray">미구매</span>';
 
@@ -2580,7 +2608,7 @@ function renderUnpo() {
         return `<div class="unpo-card-wrap">
           <div class="unpo-card${c.owned ? ' owned' : ''}" onclick="toggleUnpoOwned('${s.id}','${albKey}',${si},${actualCi})">
             ${c.img ? `<img src="${c.img}" loading="lazy">` : '<div class="no-img">📷<br>미등록</div>'}
-            ${c.owned ? '<div class="unpo-owned-badge">보유</div>' : ''}
+            ${c.owned ? '<div class="unpo-owned-badge">WANT</div>' : ''}
           </div>
           ${c.note ? `<div style="font-size:10px;color:var(--tx3);text-align:center">${c.note}</div>` : ''}
         </div>`;
@@ -2589,7 +2617,7 @@ function renderUnpo() {
       if (!cardsHtml) return '';
       return `<div style="margin-bottom:12px">
         ${set.memo ? `<div style="font-size:12px;color:var(--tx2);margin-bottom:6px">${set.memo}</div>` : ''}
-        <div style="font-size:11px;color:var(--tx3);margin-bottom:6px">${ownedCount}/${cards.length} 보유</div>
+        <div style="font-size:11px;color:var(--tx3);margin-bottom:6px">${ownedCount}/${cards.length} WANT</div>
         <div class="unpo-grid">${cardsHtml}</div>
       </div>`;
     }).filter(Boolean).join('');
@@ -2606,7 +2634,7 @@ function renderUnpo() {
         return `<div class="unpo-card-wrap">
           <div class="unpo-card${c.owned ? ' owned' : ''}" onclick="toggleUnpoOwned('${s.id}','${albKey}',${bSi},${actualCi})">
             ${c.img ? `<img src="${c.img}" loading="lazy">` : '<div class="no-img">📷<br>미등록</div>'}
-            ${c.owned ? '<div class="unpo-owned-badge">보유</div>' : ''}
+            ${c.owned ? '<div class="unpo-owned-badge">WANT</div>' : ''}
           </div>
           ${c.note ? `<div style="font-size:10px;color:var(--tx3);text-align:center">${c.note.replace(' (뒷)', '')}</div>` : ''}
         </div>`;
@@ -2879,30 +2907,46 @@ function buildCalLegend(cat) {
 }
 
 function renderCalEvents() {
-  const stores = catStores().filter(s => s.offlineStart);
+  const allStores = catStores();
   const today = new Date().toISOString().slice(0,10);
-  const sorted = [...stores].sort((a, b) => (a.offlineStart||'').localeCompare(b.offlineStart||''));
-  const future = sorted.filter(s => !s.offlineEnd || s.offlineEnd >= today);
-  const past = sorted.filter(s => s.offlineEnd && s.offlineEnd < today);
+  // Include stores with either new offlineEvents or legacy offlineStart
+  const stores = allStores.filter(s => s.offlineEvents?.length || s.offlineStart);
+  const sorted = [...stores].sort((a, b) => {
+    const aStart = a.offlineEvents?.[0]?.start || a.offlineStart || '';
+    const bStart = b.offlineEvents?.[0]?.start || b.offlineStart || '';
+    return aStart.localeCompare(bStart);
+  });
+  const future = sorted.filter(s => {
+    const end = s.offlineEvents?.length ? s.offlineEvents[s.offlineEvents.length-1]?.end : s.offlineEnd;
+    return !end || end >= today;
+  });
+  const past = sorted.filter(s => {
+    const end = s.offlineEvents?.length ? s.offlineEvents[s.offlineEvents.length-1]?.end : s.offlineEnd;
+    return end && end < today;
+  });
 
   function eventCard(s) {
-    const mapUrl = s.offlineAddress ? `https://map.naver.com/v5/search/${encodeURIComponent(s.offlineAddress)}` : null;
+    const evts = s.offlineEvents?.length ? s.offlineEvents
+      : s.offlineStart ? [{ start: s.offlineStart, end: s.offlineEnd, addressName: s.offlineAddressName||'', addressDetail: s.offlineAddressDetail||s.offlineAddress||'', note: s.offlineNote||'', luckyDraw: s.offlineLuckyDraw||false }]
+      : [];
     return `<div class="card" style="margin-bottom:10px">
-      <div class="card-header">
+      <div class="card-header" style="cursor:pointer" onclick="openStorePopup('${s.id}')">
         <div class="fw-600">${s.name}</div>
-        <div style="display:flex;gap:4px">
-          ${s.offlineLuckyDraw ? '<span class="badge badge-pk">🃏 럭키드로우</span>' : ''}
-          ${s.videocall ? '<span class="badge badge-info">📞 영통</span>' : ''}
+        <div style="display:flex;gap:4px;align-items:center">
+          ${s.offlineLuckyDraw ? '<span style="font-size:11px;background:rgba(192,132,252,.15);color:var(--pk);padding:2px 6px;border-radius:3px;font-weight:600">럭드</span>' : ''}
+          ${s.videocall ? '<span class="badge badge-info" style="font-size:10px">📞 영통</span>' : ''}
         </div>
       </div>
-      <div style="font-size:13px;color:var(--tx2);margin-bottom:6px">
-        📅 ${fDate(s.offlineStart)}${s.offlineEnd && s.offlineEnd!==s.offlineStart?' ~ '+fDate(s.offlineEnd):''}
-        ${s.offlineHours ? ` · ⏰ ${s.offlineHours}` : ''}
-      </div>
-      ${s.offlineAddress ? `<div style="font-size:12px;margin-bottom:6px">
-        📍 ${mapUrl ? `<a href="${mapUrl}" target="_blank" style="color:var(--pk)">${s.offlineAddress} 🗺</a>` : s.offlineAddress}
-      </div>` : ''}
-      ${s.offlineNote ? `<div style="font-size:12px;color:var(--tx2);white-space:pre-wrap">${s.offlineNote}</div>` : ''}
+      ${evts.map(ev => {
+        const loc = ev.addressName || ev.addressDetail || '';
+        const mapUrl = ev.addressDetail ? `https://map.naver.com/v5/search/${encodeURIComponent(ev.addressDetail)}` : null;
+        const luckyTag = ev.luckyDraw ? ' <span style="font-size:10px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 4px;border-radius:3px;font-weight:600">럭드</span>' : '';
+        return `<div style="padding:8px 0;border-top:1px solid var(--bd)">
+          <div style="font-size:13px;color:var(--tx2);margin-bottom:4px">📅 ${fDate(ev.start)}${ev.end&&ev.end!==ev.start?' ~ '+fDate(ev.end):''}${luckyTag}</div>
+          ${loc ? `<div style="font-size:12px;color:var(--tx2);margin-bottom:3px">📍 ${mapUrl ? `<a href="${mapUrl}" target="_blank" style="color:var(--pk)">${loc} 🗺</a>` : loc}</div>` : ''}
+          ${ev.note ? `<div style="font-size:12px;color:var(--tx2);white-space:pre-wrap">${ev.note}</div>` : ''}
+        </div>`;
+      }).join('')}
     </div>`;
   }
 
