@@ -958,6 +958,11 @@ function openStoreModal(id) {
     <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">
       <label class="form-check"><input type="checkbox" id="sp-music" ${s?.isMusicStreamTeam ? 'checked':''}><span>음총 연계</span></label>
       <label class="form-check"><input type="checkbox" id="sp-videocall" ${s?.videocall ? 'checked':''}><span>영통</span></label>
+      <div style="display:flex;align-items:center;gap:4px">
+        <input type="date" id="sp-vc-start" value="${s?.vcStart||''}" style="font-size:11px;padding:2px 4px" title="영통 시작일">
+        <span style="font-size:10px;color:var(--tx3)">~</span>
+        <input type="date" id="sp-vc-end" value="${s?.vcEnd||''}" style="font-size:11px;padding:2px 4px" title="영통 마감일">
+      </div>
       <label class="form-check"><input type="checkbox" id="sp-hanteo" ${s?.hanteoChart ? 'checked':''}><span>한터차트</span></label>
       <label class="form-check"><input type="checkbox" id="sp-billboard" ${s?.billboardChart ? 'checked':''}><span>빌보드</span></label>
       <div style="display:flex;align-items:center;gap:6px">
@@ -1101,11 +1106,11 @@ function renderOfflineEventsList() {
         </div>
       </div>
       <div class="form-row cols-2">
-        <div><label>메모</label><input type="text" id="oe-note-${idx}" value="${ev.note||''}" onchange="saveOfflineEventField(${idx})"></div>
+        <div><label>메모</label><textarea id="oe-note-${idx}" rows="3" style="resize:vertical" onchange="saveOfflineEventField(${idx})">${(ev.note||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea></div>
         <div><label>이벤트 공지 링크</label><input type="url" id="oe-url-${idx}" value="${ev.url||''}" placeholder="https://..." onchange="saveOfflineEventField(${idx})"></div>
       </div>
       <div style="margin-top:4px">
-        <label style="font-size:11px"><input type="checkbox" id="oe-lucky-${idx}" ${ev.luckyDraw?'checked':''} onchange="saveOfflineEventField(${idx})"> 🎰 럭키드로우</label>
+        <label style="font-size:11px"><input type="checkbox" id="oe-lucky-${idx}" ${ev.luckyDraw?'checked':''} onchange="saveOfflineEventField(${idx})"> 🃏 럭키드로우</label>
       </div>
     </div>
   `).join('') || '<div class="text-muted text-sm" style="padding:8px">오프라인 이벤트 없음</div>';
@@ -1249,6 +1254,8 @@ function saveStore() {
     round: parseInt(document.getElementById('sp-round').value) || null,
     isMusicStreamTeam: document.getElementById('sp-music').checked,
     videocall: document.getElementById('sp-videocall').checked,
+    vcStart: document.getElementById('sp-vc-start')?.value || '',
+    vcEnd: document.getElementById('sp-vc-end')?.value || '',
     unpoAlbumKey,
     unpoAlbumKeys,
     priceMode,
@@ -1410,10 +1417,11 @@ function renderUnpoSet(store, si, set) {
 
   return `<div class="unpo-set-wrap">
     <div class="unpo-set-head">
-      <div class="flex gap-8">
+      <div class="flex gap-8" style="align-items:center">
         <span class="text-sm fw-600">세트 ${si + 1}</span>
         <input type="text" value="${set.memo || ''}" placeholder="세트 설명 (예: Bite ver)" style="width:200px;height:28px;padding:4px 8px;font-size:12px"
           onchange="updateUnpoSetMemo('${storeId}','${albKey}',${si},this.value)">
+        ${store.offlineLuckyDraw ? `<label style="font-size:11px;white-space:nowrap"><input type="checkbox" ${set.luckyDraw?'checked':''} onchange="toggleUnpoSetLucky('${storeId}','${albKey}',${si},this.checked)"> 🃏 럭드 세트</label>` : ''}
       </div>
       <div class="flex gap-4">
         <button class="btn btn-ghost btn-sm" onclick="addUnpoCard('${storeId}','${albKey}',${si})">+ 카드</button>
@@ -1445,7 +1453,13 @@ const MEMBERS = ['예준', '노아', '밤비', '은호', '하민'];
 function addBackCardsToSet(storeId, albKey, si) {
   const sets = JSON.parse(JSON.stringify(getUnpoSets(storeId, albKey)));
   if (!sets[si]) return;
-  MEMBERS.forEach(name => sets[si].cards.push({ owned: false, note: name + ' (뒷)', img: null }));
+  sets[si].cards.push({ owned: false, note: '뒷면 (공통)', img: null });
+  setUnpoSets(storeId, albKey, sets);
+}
+
+function toggleUnpoSetLucky(storeId, albKey, si, val) {
+  const sets = JSON.parse(JSON.stringify(getUnpoSets(storeId, albKey)));
+  if (sets[si]) sets[si].luckyDraw = val;
   setUnpoSets(storeId, albKey, sets);
 }
 
@@ -1453,7 +1467,7 @@ function addUnpoSet(storeId, albKey) {
   const store = (DB.stores || []).find(s => s.id === storeId);
   const cards = MEMBERS.map(name => ({ owned: false, note: name, img: null }));
   if (store?.unpoBack) {
-    MEMBERS.forEach(name => cards.push({ owned: false, note: name + ' (뒷)', img: null }));
+    cards.push({ owned: false, note: '뒷면 (공통)', img: null });
   }
   const sets = getUnpoSets(storeId, albKey);
   setUnpoSets(storeId, albKey, [...sets, { memo: '', cards }]);
