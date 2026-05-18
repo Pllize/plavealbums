@@ -517,8 +517,9 @@ let S = {
 function init() {
   DB = dbInit();
   // Set default category
-  if (DB.categories.length > 0) {
-    S.catId = DB.categories[0].id;
+  const visibleCats = (DB.categories || []).filter(c => !c.hidden);
+  if (visibleCats.length > 0) {
+    S.catId = visibleCats[0].id;
   }
   applyTheme();
   buildCatBar();
@@ -552,12 +553,17 @@ async function loadServiceData() {
     const data = await r.json();
     if (!data.categories?.length && !data.stores?.length && !data.albumTypes?.length) return;
     const savedPurchases = JSON.parse(JSON.stringify(DB.purchases || []));
-    const savedUnpoCards = JSON.parse(JSON.stringify(DB.unpoCards || []));
+    const localOwnedMap = Object.fromEntries((DB.unpoCards || []).map(c => [c.id, c.owned]));
     const savedAdminPw = DB.settings?.adminPw || '';
     const savedGithub = DB.settings?.github || {};
     dbImportJSON(JSON.stringify(data));
     reloadDB();
-    dbUpdate(s => ({ ...s, purchases: savedPurchases, unpoCards: savedUnpoCards }));
+    // Merge: use service card structure/images, preserve local owned flags
+    const mergedUnpoCards = (DB.unpoCards || []).map(c => ({
+      ...c,
+      owned: localOwnedMap[c.id] ?? c.owned,
+    }));
+    dbUpdate(s => ({ ...s, purchases: savedPurchases, unpoCards: mergedUnpoCards }));
     dbUpdateSettings({ adminPw: savedAdminPw, github: savedGithub });
     reloadDB(); buildCatBar(); buildFilters(); render();
   } catch(e) {}
@@ -865,7 +871,7 @@ function toast(msg, type = 'ok') {
 // ═══════════════════════════════════════════
 function buildCatBar() {
   const el = document.getElementById('cat-bar');
-  el.innerHTML = DB.categories.map(c =>
+  el.innerHTML = (DB.categories || []).filter(c => !c.hidden).map(c =>
     `<button class="cat-chip${c.id === S.catId ? ' active' : ''}" onclick="selectCat('${c.id}')">
       ${c.name} <span style="font-size:11px;opacity:.6">${c.artist}</span>
     </button>`
@@ -1650,23 +1656,25 @@ function renderPurchCard(p) {
 
   return `<div class="purch-card">
     <div class="purch-card-header">
-      <div>
-        <div class="purch-store-name">${store?.name || '?'} ${store?.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : ''} ${store?.hanteoChart ? '<span style="font-size:10px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">한터</span>' : ''}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+          <div class="purch-store-name" style="min-width:0">${store?.name || '?'} ${store?.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : ''} ${store?.hanteoChart ? '<span style="font-size:10px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">한터</span>' : ''}</div>
+          <div class="flex gap-8" style="align-items:center;flex-shrink:0">
+            <button class="btn btn-ghost btn-xs" onclick="viewPurchDetail('${p.id}')">상세</button>
+            <button class="btn btn-ghost btn-xs" onclick="editPurch('${p.id}')">편집</button>
+            <button class="btn btn-err btn-xs" onclick="deletePurch('${p.id}')">삭제</button>
+          </div>
+        </div>
         <div class="purch-meta">
           ${cat ? cat.name + ' · ' : ''}
           주문 ${p.orderDate ? fDate(p.orderDate) : '날짜미입력'}
           ${p.orderNumber ? `· <span class="mono text-xs">#${p.orderNumber}</span>` : ''}
         </div>
-      </div>
-      <div class="flex gap-8 flex-1" style="justify-content:flex-end;align-items:flex-start">
-        ${stBadge(p.status || 'waiting')}
-        <div>
-          <div class="price-total">${fKRW(total)}</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
+          ${stBadge(p.status || 'waiting')}
+          <div class="price-total" style="font-size:15px">${fKRW(total)}</div>
           ${proxyTotal ? `<div class="text-xs text-muted">내 지출: ${fKRW(myTotal)}</div>` : ''}
         </div>
-        <button class="btn btn-ghost btn-xs" onclick="viewPurchDetail('${p.id}')">상세</button>
-        <button class="btn btn-ghost btn-xs" onclick="editPurch('${p.id}')">편집</button>
-        <button class="btn btn-err btn-xs" onclick="deletePurch('${p.id}')">삭제</button>
       </div>
     </div>
 
@@ -1706,12 +1714,6 @@ function renderPurchCard(p) {
     ` : ''}
 
     ${p.memo ? `<div style="margin-top:8px;font-size:12px;color:var(--tx2);white-space:pre-wrap">${p.memo}</div>` : ''}
-
-    <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
-      ${['unpurchased','waiting','ordered','shipped','delivered'].map(st =>
-        `<button class="btn btn-ghost btn-xs" style="${mappedStatus===st?'border-color:var(--pk2);color:var(--pk)':''}" onclick="setPurchStatus('${p.id}','${st}')">${STATUS_MAP[st]?.lb||st}</button>`
-      ).join('')}
-    </div>
   </div>`;
 }
 

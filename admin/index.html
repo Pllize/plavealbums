@@ -116,7 +116,7 @@
     <button class="btn btn-p" onclick="openCatModal()">+ 분류 추가</button>
   </div>
   <div class="card"><table id="cat-table">
-    <thead><tr><th>분류명</th><th>아티스트</th><th>발매일</th><th>앨범수</th><th>판매처수</th><th></th></tr></thead>
+    <thead><tr><th>분류명</th><th>아티스트</th><th>발매일</th><th>앨범수</th><th>판매처수</th><th></th><th></th></tr></thead>
     <tbody id="cat-tbody"></tbody>
   </table></div>
 </div>
@@ -341,6 +341,12 @@
       <div class="form-row cols-2">
         <div><label>초동 마감일 (직접 지정)</label><input type="date" id="mc-chodongend" onchange="this.style.borderColor='';this.title=''"></div>
         <div><label>설명</label><input type="text" id="mc-desc" placeholder="예: 4th Mini Album"></div>
+      </div>
+      <div class="form-row">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="mc-hidden">
+          <span>숨김 (인덱스에서 이 분류를 표시하지 않음)</span>
+        </label>
       </div>
       <input type="hidden" id="mc-release">
     </div>
@@ -640,18 +646,19 @@ function renderCategories() {
   document.getElementById('cat-tbody').innerHTML = cats.map(c => {
     const albCount = (DB.albumTypes || []).filter(a => a.categoryId === c.id).length;
     const storeCount = (DB.stores || []).filter(s => s.categoryId === c.id).length;
-    return `<tr>
-      <td><span class="fw-600">${c.name}</span></td>
+    return `<tr${c.hidden ? ' style="opacity:.5"' : ''}>
+      <td><span class="fw-600">${c.name}</span>${c.hidden ? ' <span style="font-size:10px;color:var(--tx3);background:var(--sur2);padding:1px 5px;border-radius:3px">숨김</span>' : ''}</td>
       <td>${c.artist || '—'}</td>
       <td>${c.releaseDate ? fDate(c.releaseDate) : '—'}</td>
       <td>${albCount}</td>
       <td>${storeCount}</td>
       <td class="flex gap-4">
+        <button class="btn btn-ghost btn-xs" onclick="toggleCatHidden('${c.id}')">${c.hidden ? '노출' : '숨김'}</button>
         <button class="btn btn-ghost btn-xs" onclick="openCatModal('${c.id}')">편집</button>
         <button class="btn btn-err btn-xs" onclick="deleteCat('${c.id}')">삭제</button>
       </td>
     </tr>`;
-  }).join('') || '<tr><td colspan="6" class="empty">분류 없음</td></tr>';
+  }).join('') || '<tr><td colspan="7" class="empty">분류 없음</td></tr>';
 }
 
 function openCatModal(id) {
@@ -667,6 +674,7 @@ function openCatModal(id) {
   document.getElementById('mc-physicalrelease').value = c?.physicalReleaseDate || '';
   document.getElementById('mc-chodongbase').value = c?.chodongBaseDate || '';
   document.getElementById('mc-chodongend').value = c?.chodongEndDate || '';
+  document.getElementById('mc-hidden').checked = c?.hidden || false;
   openModal('modal-cat');
 }
 
@@ -694,6 +702,7 @@ function saveCat() {
     chodongBaseDate: document.getElementById('mc-chodongbase').value,
     chodongEndDate: document.getElementById('mc-chodongend').value,
     description: document.getElementById('mc-desc').value.trim(),
+    hidden: document.getElementById('mc-hidden').checked,
     sortOrder: Date.now(),
   };
   if (ADM.editCatId) {
@@ -715,6 +724,14 @@ function deleteCat(id) {
   dbUpdate(s => ({ ...s, albumTypes: (s.albumTypes||[]).filter(a => a.categoryId !== id), stores: (s.stores||[]).filter(st => st.categoryId !== id) }));
   reloadDB(); buildCatFilters(); renderCategories();
   toast('분류 삭제됨', 'warn');
+}
+
+function toggleCatHidden(id) {
+  const cat = (DB.categories || []).find(c => c.id === id);
+  if (!cat) return;
+  dbUpdateItem('categories', id, { hidden: !cat.hidden });
+  reloadDB(); renderCategories();
+  toast(cat.hidden ? '분류 노출됨' : '분류 숨김 처리됨');
 }
 
 // ═══════════════════════════════════════════
