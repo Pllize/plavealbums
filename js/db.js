@@ -106,11 +106,10 @@ function dbMergeImages(state) {
   }
 }
 
-function dbInit(seedFn) {
+function dbInit() {
   let state = dbLoad();
-  if (!state || !state.categories || state.categories.length === 0) {
+  if (!state) {
     state = _defaultState();
-    if (seedFn) seedFn(state);
     dbSave(state);
   }
   return dbMergeImages(state);
