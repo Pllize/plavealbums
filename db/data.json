@@ -235,7 +235,7 @@
           "id": "oe0",
           "start": "2026-04-20",
           "end": "2026-04-20",
-          "addressName": "",
+          "addressName": "ASTERUM433-10",
           "addressDetail": "서대문구 연희로11가길 48-23",
           "hoursMap": {
             "0": "",
@@ -248,16 +248,20 @@
           },
           "note": "모든 버전 구매시 A2T DRAW (십카페 럭드) 와 동일한 포카 중 랜덤 1종 증정\n럭드 포토카드중 친필사인 포토카드 랜덤 제공",
           "luckyDraw": true,
-          "url": ""
+          "url": "https://caligopt2popup.oopy.io/32d4cacd-15c9-80d4-91e3-e505275bb65c"
         }
       ],
-      "offlineAddressName": "",
+      "offlineAddressName": "ASTERUM433-10",
       "offlineAddressDetail": "서대문구 연희로11가길 48-23",
       "hanteoChart": true,
       "billboardChart": false,
       "chartEtc": "",
-      "sharedWithAlbs": [],
-      "sharedWithStoreIds": [],
+      "sharedWithAlbs": [
+        "ALB_1779038847739"
+      ],
+      "sharedWithStoreIds": [
+        "cs1776085185495"
+      ],
       "vcStart": "",
       "vcEnd": ""
     },
@@ -282,7 +286,7 @@
       "offlineEnd": "2026-04-19",
       "offlineHours": "(화-목) 10:30 - 20:00 ; (금-일) 10:30 - 20:30",
       "offlineAddress": "더현대서울 5F",
-      "offlineNote": "https://caligopt2popup.oopy.io/32d4cacd-15c9-80e1-b7b5-d07592ac0481모든 버전 구매시 더현대럭키드로우 포토카드 5종중 랜덤 증정",
+      "offlineNote": "모든 버전 구매시 더현대럭키드로우 포토카드 5종중 랜덤 증정",
       "offlineLuckyDraw": true,
       "defDomShip": 0,
       "defOvsShip": 0,
@@ -301,23 +305,30 @@
           "addressName": "",
           "addressDetail": "더현대서울 5F",
           "hoursMap": {
-            "0": "",
-            "1": "",
-            "2": "",
-            "3": "",
-            "4": "",
-            "5": "",
-            "6": ""
+            "0": null,
+            "1": "10:30-20:00",
+            "2": "10:30-20:00",
+            "3": "10:30-20:00",
+            "4": "10:30-20:30",
+            "5": "10:30-20:30",
+            "6": "10:30-20:30"
           },
-          "note": "https://caligopt2popup.oopy.io/32d4cacd-15c9-80e1-b7b5-d07592ac0481모든 버전 구매시 더현대럭키드로우 포토카드 5종중 랜덤 증정",
-          "luckyDraw": true
+          "note": "모든 버전 구매시 더현대럭키드로우 포토카드 5종중 랜덤 증정",
+          "luckyDraw": true,
+          "url": "https://caligopt2popup.oopy.io/32d4cacd-15c9-80e1-b7b5-d07592ac0481"
         }
       ],
       "offlineAddressName": "",
       "offlineAddressDetail": "더현대서울 5F",
-      "hanteoChart": false,
+      "hanteoChart": true,
       "billboardChart": false,
-      "chartEtc": ""
+      "chartEtc": "",
+      "vcStart": "",
+      "vcEnd": "",
+      "sharedWithAlbs": [
+        "ALB_1779038847739"
+      ],
+      "sharedWithStoreIds": []
     },
     {
       "id": "s3",
@@ -340,7 +351,7 @@
       "offlineEnd": "2026-04-20",
       "offlineHours": "매일 12:00~20:00",
       "offlineAddress": "서울시 학동로23길 29 B1",
-      "offlineNote": "[강남] MAKESTAR SPACE GANGNAM",
+      "offlineNote": "",
       "offlineLuckyDraw": false,
       "defDomShip": 3000,
       "defOvsShip": 0,
@@ -356,26 +367,33 @@
           "id": "oe0",
           "start": "2026-04-14",
           "end": "2026-04-20",
-          "addressName": "",
+          "addressName": "메이크스타 스페이스 강남",
           "addressDetail": "서울시 학동로23길 29 B1",
           "hoursMap": {
-            "0": "",
-            "1": "",
-            "2": "",
-            "3": "",
-            "4": "",
-            "5": "",
-            "6": ""
+            "0": "12:00-20:00",
+            "1": "12:00-20:00",
+            "2": "12:00-20:00",
+            "3": "12:00-20:00",
+            "4": "12:00-20:00",
+            "5": "12:00-20:00",
+            "6": "12:00-20:00"
           },
-          "note": "[강남] MAKESTAR SPACE GANGNAM",
-          "luckyDraw": false
+          "note": "",
+          "luckyDraw": false,
+          "url": ""
         }
       ],
-      "offlineAddressName": "",
+      "offlineAddressName": "메이크스타 스페이스 강남",
       "offlineAddressDetail": "서울시 학동로23길 29 B1",
       "hanteoChart": false,
       "billboardChart": false,
-      "chartEtc": ""
+      "chartEtc": "",
+      "vcStart": "",
+      "vcEnd": "",
+      "sharedWithAlbs": [
+        "ALB_1779038847739"
+      ],
+      "sharedWithStoreIds": []
     },
     {
       "id": "s4",
@@ -386,7 +404,7 @@
       "round": 1,
       "isMusicStreamTeam": false,
       "unpoAlbumKey": "ALB_1779038855533",
-      "unpoSets": 2,
+      "unpoSets": 1,
       "unpoBack": false,
       "sharedWith": null,
       "priceMode": "country",
@@ -412,11 +430,13 @@
       "offlineEvents": [],
       "offlineAddressName": "",
       "offlineAddressDetail": "",
-      "hanteoChart": false,
+      "hanteoChart": true,
       "billboardChart": false,
       "chartEtc": "",
       "sharedWithAlbs": [],
-      "sharedWithStoreIds": []
+      "sharedWithStoreIds": [],
+      "vcStart": "",
+      "vcEnd": ""
     },
     {
       "id": "s5",
@@ -427,7 +447,7 @@
       "round": 2,
       "isMusicStreamTeam": false,
       "unpoAlbumKey": "ALB_1779038855533",
-      "unpoSets": 2,
+      "unpoSets": 1,
       "unpoBack": false,
       "sharedWith": null,
       "priceMode": "country",
@@ -439,7 +459,7 @@
       "offlineEnd": "2026-04-20",
       "offlineHours": "11:00~10:00",
       "offlineAddress": "",
-      "offlineNote": "무신사 온라인: ASTERUM 433-10 (십카페럭드)와 동일\n무신사 스토어 성수 (연무장길 83 1F) - 무신사 1차럭드와 동일\n무신사 스토어 명동 (명동길 13) - ASTERUM 433-10 (십카페럭드)와 동일",
+      "offlineNote": "무신사 온라인: ASTERUM 433-10 (십카페럭드)와 동일\n무신사 스토어 명동 (명동길 13) - ASTERUM 433-10 (십카페럭드)와 동일",
       "offlineLuckyDraw": false,
       "defDomShip": 0,
       "defOvsShip": 0,
@@ -466,14 +486,33 @@
             "5": "",
             "6": ""
           },
-          "note": "무신사 온라인: ASTERUM 433-10 (십카페럭드)와 동일\n무신사 스토어 성수 (연무장길 83 1F) - 무신사 1차럭드와 동일\n무신사 스토어 명동 (명동길 13) - ASTERUM 433-10 (십카페럭드)와 동일",
+          "note": "무신사 온라인: ASTERUM 433-10 (십카페럭드)와 동일\n무신사 스토어 명동 (명동길 13) - ASTERUM 433-10 (십카페럭드)와 동일",
+          "luckyDraw": false,
+          "url": ""
+        },
+        {
+          "id": "oe1779208805159",
+          "start": "2026-04-14",
+          "end": "2026-04-20",
+          "addressName": "무신사 스토어 성수",
+          "addressDetail": "연무장길 83 1층",
+          "hoursMap": {
+            "0": "",
+            "1": "",
+            "2": "",
+            "3": "",
+            "4": "",
+            "5": "",
+            "6": ""
+          },
+          "note": "무신사 스토어 성수 (연무장길 83 1F) - 무신사 1차럭드와 동일",
           "luckyDraw": false,
           "url": ""
         }
       ],
       "offlineAddressName": "",
       "offlineAddressDetail": "",
-      "hanteoChart": false,
+      "hanteoChart": true,
       "billboardChart": false,
       "chartEtc": "",
       "sharedWithAlbs": [],
@@ -1132,7 +1171,12 @@
       "unpoBack": false,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {},
+      "customPrices": {
+        "ALB_1779038838207": 16500,
+        "ALB_1779038847739": 6900,
+        "ALB_1779038855533": 1200,
+        "ALB_1779038864675": 14200
+      },
       "purchaseStart": "2026-03-24T02:25",
       "purchaseEnd": "2026-04-14T19:00",
       "purchaseEndTxt": "",
@@ -1154,7 +1198,11 @@
       "offlineAddressDetail": "",
       "hanteoChart": false,
       "billboardChart": false,
-      "chartEtc": ""
+      "chartEtc": "",
+      "vcStart": "",
+      "vcEnd": "",
+      "sharedWithAlbs": [],
+      "sharedWithStoreIds": []
     },
     {
       "id": "cs1774545824537",
@@ -1319,7 +1367,12 @@
       "unpoBack": false,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {},
+      "customPrices": {
+        "ALB_1779038838207": null,
+        "ALB_1779038847739": null,
+        "ALB_1779038855533": null,
+        "ALB_1779038864675": 17100
+      },
       "purchaseStart": "2026-03-28T11:00",
       "purchaseEnd": "2026-03-31T23:59",
       "purchaseEndTxt": "",
@@ -1341,9 +1394,13 @@
       "offlineEvents": [],
       "offlineAddressName": "",
       "offlineAddressDetail": "",
-      "hanteoChart": false,
+      "hanteoChart": true,
       "billboardChart": false,
-      "chartEtc": ""
+      "chartEtc": "",
+      "vcStart": "2026-04-26",
+      "vcEnd": "",
+      "sharedWithAlbs": [],
+      "sharedWithStoreIds": []
     },
     {
       "id": "cs1774700960047",
@@ -1380,11 +1437,13 @@
       "offlineEvents": [],
       "offlineAddressName": "",
       "offlineAddressDetail": "",
-      "hanteoChart": false,
+      "hanteoChart": true,
       "billboardChart": false,
       "chartEtc": "",
       "sharedWithAlbs": [],
-      "sharedWithStoreIds": []
+      "sharedWithStoreIds": [],
+      "vcStart": "",
+      "vcEnd": ""
     },
     {
       "id": "cs1774874734719",
@@ -1900,7 +1959,8 @@
       "repo": "myalbums",
       "branch": "main",
       "filePath": "db/data.json",
-      "sha": "5654a770b675bffaec76c499cf61e37febadfbed"
+      "sha": "519a757b4cc4912dfb4ab8e197067743d86e2f64"
     }
-  }
+  },
+  "unpoCards": []
 }
