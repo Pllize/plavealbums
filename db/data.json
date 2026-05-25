@@ -885,7 +885,13 @@
       "offlineAddressDetail": "",
       "hanteoChart": false,
       "billboardChart": false,
-      "chartEtc": ""
+      "chartEtc": "",
+      "vcStart": "",
+      "vcEnd": "",
+      "sharedWithAlbs": [],
+      "sharedWithStoreIds": [
+        "cs1774546033455"
+      ]
     },
     {
       "id": "cs1774546033455",
@@ -924,7 +930,13 @@
       "offlineAddressDetail": "",
       "hanteoChart": false,
       "billboardChart": false,
-      "chartEtc": ""
+      "chartEtc": "",
+      "vcStart": "",
+      "vcEnd": "",
+      "sharedWithAlbs": [],
+      "sharedWithStoreIds": [
+        "s9"
+      ]
     },
     {
       "id": "s13",
@@ -1517,7 +1529,13 @@
       "offlineAddressDetail": "",
       "hanteoChart": false,
       "billboardChart": false,
-      "chartEtc": ""
+      "chartEtc": "",
+      "vcStart": "",
+      "vcEnd": "",
+      "sharedWithAlbs": [],
+      "sharedWithStoreIds": [
+        "s9"
+      ]
     },
     {
       "id": "cs1775049657392",
@@ -1959,7 +1977,7 @@
       "repo": "plavealbums",
       "branch": "main",
       "filePath": "db/data.json",
-      "sha": "242f3883e644fe8103f5e0edf5fcf0a590e69287"
+      "sha": "c79f224df025275d0a2a7f297ad791185d8a0a9f"
     }
   },
   "unpoCards": [
@@ -2032,6 +2050,406 @@
               "owned": false,
               "note": "하민",
               "img": "https://blog.kakaocdn.net/dna/cXGDm9/dJMcahK9bon/AAAAAAAAAAAAAAAAAAAAAGpWWW0bXsbDk645OfVmnwCAowMYcOc0f0nFTWptkRr5/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=DbMXLjVPpnHaqQOp8QXcsQjJLx4%3D&v=2&v=2&v=2&v=2&v=2&v=2&v=2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u1779723499467zxxj",
+      "storeId": "s3",
+      "albumTypeId": "ALB_1779038847739",
+      "sets": [
+        {
+          "memo": "",
+          "cards": [
+            {
+              "owned": false,
+              "note": "예준",
+              "img": "https://blog.kakaocdn.net/dna/cFLyzw/dJMcaiXwPzK/AAAAAAAAAAAAAAAAAAAAALJD_vSBnMYMdm9194e8JE8TobcW5jNgt-SOS1uVF6_p/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=xsI4k6Lw4XJYAc1%2FHYsWkL3v0M8%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "노아",
+              "img": "https://blog.kakaocdn.net/dna/rNDO4/dJMcadaPAc7/AAAAAAAAAAAAAAAAAAAAAHXddzVe0PrDsdpYFjqWO5xhZeVbShX8b1wVss_lxz95/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=zKwBFTT8ACy0l5S692WS4Ubgtno%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "밤비",
+              "img": "https://blog.kakaocdn.net/dna/yMsH8/dJMcaiXwPzM/AAAAAAAAAAAAAAAAAAAAANkrmijf6iyYUL2aJk78sCBeGIBz7krl7Z_CXNAvafzK/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=gRaNCspOZ19y6wNCp9eAFJXIYIY%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "은호",
+              "img": "https://blog.kakaocdn.net/dna/U6T8z/dJMcaiXwPzN/AAAAAAAAAAAAAAAAAAAAAMY45xQcOsJyNRazc5sO2ZLBBbmPagNlzKGRdZZ3rb5j/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=ZG0kzEQ%2F6TIDEqj0KbS4KbwbISs%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "하민",
+              "img": "https://blog.kakaocdn.net/dna/d3dh5J/dJMcaiceJsq/AAAAAAAAAAAAAAAAAAAAABXHfr_Kv-5GM8OJh31WPKOP-iJxP_CWmfMq-jcon1rR/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=wO4lt63zFqUrLNUdkNE%2BrHr1xac%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u1779723543471foum",
+      "storeId": "s4",
+      "albumTypeId": "ALB_1779038855533",
+      "sets": [
+        {
+          "memo": "",
+          "cards": [
+            {
+              "owned": false,
+              "note": "예준",
+              "img": "https://blog.kakaocdn.net/dna/WPL0d/dJMcacbZmQ8/AAAAAAAAAAAAAAAAAAAAAPoQxbZxAc2bGzNLw466AafMiFcBnzHiAr6cl6KMBjsF/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=cjr5o09hopatNNRRlWty2YmTkuY%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "노아",
+              "img": "https://blog.kakaocdn.net/dna/soEna/dJMcacbZmQ9/AAAAAAAAAAAAAAAAAAAAAOo4nwaLDT7ldPd9ShrMSDm7x3fkIqfaN-sKEIdyqM3C/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=wsFTXMBFFtsXFB10o9XwL78VEVc%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "밤비",
+              "img": "https://blog.kakaocdn.net/dna/oErqo/dJMcafzNFv8/AAAAAAAAAAAAAAAAAAAAAOEqwUnS0N10nCAKKo4tnxXT8aIJGGJ-4E4PwtWl_9fJ/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=zk4zSIrIhOY%2BBRoD3nmenzXoYYs%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "은호",
+              "img": "https://blog.kakaocdn.net/dna/rnCGy/dJMcaakVRvs/AAAAAAAAAAAAAAAAAAAAAKPjF9UtZgKSmUwqF0mF2Ta94PupI2YkWsUIeRNl87pY/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=AMTutiHaAjvXO6Sk1%2Bd30%2FZOAqw%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "하민",
+              "img": "https://blog.kakaocdn.net/dna/bZR67W/dJMcacbZmRa/AAAAAAAAAAAAAAAAAAAAAKKmbxglFe14sHgnSEBDHhUuY2kBd7t1hFYntMDajM0i/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=kwr1Fwckl4luqSuGy7wYShLXozM%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u1779723589940xq22",
+      "storeId": "s5",
+      "albumTypeId": "ALB_1779038855533",
+      "sets": [
+        {
+          "memo": "십카페 럭드와 동일",
+          "cards": [
+            {
+              "owned": false,
+              "note": "예준",
+              "img": "https://blog.kakaocdn.net/dna/uSsWK/dJMcad2Y0St/AAAAAAAAAAAAAAAAAAAAAKy3HuX4hnGKF7zfSC8D0fwIiv627XghJ573KmCoPVrR/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=BNYQH2ZfvXy37%2BRsm2gtB9fXIzM%3D&v=2&v=2&v=2&v=2&v=2&v=2&v=2&v=2"
+            },
+            {
+              "owned": false,
+              "note": "노아",
+              "img": "https://blog.kakaocdn.net/dna/erCxTu/dJMcajvoInI/AAAAAAAAAAAAAAAAAAAAACuuFvFdYd8POpis9ErTm4wHk2IoQgup_PEXCTxQQoE2/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=j8c44Gm%2F6rc5R8QA5aCK5leHQMI%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "밤비",
+              "img": "https://blog.kakaocdn.net/dna/cuUF4W/dJMcahK9bom/AAAAAAAAAAAAAAAAAAAAAOvketYPgMPqtVB-3aRzgWyI_waBpwNVXQjbe8x5lOTb/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=FBtvMZeSBLF8bBhEyGAojYV9JUw%3D&v=2&v=2&v=2&v=2&v=2&v=2&v=2&v=2"
+            },
+            {
+              "owned": false,
+              "note": "은호",
+              "img": "https://blog.kakaocdn.net/dna/HxRYr/dJMcahK9bol/AAAAAAAAAAAAAAAAAAAAAOcwBhWMpHsYhd-WaJBmLqXUniLb8H5_u2_rM2jXAOrc/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=8pLZn%2FhhKw9sx1NEelCNVTANQmw%3D&v=2&v=2&v=2&v=2&v=2&v=2&v=2&v=2"
+            },
+            {
+              "owned": false,
+              "note": "하민",
+              "img": "https://blog.kakaocdn.net/dna/IGxOi/dJMcajvoInJ/AAAAAAAAAAAAAAAAAAAAAHnFIJsMVkffe7DSgCL6V7P_wUn-T7Yd6yBiW-O-lk78/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=qnbxaRNth4VAp8o%2F3NSLrz7vFGk%3D&v=2&v=2&v=2&v=2&v=2&v=2&v=2&v=2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u17797236971734wuk",
+      "storeId": "s10",
+      "albumTypeId": "ALB_1779038855533",
+      "sets": [
+        {
+          "memo": "",
+          "cards": [
+            {
+              "owned": false,
+              "note": "예준",
+              "img": "https://blog.kakaocdn.net/dna/1PoON/dJMcagFuB0V/AAAAAAAAAAAAAAAAAAAAAGhRJk2Ny-QJUXrtQz1xfy6Hx5iJx_FDWGEGjAcLV_md/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=T146SKGQPKUUqB7sj3nHgOV2EZY%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "노아",
+              "img": "https://blog.kakaocdn.net/dna/Hq2YE/dJMcaiwubOk/AAAAAAAAAAAAAAAAAAAAAOPKQxS1qoHpbwdWqBxujeYuZRtQZWKfuf5uuJ_VYMfX/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=PzgKK1YFOgCqW1LF06IG0c5%2B7fE%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "밤비",
+              "img": "https://blog.kakaocdn.net/dna/mf7pr/dJMcagFuB0X/AAAAAAAAAAAAAAAAAAAAAMsN0y46ovVza0aOoYiJFKS7WDmyp3eqfB1OLWIZ_BjE/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=TUdiutb3y9biPP5WiH87l2R8mdY%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "은호",
+              "img": "https://blog.kakaocdn.net/dna/bcAcYJ/dJMcaiwubOl/AAAAAAAAAAAAAAAAAAAAAI9p0rlGh28KgyJ8D09AR0y47X7PDDbuZtn6PZHTL2cY/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=IPWaLA16Kr%2BOZTq0R67CPyqkr0U%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "하민",
+              "img": "https://blog.kakaocdn.net/dna/qirNy/dJMcacXlJ55/AAAAAAAAAAAAAAAAAAAAALwv5p-vLjqdL4DKyhb-wOspDsaG--AemoZLI4Ku5fPW/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=wQshDgEhmg0qwZ%2BWDwUsEuhW43E%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            }
+          ]
+        },
+        {
+          "memo": "애니메이트 코스터",
+          "cards": [
+            {
+              "owned": false,
+              "note": "예준",
+              "img": "https://blog.kakaocdn.net/dna/s5Gu0/dJMcad2Y0Sp/AAAAAAAAAAAAAAAAAAAAABZMZ8agz6eKQyQH7QCVWAgL75OH5vD5dAd5VWJfwswE/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=Q3ILk8mvbzsROQxzO8eUQRDl5g4%3D&v=2&v=2&v=2&v=2&v=2&v=2&v=2&v=2"
+            },
+            {
+              "owned": false,
+              "note": "노아",
+              "img": "https://blog.kakaocdn.net/dna/XBL1G/dJMcahK9bok/AAAAAAAAAAAAAAAAAAAAALV8WkMhKSgTLy_GS9n3Yf0Rx78R5Lr4EfyD_NvkkupJ/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=jq9M0qYMAP1%2FAjAQfVntmesR8GI%3D&v=2&v=2&v=2&v=2&v=2&v=2&v=2&v=2"
+            },
+            {
+              "owned": false,
+              "note": "밤비",
+              "img": "https://blog.kakaocdn.net/dna/deiCTS/dJMcad2Y0Ss/AAAAAAAAAAAAAAAAAAAAAPRXJugSCBEsTukFbAg21ZrDpOqK_iiOod5WPEKbEr90/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=uuR8c8eWdtlqRpXCtRS3csHxtg8%3D&v=2&v=2&v=2&v=2&v=2&v=2&v=2&v=2"
+            },
+            {
+              "owned": false,
+              "note": "은호",
+              "img": "https://blog.kakaocdn.net/dna/cphY0X/dJMcad2Y0Sr/AAAAAAAAAAAAAAAAAAAAAMNgdCWeFNkxO8JP8O_92qmR5MaTDzyeUF-a_wjCGjr4/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=RaeSdUhZpVJ71s%2F%2FtVcSkenIC%2F8%3D&v=2&v=2&v=2&v=2&v=2&v=2&v=2&v=2"
+            },
+            {
+              "owned": false,
+              "note": "하민",
+              "img": "https://blog.kakaocdn.net/dna/c3qV9H/dJMcad2Y0Sq/AAAAAAAAAAAAAAAAAAAAAC3Pz833FpH-0slBlIVjTbO7u3AXh3Fop4YGoDT0Tck0/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=DJDCxKSRwnMKjECL5tzodKZxoL4%3D&v=2&v=2&v=2&v=2&v=2&v=2&v=2&v=2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u1779723759108a5dz",
+      "storeId": "s7",
+      "albumTypeId": "ALB_1779038847739",
+      "sets": [
+        {
+          "memo": "",
+          "cards": [
+            {
+              "owned": false,
+              "note": "예준",
+              "img": "https://blog.kakaocdn.net/dna/b4RhpS/dJMcacpxcsw/AAAAAAAAAAAAAAAAAAAAAIgd_VDolFi_Q90t2_yWZR2eM-YUseOUw3jkyjCSKAo3/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=pQbD417XjFuQ%2BH143%2Bq24zpGXSo%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "노아",
+              "img": "https://blog.kakaocdn.net/dna/q7Pkx/dJMcaaZw8j1/AAAAAAAAAAAAAAAAAAAAAHtvip6KuKHaqF71czd6IJNGOx8VXf4f-OuQwP96zanL/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=YXjqrzb7Ovp6GmCq6vyp7GQySAg%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "밤비",
+              "img": "https://blog.kakaocdn.net/dna/mbe7D/dJMcaaZw8j3/AAAAAAAAAAAAAAAAAAAAAKVeZILSw_oX9PhGwjC_nh_ON0MNGvzSd3-JYo6oNUov/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=E%2BtLvVmV0P8cAQOAPk1gHWNn%2BqM%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "은호",
+              "img": "https://blog.kakaocdn.net/dna/bRQeq4/dJMcab5dscT/AAAAAAAAAAAAAAAAAAAAAPGhGip_A4PtYSp_4tSXUn4TIoSsqJ-h4ZPsFcLU-9fi/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=c0MAcX%2BnE%2FY4D2vOx70ZXSWhuPw%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "하민",
+              "img": "https://blog.kakaocdn.net/dna/DkZAg/dJMcacpxcsA/AAAAAAAAAAAAAAAAAAAAAPWgBQz9lgfvmVHuGTfacsXglAgrGN21ebdUyMgagJM8/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=LPs%2FkmeM0CL3GubjqvMVbfpbNVY%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u1779723787494hzuw",
+      "storeId": "s6",
+      "albumTypeId": "ALB_1779038847739",
+      "sets": [
+        {
+          "memo": "",
+          "cards": [
+            {
+              "owned": false,
+              "note": "예준",
+              "img": "https://blog.kakaocdn.net/dna/bTTvfT/dJMcaakVRvu/AAAAAAAAAAAAAAAAAAAAAOxjslYzttZY370lSCVENZb3kYkduvw6WT8s8WK3R9IY/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=umGwmU%2BwEblPe%2FCp4a%2B4qYFNVkI%3D&v=4&v=4&v=4&v=4&v=4&v=4&v=4&v=4"
+            },
+            {
+              "owned": false,
+              "note": "노아",
+              "img": "https://blog.kakaocdn.net/dna/bkNEGL/dJMcacbZmRb/AAAAAAAAAAAAAAAAAAAAAERtVjdJe-HE6JrZNmhOlDFapd0eBaJsGKWVmHfSm873/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=EmlizTchGXieqsds%2FK%2F0JYcSgP0%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "밤비",
+              "img": "https://blog.kakaocdn.net/dna/bHQXYA/dJMcacQAfHM/AAAAAAAAAAAAAAAAAAAAAAALrQScUW7K9peG6faBzxPclfZ-itg-l7yyNy8JQTmC/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=3SgebgsAZtWiGMfeOtt9WqZQWzs%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "은호",
+              "img": "https://blog.kakaocdn.net/dna/pKMnL/dJMcaakVRvx/AAAAAAAAAAAAAAAAAAAAAFe4fkUSS08PUZMl2BZmvLaYgoH9L7JtUKluQiitm-uA/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=ZFxf9EnOTDptIEpOKqxJpDpiicM%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "하민",
+              "img": "https://blog.kakaocdn.net/dna/Xgn1Y/dJMcacbZmRc/AAAAAAAAAAAAAAAAAAAAAMigWTFJaMc7DS5D_q8QBd0F6sgJ_TBZ0GdQiy1w0brM/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=S0FRhTH10BbAjhe7UA6WGAZSmrU%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u177972383745045i9",
+      "storeId": "s8",
+      "albumTypeId": "ALB_1779038855533",
+      "sets": [
+        {
+          "memo": "",
+          "cards": [
+            {
+              "owned": false,
+              "note": "예준",
+              "img": "https://blog.kakaocdn.net/dna/cL9tZi/dJMcacQAfHS/AAAAAAAAAAAAAAAAAAAAAOcL0ZedostKo69NY3sUSv7HcuX32bSd8kIFB0PQyj-v/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=dukIfFYPWB3Whnzy9YvMrpO3SR8%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "노아",
+              "img": "https://blog.kakaocdn.net/dna/Tchnm/dJMcacQAfHU/AAAAAAAAAAAAAAAAAAAAAGMQ_eIypwzaFWsg_OTzNEyogGbs9jeq3yh9OStvTtGi/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=oeqytOLPFnXAbPJ%2BMI%2Fytgqcqi8%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "밤비",
+              "img": "https://blog.kakaocdn.net/dna/b9LxCW/dJMcaakVRwv/AAAAAAAAAAAAAAAAAAAAAKZiBGe_Zxxl22R_2qiRRcPjetFWbIr9n_bFu9YenRLK/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=yFPbT577LW11%2BdPtm51H1AErMuw%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "은호",
+              "img": "https://blog.kakaocdn.net/dna/AicWD/dJMcacbZmRh/AAAAAAAAAAAAAAAAAAAAAPO11XEnk4n0mKZt29_5STfG_xH4u6keg6vZYiKYxFMO/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=zjY%2BzfpBIlLsLDloHtoWMTVQL7U%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "하민",
+              "img": "https://blog.kakaocdn.net/dna/cEvWL6/dJMcacQAfH4/AAAAAAAAAAAAAAAAAAAAALJP_iplBbOJl0RbkRymS5HvdkturE2_hz6Du0hi_KJN/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=r%2FmwAqvbhoI6NuKqz2dpP6tat28%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u1779723867460kgc0",
+      "storeId": "s11",
+      "albumTypeId": "ALB_1779038855533",
+      "sets": [
+        {
+          "memo": "BITE",
+          "cards": [
+            {
+              "owned": false,
+              "note": "예준",
+              "img": "https://blog.kakaocdn.net/dna/cBu6j4/dJMcagFuB0Y/AAAAAAAAAAAAAAAAAAAAAPR4_3GHTXArYGM1cNCWx_V2E7MbZeeq-kVYOTtGUMZf/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=DhBJ893ecziqgvKy%2Fl5gKay2a8Q%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "노아",
+              "img": "https://blog.kakaocdn.net/dna/bkPnzE/dJMcaiwubOo/AAAAAAAAAAAAAAAAAAAAACFfrBXdwNM0HYk9DmJScSSyBo2X9JQS0e6XSguhBMva/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=DGtAJn%2FUoBeO7RciA12MNBn8UZQ%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "밤비",
+              "img": "https://blog.kakaocdn.net/dna/Dwar5/dJMcagFuB0Z/AAAAAAAAAAAAAAAAAAAAAIRPjevSaWVkrIHOCcZVzA6qVGNNvCNTA3Z63Gqmu5NB/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=kz8DTvDY%2FlXJuYhdVF9d%2BAQ67U8%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "은호",
+              "img": "https://blog.kakaocdn.net/dna/yw1df/dJMcagFuB00/AAAAAAAAAAAAAAAAAAAAAF_uaWsSJ-HHyb3D1EiU__sck4p0QGR0Y2d003JtRChu/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=MGuHQn4gDRGTHziV6FikpBScJHM%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "하민",
+              "img": "https://blog.kakaocdn.net/dna/c251bd/dJMcaiwubOp/AAAAAAAAAAAAAAAAAAAAAM6wfkElpmqWMJlIfSiO4R1LRAo0SVDAfk1o18k4i8zx/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=AMPFjge22B5KIKZgRjz1UltTnDo%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u1779723910643pltz",
+      "storeId": "s12",
+      "albumTypeId": "ALB_1779038855533",
+      "sets": [
+        {
+          "memo": "Look Up",
+          "cards": [
+            {
+              "owned": false,
+              "note": "예준",
+              "img": "https://blog.kakaocdn.net/dna/cZsH4Y/dJMcacXlJ56/AAAAAAAAAAAAAAAAAAAAANNnZggCM6tgCmVToFApomYGNexDNr-4K9hVEEaXaomg/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=lz6CzOOUCgqNWkcj%2BE%2B5UD5S7Wo%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "노아",
+              "img": "https://blog.kakaocdn.net/dna/EbS10/dJMcagFuB01/AAAAAAAAAAAAAAAAAAAAANhANHu0a4udvulU7UoSWkT9mcP9aIRGAndnY3GjI9xk/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=40qJFe0ben%2B6DyS7RZ31yuTmkEg%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "밤비",
+              "img": "https://blog.kakaocdn.net/dna/cF8zVe/dJMcacXlJ58/AAAAAAAAAAAAAAAAAAAAAG6RuEzFXOMrW4XWzQInNARx409B6CWmE-Y2_5eNIlpm/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=AMr0FnkRg3tjGx2vPXIFpDJiucg%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "은호",
+              "img": "https://blog.kakaocdn.net/dna/bh72kU/dJMcacXlJ59/AAAAAAAAAAAAAAAAAAAAAP2FN5cEXflMtdqa0ccUH-FP9DbJ4jmrrMKsqR4NqSpb/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=a5zcdRUSCqt9mjST43xzVXJzCII%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "하민",
+              "img": "https://blog.kakaocdn.net/dna/QqEAk/dJMcaiwubOt/AAAAAAAAAAAAAAAAAAAAAPvzVxtS-ZJQcNhHr-GpCBJ5My5O0MjsLhy2rGUXH5if/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=OVjla9zPNuxxy5uP3JfNTnv39YQ%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u1779723943988sboo",
+      "storeId": "s9",
+      "albumTypeId": "ALB_1779038855533",
+      "sets": [
+        {
+          "memo": "",
+          "cards": [
+            {
+              "owned": false,
+              "note": "예준",
+              "img": "https://blog.kakaocdn.net/dna/bvGfHv/dJMcacXlJ6a/AAAAAAAAAAAAAAAAAAAAAPB_K0yefl0a7Bqf5JS24wvS126fq7FGrs-wHSWIpJVJ/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=X7zCVbjLfJ8ObFGNUQbCrA19Jb8%3D&v=4&v=4&v=4&v=4&v=4&v=4&v=4&v=4"
+            },
+            {
+              "owned": false,
+              "note": "노아",
+              "img": "https://blog.kakaocdn.net/dna/FFZQ9/dJMcacXlJ6b/AAAAAAAAAAAAAAAAAAAAABp8pdLCh-fEDCmEQw_0W7RObbGjt28f8xz5Q0KjOL2_/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=QXiGA7iVFRKhBNjRFNi84Y2eqww%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "밤비",
+              "img": "https://blog.kakaocdn.net/dna/boGqkD/dJMcaipKnnJ/AAAAAAAAAAAAAAAAAAAAAHVDX4elZg_3DHae4SnzhjRJrY0VmSaEebEyz6MTUVl0/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=%2BIxJRJsTW%2BUvOFdWDS%2FfNVu3q4A%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "은호",
+              "img": "https://blog.kakaocdn.net/dna/pnymQ/dJMcacXlJ6c/AAAAAAAAAAAAAAAAAAAAAIw9UDRzJwSYpGp5a94yDuMBcwyhNhp4peKw3dQz7Y5k/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=tLSCSEWb%2BC2UfpS8asDHy9dccWA%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "하민",
+              "img": "https://blog.kakaocdn.net/dna/dXTJZk/dJMcacXlJ6e/AAAAAAAAAAAAAAAAAAAAAJ5LP7tsBCS4sfiICk9H0tupaCGx9y33XZKwrTPY6q28/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=vK4f9v9ZoEMP3HLaSv4EsaVR0Xs%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
             }
           ]
         }
