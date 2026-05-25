@@ -1080,6 +1080,7 @@ function openStoreModal(id) {
       hoursMap: s.offlineHoursMap || {},
       note: s.offlineNote || '',
       luckyDraw: s.offlineLuckyDraw || false,
+      mapUrl: '',
     }];
   } else {
     window._offlineEvents = [];
@@ -1126,7 +1127,10 @@ function renderOfflineEventsList() {
       </div>
       <div class="form-row cols-2">
         <div><label>메모</label><textarea id="oe-note-${idx}" rows="3" style="resize:vertical" oninput="saveOfflineEventField(${idx})">${(ev.note||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea></div>
-        <div><label>이벤트 공지 링크</label><input type="url" id="oe-url-${idx}" value="${ev.url||''}" placeholder="https://..." onchange="saveOfflineEventField(${idx})"></div>
+        <div>
+          <div><label>이벤트 공지 링크</label><input type="url" id="oe-url-${idx}" value="${ev.url||''}" placeholder="https://..." onchange="saveOfflineEventField(${idx})"></div>
+          <div style="margin-top:6px"><label>지도 링크 (네이버/구글)</label><input type="url" id="oe-mapurl-${idx}" value="${ev.mapUrl||''}" placeholder="https://naver.me/... 또는 https://maps.app.goo.gl/..." onchange="saveOfflineEventField(${idx})"></div>
+        </div>
       </div>
       <div style="margin-top:4px">
         <label style="font-size:11px"><input type="checkbox" id="oe-lucky-${idx}" ${ev.luckyDraw?'checked':''} onchange="saveOfflineEventField(${idx})"> 럭드</label>
@@ -1137,7 +1141,7 @@ function renderOfflineEventsList() {
 
 function addOfflineEvent() {
   window._offlineEvents = window._offlineEvents || [];
-  window._offlineEvents.push({ id: 'oe'+Date.now(), start:'', end:'', addressName:'', addressDetail:'', hoursMap:{}, note:'', luckyDraw:false });
+  window._offlineEvents.push({ id: 'oe'+Date.now(), start:'', end:'', addressName:'', addressDetail:'', hoursMap:{}, note:'', luckyDraw:false, mapUrl:'' });
   renderOfflineEventsList();
 }
 
@@ -1160,6 +1164,7 @@ function saveOfflineEventField(idx) {
   ev.addressDetail = document.getElementById('oe-adetail-'+idx)?.value || '';
   ev.note = document.getElementById('oe-note-'+idx)?.value || '';
   ev.url = document.getElementById('oe-url-'+idx)?.value || '';
+  ev.mapUrl = document.getElementById('oe-mapurl-'+idx)?.value || '';
   ev.luckyDraw = document.getElementById('oe-lucky-'+idx)?.checked || false;
   ev.hoursMap = {};
   for (let di = 0; di < DAYS_N; di++) {
@@ -1399,6 +1404,7 @@ function renderUnpo() {
           </div>
           <div class="flex gap-8">
             <span class="text-xs text-muted">${totalCards}장 · 이미지 ${withImg}/${totalCards}</span>
+            <button class="btn btn-ghost btn-sm" onclick="copyUnpoFromStore('${s.id}','${albKey}')">📋 복사</button>
             <button class="btn btn-ghost btn-sm" onclick="addUnpoSet('${s.id}','${albKey}')">+ 세트 추가</button>
           </div>
         </div>
@@ -1465,6 +1471,50 @@ function setUnpoSets(storeId, albKey, sets) {
   dbSaveUnpoCards(storeId, albKey, sets);
   reloadDB();
   renderUnpo();
+}
+
+function copyUnpoFromStore(targetStoreId, albKey) {
+  // 같은 albumKey를 가진 다른 stores 목록 수집
+  const candidates = (DB.stores || []).filter(s =>
+    s.id !== targetStoreId && getStoreUnpoKeys(s).includes(albKey)
+  );
+  if (!candidates.length) { alert('복사할 다른 플랫폼이 없습니다.'); return; }
+
+  const opts = candidates.map((s, i) => `${i + 1}. ${s.name}`).join('\n');
+  const input = prompt(`복사할 플랫폼 번호를 입력하세요:\n${opts}`);
+  if (!input) return;
+  const idx = parseInt(input) - 1;
+  const src = candidates[idx];
+  if (!src) { alert('잘못된 번호입니다.'); return; }
+
+  const srcSets = JSON.parse(JSON.stringify(getUnpoSets(src.id, albKey)));
+  if (!srcSets.length) { alert(`${src.name}에 복사할 세트가 없습니다.`); return; }
+
+  const resetSets = srcSets.map(set => ({
+    ...set,
+    cards: (set.cards || []).map(c => ({ ...c, owned: false }))
+  }));
+
+  if (!confirm(`${src.name}의 미공포 세트 ${srcSets.length}개를 복사하시겠습니까?\n(기존 데이터는 덮어씌워집니다)`)) return;
+
+  // 세트 복사 저장
+  setUnpoSets(targetStoreId, albKey, resetSets);
+
+  // sharedWithStoreIds 양방향 업데이트
+  dbUpdate(state => {
+    const stores = JSON.parse(JSON.stringify(state.stores || []));
+    const tgt = stores.find(x => x.id === targetStoreId);
+    const srcStore = stores.find(x => x.id === src.id);
+    if (tgt) {
+      tgt.sharedWithStoreIds = [...new Set([...(tgt.sharedWithStoreIds || []), src.id])];
+    }
+    if (srcStore) {
+      srcStore.sharedWithStoreIds = [...new Set([...(srcStore.sharedWithStoreIds || []), targetStoreId])];
+    }
+    return { ...state, stores };
+  });
+  reloadDB();
+  toast('복사 완료! 공유 관계가 자동으로 설정되었습니다.');
 }
 
 const MEMBERS = ['예준', '노아', '밤비', '은호', '하민'];
