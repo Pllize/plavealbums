@@ -1977,7 +1977,7 @@
       "repo": "plavealbums",
       "branch": "main",
       "filePath": "db/data.json",
-      "sha": "c79f224df025275d0a2a7f297ad791185d8a0a9f"
+      "sha": "bc03186840f55638707044b663a7f4bb8168cd99"
     }
   },
   "unpoCards": [
@@ -2421,6 +2421,43 @@
     {
       "id": "u1779723943988sboo",
       "storeId": "s9",
+      "albumTypeId": "ALB_1779038855533",
+      "sets": [
+        {
+          "memo": "",
+          "cards": [
+            {
+              "owned": false,
+              "note": "예준",
+              "img": "https://blog.kakaocdn.net/dna/bvGfHv/dJMcacXlJ6a/AAAAAAAAAAAAAAAAAAAAAPB_K0yefl0a7Bqf5JS24wvS126fq7FGrs-wHSWIpJVJ/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=X7zCVbjLfJ8ObFGNUQbCrA19Jb8%3D&v=4&v=4&v=4&v=4&v=4&v=4&v=4&v=4"
+            },
+            {
+              "owned": false,
+              "note": "노아",
+              "img": "https://blog.kakaocdn.net/dna/FFZQ9/dJMcacXlJ6b/AAAAAAAAAAAAAAAAAAAAABp8pdLCh-fEDCmEQw_0W7RObbGjt28f8xz5Q0KjOL2_/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=QXiGA7iVFRKhBNjRFNi84Y2eqww%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "밤비",
+              "img": "https://blog.kakaocdn.net/dna/boGqkD/dJMcaipKnnJ/AAAAAAAAAAAAAAAAAAAAAHVDX4elZg_3DHae4SnzhjRJrY0VmSaEebEyz6MTUVl0/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=%2BIxJRJsTW%2BUvOFdWDS%2FfNVu3q4A%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "은호",
+              "img": "https://blog.kakaocdn.net/dna/pnymQ/dJMcacXlJ6c/AAAAAAAAAAAAAAAAAAAAAIw9UDRzJwSYpGp5a94yDuMBcwyhNhp4peKw3dQz7Y5k/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=tLSCSEWb%2BC2UfpS8asDHy9dccWA%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "하민",
+              "img": "https://blog.kakaocdn.net/dna/dXTJZk/dJMcacXlJ6e/AAAAAAAAAAAAAAAAAAAAAJ5LP7tsBCS4sfiICk9H0tupaCGx9y33XZKwrTPY6q28/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=vK4f9v9ZoEMP3HLaSv4EsaVR0Xs%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u17797255622519lnx",
+      "storeId": "cs1774546033455",
       "albumTypeId": "ALB_1779038855533",
       "sets": [
         {
