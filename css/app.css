@@ -355,8 +355,8 @@ select option { background: var(--sur2); }
   gap: 4px;
 }
 .unpo-owned-badge {
-  position: absolute;
-  top: 4px; right: 4px;
+  display: block;
+  text-align: center;
   background: var(--ok);
   color: #fff;
   font-size: 10px;
@@ -364,6 +364,7 @@ select option { background: var(--sur2); }
   border-radius: 4px;
   font-weight: 700;
   letter-spacing: .3px;
+  margin-top: 2px;
 }
 
 /* ── Calendar ── */
@@ -612,6 +613,8 @@ code { font: 12px 'Menlo','Monaco',monospace; background: var(--sur2); padding: 
   .form-row.cols-3, .form-row.cols-4 { grid-template-columns: 1fr 1fr; }
   .page-header { flex-wrap: wrap; }
   .cat-selector { gap: 6px; }
+  .unpo-grid { grid-template-columns: repeat(4, 1fr); }
+  .unpo-grid.six { grid-template-columns: repeat(4, 1fr); }
 }
 
 /* ── Section tabs ── */

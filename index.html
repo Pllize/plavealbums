@@ -2507,7 +2507,11 @@ function showStoreDetail(storeId) {
         <div style="font-size:13px;font-weight:600">${ev.start ? fDate(ev.start) : ''}${ev.end && ev.end !== ev.start ? ' ~ ' + fDate(ev.end) : ''}
           ${ev.luckyDraw ? ' <span style="font-size:10px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 4px;border-radius:3px;font-weight:600">럭드</span>' : ''}
         </div>
-        ${ev.addressName ? `<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 ${ev.addressName}${ev.addressDetail ? ' · ' + ev.addressDetail : ''}</div>` : ev.addressDetail ? `<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 ${ev.addressDetail}</div>` : ''}
+        ${(() => {
+          const addrMapUrl = ev.mapUrl || (ev.addressDetail ? `https://map.naver.com/v5/search/${encodeURIComponent(ev.addressDetail)}` : null);
+          const addrText = ev.addressName ? `${ev.addressName}${ev.addressDetail ? ' · ' + ev.addressDetail : ''}` : ev.addressDetail || '';
+          return addrText ? `<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 ${addrMapUrl ? `<a href="${addrMapUrl}" target="_blank" style="color:var(--pk)">${addrText} 🗺</a>` : addrText}</div>` : '';
+        })()}
         ${(() => {
           const DAYS = ['월','화','수','목','금','토','일'];
           const hrs = Object.entries(ev.hoursMap||{}).filter(([,v])=>v).map(([di,v])=>`${DAYS[di]} ${v}`).join(' / ');
@@ -2573,9 +2577,22 @@ function renderUnpo() {
   }
 
   // Get stores with unpo for this album key
-  const stores = catStores().filter(s => getStoreUnpoKeys(s).includes(albKey));
+  const allUnpoStores = catStores().filter(s => getStoreUnpoKeys(s).includes(albKey));
+  const filteredStores = allUnpoStores.filter(s => !search || s.name.toLowerCase().includes(search));
 
-  const html = stores.filter(s => !search || s.name.toLowerCase().includes(search)).map(s => {
+  // Group stores sharing the same unpo sets (via sharedWithStoreIds)
+  const shownIds = new Set();
+  const storeGroups = [];
+  filteredStores.forEach(s => {
+    if (shownIds.has(s.id)) return;
+    const linkedIds = s.sharedWithStoreIds || [];
+    const linked = filteredStores.filter(x => linkedIds.includes(x.id) && !shownIds.has(x.id) && x.id !== s.id);
+    shownIds.add(s.id);
+    linked.forEach(x => shownIds.add(x.id));
+    storeGroups.push({ primary: s, linked });
+  });
+
+  function renderStoreUnpoCard(s, linked) {
     const unpo = dbGetUnpoCards(s.id, albKey);
 
     // Purchase linkage badge
@@ -2583,16 +2600,24 @@ function renderUnpo() {
     const purchBadge = storePurch
       ? stBadge(storePurch.status || 'waiting') +
         (() => {
-          const qty = (storePurch.items || []).filter(i => i.albKey === albKey && i.qty > 0).reduce((s, i) => s + i.qty, 0);
+          const qty = (storePurch.items || []).filter(i => i.albKey === albKey && i.qty > 0).reduce((acc, i) => acc + i.qty, 0);
           return (qty ? `<span class="text-sm text-muted" style="margin-left:4px">${qty}장</span>` : '') +
             `<button class="btn btn-ghost btn-xs" style="margin-left:4px" onclick="viewPurchDetail('${storePurch.id}')">구매상세</button>`;
         })()
       : '<span class="badge badge-gray">미구매</span>';
 
+    // Build store name header (single or grouped)
+    const nameHtml = linked && linked.length
+      ? `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <span class="fw-600">${s.name}</span>
+          ${linked.map(x => `<span class="badge badge-gray" style="font-size:11px">= ${x.name}</span>`).join('')}
+        </div>`
+      : `<span class="fw-600">${s.name}${s.sharedWith ? ` <span class="badge badge-gray" style="font-size:10px">→ ${s.sharedWith.bn} (${s.sharedWith.ak})와 동일</span>` : ''}</span>`;
+
     if (!unpo || !unpo.sets?.length) {
       return `<div class="card" style="margin-bottom:12px">
         <div class="card-header">
-          <div class="fw-600">${s.name} <span class="text-muted text-sm">미공포 없음</span></div>
+          <div>${nameHtml} <span class="text-muted text-sm">미공포 없음</span></div>
           <div style="display:flex;gap:6px;align-items:center">${purchBadge}</div>
         </div>
       </div>`;
@@ -2606,7 +2631,6 @@ function renderUnpo() {
       const backCards = allCards.filter(c => c.note?.endsWith('(뒷)'));
       if (backCards.length && !backCardsSrc) backCardsSrc = { cards: backCards, si };
       const cards = frontCards;
-      const ownedCount = cards.filter(c => c.owned).length;
       const cardsHtml = cards.map((c, ci) => {
         if (ownedOnly && !c.owned) return '';
         // ci is the index within frontCards; find actual index in allCards
@@ -2614,16 +2638,15 @@ function renderUnpo() {
         return `<div class="unpo-card-wrap">
           <div class="unpo-card${c.owned ? ' owned' : ''}" onclick="toggleUnpoOwned('${s.id}','${albKey}',${si},${actualCi})">
             ${c.img ? `<img src="${c.img}" loading="lazy">` : '<div class="no-img">📷<br>미등록</div>'}
-            ${c.owned ? '<div class="unpo-owned-badge">WANT</div>' : ''}
           </div>
           ${c.note ? `<div style="font-size:10px;color:var(--tx3);text-align:center">${c.note}</div>` : ''}
+          ${c.owned ? '<div class="unpo-owned-badge">WANT</div>' : ''}
         </div>`;
       }).filter(Boolean).join('');
 
       if (!cardsHtml) return '';
       return `<div style="margin-bottom:12px">
         ${set.memo ? `<div style="font-size:12px;color:var(--tx2);margin-bottom:6px">${set.memo}</div>` : ''}
-        <div style="font-size:11px;color:var(--tx3);margin-bottom:6px">${ownedCount}/${cards.length} WANT</div>
         <div class="unpo-grid">${cardsHtml}</div>
       </div>`;
     }).filter(Boolean).join('');
@@ -2640,9 +2663,9 @@ function renderUnpo() {
         return `<div class="unpo-card-wrap">
           <div class="unpo-card${c.owned ? ' owned' : ''}" onclick="toggleUnpoOwned('${s.id}','${albKey}',${bSi},${actualCi})">
             ${c.img ? `<img src="${c.img}" loading="lazy">` : '<div class="no-img">📷<br>미등록</div>'}
-            ${c.owned ? '<div class="unpo-owned-badge">WANT</div>' : ''}
           </div>
           ${c.note ? `<div style="font-size:10px;color:var(--tx3);text-align:center">${c.note.replace(' (뒷)', '')}</div>` : ''}
+          ${c.owned ? '<div class="unpo-owned-badge">WANT</div>' : ''}
         </div>`;
       }).filter(Boolean).join('');
       if (bCardsHtml) {
@@ -2653,12 +2676,12 @@ function renderUnpo() {
       }
     }
 
-    const totalCards = unpo.sets.reduce((s, set) => s + (set.cards?.length || 0), 0);
-    const ownedCards = unpo.sets.reduce((s, set) => s + (set.cards?.filter(c => c.owned).length || 0), 0);
+    const totalCards = unpo.sets.reduce((acc, set) => acc + (set.cards?.length || 0), 0);
+    const ownedCards = unpo.sets.reduce((acc, set) => acc + (set.cards?.filter(c => c.owned).length || 0), 0);
 
     return `<div class="card" style="margin-bottom:12px">
       <div class="card-header">
-        <div class="fw-600">${s.name}${s.sharedWith ? ` <span class="badge badge-gray" style="font-size:10px">→ ${s.sharedWith.bn} (${s.sharedWith.ak})와 동일</span>` : ''}</div>
+        <div>${nameHtml}</div>
         <div style="display:flex;gap:6px;align-items:center">
           ${purchBadge}
           <span class="badge ${ownedCards === totalCards && totalCards > 0 ? 'badge-ok' : 'badge-gray'}">${ownedCards}/${totalCards}</span>
@@ -2667,7 +2690,9 @@ function renderUnpo() {
       ${setsHtml || '<div class="empty">카드 정보 없음</div>'}
       ${backSectionHtml}
     </div>`;
-  }).join('');
+  }
+
+  const html = storeGroups.map(g => renderStoreUnpoCard(g.primary, g.linked)).join('');
 
   document.getElementById('unpo-content').innerHTML = html || '<div class="empty">미공포 정보가 없습니다.<br>관리자에서 등록하세요.</div>';
 }
@@ -2858,8 +2883,8 @@ function renderCal() {
         <span>${day}</span>${ddayLabel(dateStr)}
       </div>
       ${displayEvs.map(ev => {
-        const clickHandler = ev.storeId ? `onclick="event.stopPropagation();openStorePopup('${ev.storeId}')"` : '';
-        return `<div class="cal-event ${ev.type}"${clickHandler} style="${ev.storeId?'cursor:pointer':''}">${ev.label.replace(/^[🛒🏪📦🎵]\s*/,'')}</div>`;
+        const clickHandler = `onclick="event.stopPropagation();calSelectDay('${dateStr}')"`;
+        return `<div class="cal-event ${ev.type}" ${clickHandler} style="cursor:pointer">${ev.label.replace(/^[🛒🏪📦🎵]\s*/,'')}</div>`;
       }).join('')}
       ${dayEvs.length > 3 ? `<div style="font-size:9px;color:var(--tx3)">+${dayEvs.length-3}</div>` : ''}
     </div>`;
@@ -2945,7 +2970,7 @@ function renderCalEvents() {
       </div>
       ${evts.map(ev => {
         const loc = ev.addressName || ev.addressDetail || '';
-        const mapUrl = ev.addressDetail ? `https://map.naver.com/v5/search/${encodeURIComponent(ev.addressDetail)}` : null;
+        const mapUrl = ev.mapUrl || (ev.addressDetail ? `https://map.naver.com/v5/search/${encodeURIComponent(ev.addressDetail)}` : null);
         const luckyTag = ev.luckyDraw ? ' <span style="font-size:10px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 4px;border-radius:3px;font-weight:600">럭드</span>' : '';
         return `<div style="padding:8px 0;border-top:1px solid var(--bd)">
           <div style="font-size:13px;color:var(--tx2);margin-bottom:4px">📅 ${fDate(ev.start)}${ev.end&&ev.end!==ev.start?' ~ '+fDate(ev.end):''}${luckyTag}</div>
