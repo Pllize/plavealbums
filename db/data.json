@@ -1956,7 +1956,7 @@
     "theme": "light",
     "github": {
       "owner": "pllize",
-      "repo": "myalbums",
+      "repo": "plavealbums",
       "branch": "main",
       "filePath": "db/data.json",
       "sha": "242f3883e644fe8103f5e0edf5fcf0a590e69287"
@@ -1987,7 +1987,7 @@
               "img": "https://blog.kakaocdn.net/dna/8JyCj/dJMcaaSNuaj/AAAAAAAAAAAAAAAAAAAAAPj8zi__kYDgDBu6fYvTAlxLi51bgcqqj3nyP0XCBfph/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=Q19%2FOCAvkzuL%2FlOuueGr4kjO6wQ%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
             },
             {
-              "owned": false,
+              "owned": true,
               "note": "은호",
               "img": "https://blog.kakaocdn.net/dna/AMi7W/dJMcafNmjIK/AAAAAAAAAAAAAAAAAAAAAMRVSFJ6tz7zwxfWvvPmB-OEqaFhXnlya2NPInZnij9W/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=c5dK3v2EBYGyYddwXLAd3lhseAM%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
             },
@@ -2019,7 +2019,7 @@
               "img": "https://blog.kakaocdn.net/dna/cu8p9n/dJMcajvoInK/AAAAAAAAAAAAAAAAAAAAABVU8wE0hCwQNWlafVwmcsOUEI2q1Ame7KQW1tsG2wed/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=G40LwGHXxu7IdgKhea1Q1iT8qOk%3D&v=2&v=2&v=2&v=2&v=2&v=2&v=2"
             },
             {
-              "owned": false,
+              "owned": true,
               "note": "밤비",
               "img": "https://blog.kakaocdn.net/dna/dffvyN/dJMcad2Y0Sv/AAAAAAAAAAAAAAAAAAAAAG8CrOkK2IRycbgPVzaDjIKmO6RftIgmtJ9-TslXqqc-/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=bjrvocmeKV5DOU79BXRZFN%2FOR74%3D&v=2&v=2&v=2&v=2&v=2&v=2&v=2"
             },
