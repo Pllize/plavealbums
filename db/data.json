@@ -862,7 +862,12 @@
       "unpoBack": true,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {},
+      "customPrices": {
+        "ALB_1779038838207": 4070,
+        "ALB_1779038847739": 1980,
+        "ALB_1779038855533": 2420,
+        "ALB_1779038864675": 3740
+      },
       "purchaseStart": "2026-03-24T11:00",
       "purchaseEnd": "",
       "purchaseEndTxt": "특전 소진시까지",
@@ -907,7 +912,12 @@
       "unpoBack": true,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {},
+      "customPrices": {
+        "ALB_1779038838207": null,
+        "ALB_1779038847739": null,
+        "ALB_1779038855533": 24410,
+        "ALB_1779038864675": null
+      },
       "purchaseStart": "2026-03-24T02:28",
       "purchaseEnd": "2026-03-29T23:59",
       "purchaseEndTxt": "",
@@ -951,8 +961,13 @@
       "unpoSets": 2,
       "unpoBack": false,
       "sharedWith": null,
-      "priceMode": "country",
-      "customPrices": {},
+      "priceMode": "custom",
+      "customPrices": {
+        "ALB_1779038838207": 96,
+        "ALB_1779038847739": null,
+        "ALB_1779038855533": null,
+        "ALB_1779038864675": null
+      },
       "purchaseStart": "2026-03-24T11:00",
       "purchaseEnd": "2026-04-20T23:59",
       "purchaseEndTxt": "",
@@ -976,7 +991,11 @@
       "offlineAddressDetail": "",
       "hanteoChart": false,
       "billboardChart": false,
-      "chartEtc": ""
+      "chartEtc": "",
+      "vcStart": "",
+      "vcEnd": "",
+      "sharedWithAlbs": [],
+      "sharedWithStoreIds": []
     },
     {
       "id": "cs1774545021788",
@@ -986,12 +1005,14 @@
       "country": "KR",
       "round": null,
       "isMusicStreamTeam": true,
-      "unpoAlbumKey": "",
+      "unpoAlbumKey": "ALB_1779038838207",
       "unpoSets": 2,
       "unpoBack": false,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {},
+      "customPrices": {
+        "ALB_1779038838207": 22684
+      },
       "purchaseStart": "2026-03-24T11:00",
       "purchaseEnd": "2026-03-27T08:00",
       "purchaseEndTxt": "특전 소진시까지",
@@ -1007,13 +1028,19 @@
       "url": "https://x.com/Plave_Album/status/2036611347409231996?s=20",
       "videocall": false,
       "memo": "(5种随机1种，购买5张凑套)\n→ 5종 중 랜덤 1종 / 5장 구매 시 한 세트 완성",
-      "unpoAlbumKeys": [],
+      "unpoAlbumKeys": [
+        "ALB_1779038838207"
+      ],
       "offlineEvents": [],
       "offlineAddressName": "",
       "offlineAddressDetail": "",
       "hanteoChart": false,
       "billboardChart": false,
-      "chartEtc": ""
+      "chartEtc": "",
+      "vcStart": "",
+      "vcEnd": "",
+      "sharedWithAlbs": [],
+      "sharedWithStoreIds": []
     },
     {
       "id": "s1",
@@ -1503,12 +1530,17 @@
       "country": "KR",
       "round": 2,
       "isMusicStreamTeam": true,
-      "unpoAlbumKey": "",
+      "unpoAlbumKey": "ALB_1779038855533",
       "unpoSets": 1,
       "unpoBack": true,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {},
+      "customPrices": {
+        "ALB_1779038838207": null,
+        "ALB_1779038847739": null,
+        "ALB_1779038855533": 24410,
+        "ALB_1779038864675": null
+      },
       "purchaseStart": "2026-03-30T11:00",
       "purchaseEnd": "2026-04-07T18:00",
       "purchaseEndTxt": "",
@@ -1524,7 +1556,9 @@
       "url": "https://09platform.com/surl/P/1312",
       "videocall": false,
       "memo": "★ 1차 공동구매와 묶음 배송 불가능합니다 ★\n출고 일정 : 1차 물량 모두 출고 후 / 05월 중 ~ 05월 말 예상",
-      "unpoAlbumKeys": [],
+      "unpoAlbumKeys": [
+        "ALB_1779038855533"
+      ],
       "offlineEvents": [],
       "offlineAddressName": "",
       "offlineAddressDetail": "",
