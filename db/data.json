@@ -708,7 +708,12 @@
       "unpoBack": true,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {},
+      "customPrices": {
+        "ALB_1779038838207": 3590,
+        "ALB_1779038847739": 1890,
+        "ALB_1779038855533": 2420,
+        "ALB_1779038864675": 3490
+      },
       "purchaseStart": "2026-03-24T11:00",
       "purchaseEnd": "",
       "purchaseEndTxt": "특전 소진시까지",
@@ -732,7 +737,11 @@
       "offlineAddressDetail": "",
       "hanteoChart": false,
       "billboardChart": false,
-      "chartEtc": ""
+      "chartEtc": "",
+      "vcStart": "",
+      "vcEnd": "",
+      "sharedWithAlbs": [],
+      "sharedWithStoreIds": []
     },
     {
       "id": "cs1774546219159",
@@ -2012,7 +2021,7 @@
       "repo": "plavealbums",
       "branch": "main",
       "filePath": "db/data.json",
-      "sha": "32eb0ec7bd8d688a06fb0a98a74139d4bb5bc1cf"
+      "sha": "fb8eb7da01bf376b9d9b94310ef3b8738b264f88"
     }
   },
   "unpoCards": [
