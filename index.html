@@ -411,6 +411,7 @@
       <h3 id="modal-detail-title">상세</h3>
       <button class="modal-close" onclick="closeModal('modal-detail')">✕</button>
     </div>
+    <div id="detail-tabs" style="display:none;padding:0 16px;border-bottom:1px solid var(--bd);margin-bottom:0"></div>
     <div class="modal-body" id="modal-detail-body"></div>
     <div class="modal-foot" id="modal-detail-foot">
       <button class="btn btn-ghost" onclick="closeModal('modal-detail')">닫기</button>
@@ -513,6 +514,10 @@ let S = {
   editStoreId: null,
   storeFromId: null,
   unpoExpanded: null,
+  detailStoreId: null,
+  detailTab: 'info',
+  detailUnpoAlbKey: null,
+  detailPurchId: null,
 };
 
 // ═══════════════════════════════════════════
@@ -520,10 +525,13 @@ let S = {
 // ═══════════════════════════════════════════
 function init() {
   DB = dbInit();
-  // Set default category
+  // Set default category — most recently added (highest sortOrder then createdAt)
   const visibleCats = (DB.categories || []).filter(c => !c.hidden);
   if (visibleCats.length > 0) {
-    S.catId = visibleCats[0].id;
+    const sortedCats = [...visibleCats].sort((a, b) =>
+      (b.sortOrder || 0) - (a.sortOrder || 0) || (b.createdAt || 0) - (a.createdAt || 0)
+    );
+    S.catId = sortedCats[0].id;
   }
   applyTheme();
   buildCatBar();
@@ -1258,7 +1266,7 @@ function showAlbumDetail(albKey) {
           </div>
           <div style="display:flex;gap:6px;align-items:center">
             ${stBadge(p.status || 'waiting')}
-            <button class="btn btn-ghost btn-xs" onclick="closeModal('modal-detail');viewPurchDetail('${p.id}')">상세</button>
+            <button class="btn btn-ghost btn-xs" onclick="viewPurchDetail('${p.id}')">상세</button>
             <button class="btn btn-ghost btn-xs" onclick="closeModal('modal-detail');editPurch('${p.id}')">편집</button>
           </div>
         </div>`;
@@ -1269,11 +1277,31 @@ function showAlbumDetail(albKey) {
 }
 
 // ═══════════════════════════════════════════
-// STORE POPUP (from unpurchased list)
+// STORE DETAIL (unified tabbed modal)
 // ═══════════════════════════════════════════
-function openStorePopup(storeId) {
+function openStorePopup(storeId, tab, unpoAlbKey) {
+  S.detailStoreId = storeId;
+  if (tab) S.detailTab = tab;
+  if (unpoAlbKey) S.detailUnpoAlbKey = unpoAlbKey;
+  _renderStoreDetailModal();
+}
+
+function viewPurchDetail(id) {
+  const p = (DB.purchases || []).find(x => x.id === id);
+  if (!p) return;
+  S.detailPurchId = id;
+  openStorePopup(p.storeId, 'purchase');
+}
+
+function openUnpoViewer(storeId, albKey) {
+  openStorePopup(storeId, 'unpo', albKey);
+}
+
+function _renderStoreDetailModal() {
+  const storeId = S.detailStoreId;
   const store = DB.stores?.find(s => s.id === storeId);
   if (!store) return;
+
   const country = COUNTRIES[store.country];
   const ovs = isOvs(store);
   const cur = getStoreCur(store);
@@ -1281,7 +1309,47 @@ function openStorePopup(storeId) {
   const unpoKeys = getStoreUnpoKeys(store);
   const myPurch = (DB.purchases || []).find(p => p.storeId === storeId);
 
-  // Top badges
+  // Ensure valid tab
+  const hasPurch = !!myPurch;
+  const hasUnpo = unpoKeys.length > 0;
+  if (S.detailTab === 'purchase' && !hasPurch) S.detailTab = 'info';
+  if (S.detailTab === 'unpo' && !hasUnpo) S.detailTab = 'info';
+  if (!S.detailUnpoAlbKey && unpoKeys.length) S.detailUnpoAlbKey = unpoKeys[0];
+
+  // Tabs
+  const tabs = [
+    { id: 'info', label: '기본정보' },
+    hasPurch ? { id: 'purchase', label: '구매기록' } : null,
+    hasUnpo ? { id: 'unpo', label: '미공포' } : null,
+  ].filter(Boolean);
+
+  const tabsEl = document.getElementById('detail-tabs');
+  if (tabs.length > 1) {
+    tabsEl.style.display = '';
+    tabsEl.innerHTML = tabs.map(t => `<button
+      style="padding:10px 16px;font-size:13px;border:none;background:none;cursor:pointer;border-bottom:2px solid ${S.detailTab===t.id?'var(--pk)':'transparent'};color:${S.detailTab===t.id?'var(--pk)':'var(--tx2)'};font-weight:${S.detailTab===t.id?'700':'400'}"
+      onclick="S.detailTab='${t.id}';_renderStoreDetailModal()">${t.label}</button>`).join('');
+  } else {
+    tabsEl.style.display = 'none';
+    tabsEl.innerHTML = '';
+  }
+
+  document.getElementById('modal-detail-title').textContent = store.name + (country ? ` ${country.flag}` : '') + (myPurch ? ' ✓' : '');
+
+  if (S.detailTab === 'info') {
+    _renderDetailInfoTab(store, storeId, ovs, cur, albums, unpoKeys, myPurch, country);
+  } else if (S.detailTab === 'purchase' && myPurch) {
+    _renderDetailPurchTab(store, storeId, myPurch);
+  } else if (S.detailTab === 'unpo' && hasUnpo) {
+    _renderDetailUnpoTab(store, storeId, ovs, cur, albums, unpoKeys);
+  }
+
+  openModal('modal-detail');
+}
+
+function _renderDetailInfoTab(store, storeId, ovs, cur, albums, unpoKeys, myPurch, country) {
+  const DAYS_KR = ['월','화','수','목','금','토','일'];
+
   const topBadges = [
     store.videocall ? '<span class="badge badge-pk">📞 영통</span>' : '',
     store.hanteoChart ? '<span style="font-size:11px;background:rgba(96,165,250,.15);color:var(--info);padding:2px 6px;border-radius:3px">한터</span>' : '',
@@ -1293,7 +1361,6 @@ function openStorePopup(storeId) {
     store.round ? `<span class="badge badge-info">${store.round}차</span>` : '',
   ].filter(Boolean).join('');
 
-  // Purchase period
   const deadline = fDeadline(store);
   const deadlineColor = isExpired(store) ? 'var(--err)' : 'var(--ok)';
   const periodHtml = `<div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px;margin-bottom:10px">
@@ -1302,137 +1369,163 @@ function openStorePopup(storeId) {
     ${deadline ? `<div style="font-size:13px;font-weight:700;color:${deadlineColor}">${deadline}</div>` : ''}
   </div>`;
 
-  // Offline info — support multiple events
   const offlineEvts = store.offlineEvents?.length ? store.offlineEvents
     : store.offlineStart ? [{ start: store.offlineStart, end: store.offlineEnd, addressName: store.offlineAddressName||'', addressDetail: store.offlineAddressDetail||store.offlineAddress||'', note: store.offlineNote||'', url: '', luckyDraw: store.offlineLuckyDraw||false, hoursMap: store.offlineHoursMap||{} }]
     : [];
-  const DAYS_KR = ['월','화','수','목','금','토','일'];
   const offlineHtml = offlineEvts.length ? `
     <div class="section-divider">🏪 오프라인 정보</div>
     ${offlineEvts.map(ev => {
       const hrs = Object.entries(ev.hoursMap||{}).filter(([,v])=>v).map(([di,v])=>`${DAYS_KR[di]} ${v}`).join(' / ');
+      const addrMapUrl = ev.mapUrl || (ev.addressDetail ? `https://map.naver.com/v5/search/${encodeURIComponent(ev.addressDetail)}` : null);
+      const addrText = ev.addressName ? `${ev.addressName}${ev.addressDetail ? ' · ' + ev.addressDetail : ''}` : ev.addressDetail || '';
       return `<div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px;margin-bottom:8px">
-        <div style="font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px">${ev.start?fDate(ev.start):''}${ev.end&&ev.end!==ev.start?' ~ '+fDate(ev.end):''}${ev.luckyDraw?' <span style="font-size:11px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 5px;border-radius:3px;font-weight:600">럭드</span>':''}</div>
-        ${ev.addressName?`<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 ${ev.addressName}${ev.addressDetail?' · '+ev.addressDetail:''}</div>`:ev.addressDetail?`<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 <a href="https://map.naver.com/v5/search/${encodeURIComponent(ev.addressDetail)}" target="_blank" style="color:var(--pk)">${ev.addressDetail} 🗺</a></div>`:''}
+        <div style="font-size:13px;font-weight:600">${ev.start?fDate(ev.start):''}${ev.end&&ev.end!==ev.start?' ~ '+fDate(ev.end):''}${ev.luckyDraw?' <span style="font-size:11px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 5px;border-radius:3px;font-weight:600">럭드</span>':''}</div>
+        ${addrText ? `<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 ${addrMapUrl ? `<a href="${addrMapUrl}" target="_blank" style="color:var(--pk)">${addrText} 🗺</a>` : addrText}</div>` : ''}
         ${hrs?`<div style="font-size:11px;color:var(--tx3);margin-top:3px">${hrs}</div>`:''}
         ${ev.note?`<div style="font-size:12px;color:var(--tx2);margin-top:4px;white-space:pre-wrap">${ev.note}</div>`:''}
         ${ev.url?`<a href="${ev.url}" target="_blank" class="btn btn-ghost btn-xs" style="margin-top:6px;display:inline-flex">🔗 이벤트 공지</a>`:''}
       </div>`;
     }).join('')}` : '';
 
-  // Price rows
-  const hasUnpo = unpoKeys.length > 0;
   const priceRows = albums.map(a => {
     const pr = storePrice(store, a.key);
     if (pr === null) return '';
-    const isUnpo = unpoKeys.includes(a.key);
     const prKrw = ovs ? toKRW(pr, cur) : pr;
-    const uc = isUnpo ? (DB.unpoCards || []).find(uc => uc.storeId === storeId && uc.albumTypeId === a.key) : null;
-    const isExpanded = isUnpo && S.unpoExpanded?.storeId === storeId && S.unpoExpanded?.albKey === a.key;
-
-    let unpoSlide = '';
-    if (isUnpo && uc?.sets?.length) {
-      const setsHtml = uc.sets.map((set, si) => `
-        <div style="margin-bottom:12px">
-          <div style="font-size:12px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:6px">
-            <span>세트 ${si+1}${set.memo ? ': ' + set.memo : ''}</span>
-            ${set.luckyDraw ? '<span style="font-size:10px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 5px;border-radius:3px;font-weight:600">럭드</span>' : ''}
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:5px">
-            ${(set.cards||[]).map((c, ci) => `
-              <div class="unpo-card-wrap">
-                <div class="unpo-card${c.owned ? ' owned' : ''}"
-                     onclick="event.stopPropagation();toggleUnpoOwned('${storeId}','${a.key}',${si},${ci});reloadDB();S.unpoExpanded={storeId:'${storeId}',albKey:'${a.key}'};openStorePopup('${storeId}')">
-                  ${c.img ? `<img src="${c.img}" loading="lazy">` : '<div class="no-img">📷</div>'}
-                  ${c.owned ? '<div class="unpo-owned-badge">WANT</div>' : ''}
-                </div>
-                ${c.note ? `<div style="font-size:9px;color:var(--tx3);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.note}</div>` : ''}
-              </div>`).join('')}
-          </div>
-        </div>`).join('');
-      unpoSlide = `<div class="unpo-slide${isExpanded ? ' open' : ''}"><div style="padding:10px;background:var(--sur2);border-radius:var(--r-sm)">${setsHtml}</div></div>`;
-    }
-
-    const clickAttr = isUnpo ? `onclick="toggleUnpoExpand('${storeId}','${a.key}')" style="cursor:pointer"` : '';
-    return `<div>
-      <div class="price-row${isUnpo ? ' unpo-highlight' : ''}" ${clickAttr}>
-        <span>${a.name}${isUnpo ? ` <span class="badge badge-pk" style="font-size:10px">미공포 ${isExpanded ? '▲' : '▼'}</span>` : ''}</span>
-        <span class="fw-600">${ovs ? `${cur} ${Number(pr).toLocaleString()} <span style="color:var(--tx3);font-size:11px">(${fKRW(prKrw)})</span>` : fKRW(pr)}</span>
-      </div>
-      ${unpoSlide}
+    return `<div class="price-row">
+      <span>${a.name}</span>
+      <span class="fw-600">${ovs ? `${cur} ${Number(pr).toLocaleString()} <span style="color:var(--tx3);font-size:11px">(${fKRW(prKrw)})</span>` : fKRW(pr)}</span>
     </div>`;
   }).filter(Boolean).join('');
 
-  // My purchase
-  const myPurchHtml = myPurch ? `
-    <div class="section-divider">내 구매기록</div>
-    <div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
-        <div>
-          ${stBadge(myPurch.status||'unpurchased')} <span class="fw-600 text-sm">${fKRW(calcPurchTotal(myPurch))}</span>
-          <div style="font-size:12px;color:var(--tx2);margin-top:4px">
-            ${(myPurch.items||[]).filter(it=>it.qty>0).map(it=>{const a=DB.albumTypes?.find(a=>a.key===it.albKey);return `${a?.name||it.albKey} ${it.qty}장`;}).join(' · ')}
-          </div>
-        </div>
-        <button class="btn btn-ghost btn-xs" style="flex-shrink:0" onclick="closeModal('modal-detail');viewPurchDetail('${myPurch.id}')">상세</button>
-      </div>
-    </div>` : '';
-
-  document.getElementById('modal-detail-title').textContent = store.name + (country ? ` ${country.flag}` : '') + (myPurch ? ' ✓' : '');
   document.getElementById('modal-detail-body').innerHTML = `
     ${topBadges ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${topBadges}</div>` : ''}
     ${periodHtml}
     ${offlineHtml}
-    <div class="section-divider">앨범 단가${hasUnpo ? ' (미공포 클릭 시 펼쳐보기)' : ''}</div>
+    <div class="section-divider">앨범 단가</div>
     ${priceRows || '<div class="text-muted text-sm">가격 정보 없음</div>'}
-    ${myPurchHtml}
   `;
   document.getElementById('modal-detail-foot').innerHTML = `
     <button class="btn btn-ghost" onclick="closeModal('modal-detail')">닫기</button>
     ${store.url ? `<a href="${store.url}" target="_blank" class="btn btn-ghost">구매 링크 ↗</a>` : ''}
     <button class="btn btn-p" onclick="closeModal('modal-detail');addPurchModal('${storeId}')">+ 구매 추가</button>
   `;
-  openModal('modal-detail');
 }
 
-function toggleUnpoExpand(storeId, albKey) {
-  const same = S.unpoExpanded?.storeId === storeId && S.unpoExpanded?.albKey === albKey;
-  S.unpoExpanded = same ? null : { storeId, albKey };
-  openStorePopup(storeId);
+function _renderDetailPurchTab(store, storeId, myPurch) {
+  const p = S.detailPurchId ? (DB.purchases || []).find(x => x.id === S.detailPurchId) || myPurch : myPurch;
+  if (!p) return;
+
+  const ovs = isOvs(store);
+  const cur = getStoreCur(store);
+  const cat = DB.categories?.find(c => c.id === store.categoryId);
+  const total = calcPurchTotal(p);
+  const proxyTotal = calcProxyTotal(p);
+  const myTotal = total - proxyTotal;
+
+  const itemsHtml = (p.items || []).filter(it => it.qty > 0).map(it => {
+    const alb = DB.albumTypes?.find(a => a.key === it.albKey);
+    const pr = it.unitPrice > 0 ? it.unitPrice : (store ? storePrice(store, it.albKey) : 0);
+    const sub = pr ? (ovs ? toKRW(pr, cur) * it.qty : pr * it.qty) : 0;
+    return `<div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--bd)">
+      <span>${alb?.name || it.albKey} <span style="color:var(--tx3)">× ${it.qty}장</span></span>
+      <span class="fw-600">${sub ? fKRW(sub) : '—'}</span>
+    </div>`;
+  }).join('');
+
+  const extraCosts = [
+    p.domShip && `국내배송비: ${fKRW(p.domShip)}`,
+    p.intlShip && `국제배송비: ${fKRW(p.intlShip)}`,
+    p.fwdFee && `포워딩: ${fKRW(p.fwdFee)}`,
+    p.customs && `관세: ${fKRW(p.customs)}`,
+    p.discount && `할인: -${fKRW(p.discount)}`,
+  ].filter(Boolean);
+
+  const trackingHtml = p.trackingNumber ? (() => {
+    const url = carrierTrackUrl(p.carrier, p.trackingNumber);
+    return `<div style="font-size:12px;color:var(--tx2);margin-top:8px">
+      📦 ${p.carrier || '택배'}: ${url ? `<a href="${url}" target="_blank" style="color:var(--pk)"><code>${p.trackingNumber}</code> 조회↗</a>` : `<code>${p.trackingNumber}</code>`}
+      ${p.shippedAt ? `<br>발송일: ${fDate(p.shippedAt)}` : ''}
+      ${p.deliveredAt ? `<br>수령일: ${fDate(p.deliveredAt)}` : ''}
+      ${p.estDelivery ? `<br>배송예정: ${fDate(p.estDelivery)}` : ''}
+    </div>`;
+  })() : '';
+
+  document.getElementById('modal-detail-body').innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      ${stBadge(p.status || 'unpurchased')}
+      ${cat ? `<span style="font-size:12px;color:var(--tx3)">${cat.name}</span>` : ''}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;color:var(--tx2);margin-bottom:12px">
+      ${p.orderDate ? `<div><span style="color:var(--tx3)">주문일</span><br><span style="color:var(--tx1)">${fDate(p.orderDate)}</span></div>` : ''}
+      ${p.orderNumber ? `<div><span style="color:var(--tx3)">주문번호</span><br><code style="color:var(--tx1)">#${p.orderNumber}</code></div>` : ''}
+    </div>
+    <div class="section-divider" style="margin-bottom:8px">구매 항목</div>
+    ${itemsHtml || '<div class="text-muted text-sm">항목 없음</div>'}
+    ${extraCosts.length ? `<div style="margin-top:8px;font-size:12px;color:var(--tx2)">${extraCosts.map(c=>`<div>${c}</div>`).join('')}</div>` : ''}
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;font-size:14px">
+      <span class="fw-600">합계</span>
+      <span class="fw-600" style="color:var(--pk)">${fKRW(total)}</span>
+    </div>
+    ${proxyTotal ? `<div style="font-size:11px;color:var(--tx3);text-align:right">내 지출: ${fKRW(myTotal)}</div>` : ''}
+    ${trackingHtml}
+    ${p.memo ? `<div style="margin-top:10px;font-size:12px;color:var(--tx2);white-space:pre-wrap;background:var(--sur2);border-radius:var(--r-sm);padding:8px">${p.memo}</div>` : ''}
+  `;
+  document.getElementById('modal-detail-foot').innerHTML = `
+    <button class="btn btn-ghost" onclick="closeModal('modal-detail')">닫기</button>
+    <button class="btn btn-p" onclick="closeModal('modal-detail');editPurch('${p.id}')">편집</button>
+  `;
 }
 
-function openUnpoViewer(storeId, albKey) {
-  const store = DB.stores?.find(s => s.id === storeId);
-  const uc = (DB.unpoCards || []).find(uc => uc.storeId === storeId && uc.albumTypeId === albKey);
-  if (!uc?.sets?.length) { toast('미공포 사진이 없습니다'); return; }
+function _renderDetailUnpoTab(store, storeId, ovs, cur, albums, unpoKeys) {
+  // Album sub-tabs if multiple unpo albums
+  const albKey = S.detailUnpoAlbKey || unpoKeys[0];
+  const albSubTabs = unpoKeys.length > 1
+    ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px">
+        ${unpoKeys.map(k => {
+          const a = DB.albumTypes?.find(x => x.key === k);
+          return `<button class="alb-chip${k === albKey ? ' active' : ''}" onclick="S.detailUnpoAlbKey='${k}';_renderStoreDetailModal()">${a?.shortName || a?.name || k}</button>`;
+        }).join('')}
+      </div>`
+    : '';
+
   const alb = DB.albumTypes?.find(a => a.key === albKey);
+  const pr = alb ? storePrice(store, albKey) : null;
+  const prKrw = (pr !== null && ovs) ? toKRW(pr, cur) : pr;
+  const priceInfo = pr !== null ? `<div style="font-size:12px;color:var(--tx2);margin-bottom:12px">
+    단가: <span class="fw-600">${ovs ? `${cur} ${Number(pr).toLocaleString()} (${fKRW(prKrw)})` : fKRW(pr)}</span>
+  </div>` : '';
 
-  const setsHtml = uc.sets.map((set, si) => `
-    <div style="margin-bottom:16px">
+  const uc = (DB.unpoCards || []).find(uc => uc.storeId === storeId && uc.albumTypeId === albKey);
+  if (!uc?.sets?.length) {
+    document.getElementById('modal-detail-body').innerHTML = `${albSubTabs}<div class="empty">미공포 사진이 없습니다</div>`;
+    document.getElementById('modal-detail-foot').innerHTML = `<button class="btn btn-ghost" onclick="closeModal('modal-detail')">닫기</button>`;
+    return;
+  }
+
+  const setsHtml = uc.sets.map((set, si) => {
+    const cards = set.cards || [];
+    const colCount = Math.max(cards.length, 1);
+    return `<div style="margin-bottom:16px">
       <div class="text-sm fw-600" style="margin-bottom:6px;display:flex;align-items:center;gap:6px">
         <span>세트 ${si+1}${set.memo ? ': ' + set.memo : ''}</span>
         ${set.luckyDraw ? '<span style="font-size:10px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 5px;border-radius:3px;font-weight:600">럭드</span>' : ''}
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px">
-        ${(set.cards||[]).map((c, ci) => `
+      <div style="display:grid;grid-template-columns:repeat(${colCount},1fr);gap:5px">
+        ${cards.map((c, ci) => `
           <div class="unpo-card-wrap">
             <div class="unpo-card${c.owned ? ' owned' : ''}"
-                 onclick="toggleUnpoOwned('${storeId}','${albKey}',${si},${ci});reloadDB();openUnpoViewer('${storeId}','${albKey}')">
+                 onclick="toggleUnpoOwned('${storeId}','${albKey}',${si},${ci});reloadDB();S.detailUnpoAlbKey='${albKey}';_renderStoreDetailModal()">
               ${c.img ? `<img src="${c.img}" loading="lazy">` : '<div class="no-img">📷<br>미등록</div>'}
-              ${c.owned ? '<div class="unpo-owned-badge">WANT</div>' : ''}
             </div>
-            ${c.note ? `<div style="font-size:10px;color:var(--tx3);text-align:center">${c.note}</div>` : ''}
+            ${c.note ? `<div style="font-size:9px;color:var(--tx3);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.note}</div>` : ''}
+            ${c.owned ? '<div class="unpo-owned-badge">WANT</div>' : ''}
           </div>`).join('')}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
-  document.getElementById('modal-detail-title').textContent = `${store?.name} · ${alb?.name || albKey} 미공포`;
-  document.getElementById('modal-detail-body').innerHTML = setsHtml;
-  document.getElementById('modal-detail-foot').innerHTML = `
-    <button class="btn btn-ghost" onclick="openStorePopup('${storeId}')">← 판매처 정보</button>
-    <button class="btn btn-ghost" onclick="closeModal('modal-detail')">닫기</button>
-  `;
-  openModal('modal-detail');
+  document.getElementById('modal-detail-body').innerHTML = `${albSubTabs}${priceInfo}${setsHtml}`;
+  document.getElementById('modal-detail-foot').innerHTML = `<button class="btn btn-ghost" onclick="closeModal('modal-detail')">닫기</button>`;
 }
 
 // ═══════════════════════════════════════════
@@ -1719,102 +1812,6 @@ function renderPurchCard(p) {
 
     ${p.memo ? `<div style="margin-top:8px;font-size:12px;color:var(--tx2);white-space:pre-wrap">${p.memo}</div>` : ''}
   </div>`;
-}
-
-function viewPurchDetail(id) {
-  const p = (DB.purchases || []).find(x => x.id === id);
-  if (!p) return;
-  const store = DB.stores?.find(s => s.id === p.storeId);
-  const cat = DB.categories?.find(c => c.id === store?.categoryId);
-  const ovs = store ? isOvs(store) : false;
-  const cur = store ? getStoreCur(store) : 'KRW';
-  const total = calcPurchTotal(p);
-  const proxyTotal = calcProxyTotal(p);
-  const myTotal = total - proxyTotal;
-
-  const itemsHtml = (p.items || []).filter(it => it.qty > 0).map(it => {
-    const alb = DB.albumTypes?.find(a => a.key === it.albKey);
-    const pr = it.unitPrice > 0 ? it.unitPrice : (store ? storePrice(store, it.albKey) : 0);
-    const sub = pr ? (ovs ? toKRW(pr, cur) * it.qty : pr * it.qty) : 0;
-    return `<div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--bd)">
-      <span>${alb?.name || it.albKey} <span style="color:var(--tx3)">× ${it.qty}장</span></span>
-      <span class="fw-600">${sub ? fKRW(sub) : '—'}</span>
-    </div>`;
-  }).join('');
-
-  const extraCosts = [
-    p.domShip && `국내배송비: ${fKRW(p.domShip)}`,
-    p.intlShip && `국제배송비: ${fKRW(p.intlShip)}`,
-    p.fwdFee && `포워딩: ${fKRW(p.fwdFee)}`,
-    p.customs && `관세: ${fKRW(p.customs)}`,
-    p.discount && `할인: -${fKRW(p.discount)}`,
-  ].filter(Boolean);
-
-  const trackingHtml = p.trackingNumber ? (() => {
-    const url = carrierTrackUrl(p.carrier, p.trackingNumber);
-    return `<div style="font-size:12px;color:var(--tx2);margin-top:8px">
-      📦 ${p.carrier || '택배'}: ${url ? `<a href="${url}" target="_blank" style="color:var(--pk)"><code>${p.trackingNumber}</code> 조회↗</a>` : `<code>${p.trackingNumber}</code>`}
-      ${p.shippedAt ? `<br>발송일: ${fDate(p.shippedAt)}` : ''}
-      ${p.deliveredAt ? `<br>수령일: ${fDate(p.deliveredAt)}` : ''}
-      ${p.estDelivery ? `<br>배송예정: ${fDate(p.estDelivery)}` : ''}
-    </div>`;
-  })() : '';
-
-  // Build compact store info block for top of detail
-  const _storeInfoHtml = store ? (() => {
-    const _country = COUNTRIES[store.country];
-    const _ovs = isOvs(store);
-    const _deadline = fDeadline(store);
-    const _expired = isExpired(store);
-    const _offlineEvts = store.offlineEvents?.length ? store.offlineEvents
-      : store.offlineStart ? [{ start: store.offlineStart, end: store.offlineEnd, addressName: store.offlineAddressName||'', addressDetail: store.offlineAddressDetail||store.offlineAddress||'', note: store.offlineNote||'' }] : [];
-    const _badges = [
-      store.videocall ? '<span class="badge badge-pk" style="font-size:10px">📞 영통</span>' : '',
-      store.hanteoChart ? '<span style="font-size:10px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">한터</span>' : '',
-      store.offlineLuckyDraw ? '<span style="font-size:10px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 5px;border-radius:3px;font-weight:600">럭드</span>' : '',
-      _country ? `<span class="badge badge-gray" style="font-size:10px">${_country.flag} ${_country.lb}</span>` : '',
-    ].filter(Boolean).join('');
-    return `<div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px;margin-bottom:12px">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
-        <div style="font-size:14px;font-weight:700">${store.name}</div>
-        <button class="btn btn-ghost btn-xs" onclick="closeModal('modal-detail');openStorePopup('${store.id}')">판매처 정보</button>
-      </div>
-      ${_badges ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">${_badges}</div>` : ''}
-      ${store.purchaseEnd ? `<div style="font-size:11px;color:${_expired?'var(--err)':'var(--tx3)'}">구매마감 ${fDate(store.purchaseEnd, true)}${_deadline ? ' · ' + _deadline : ''}</div>` : ''}
-      ${_offlineEvts.length ? `<div style="font-size:11px;color:var(--tx3);margin-top:2px">🏪 ${_offlineEvts.map(e=>fDate(e.start)+(e.end&&e.end!==e.start?' ~ '+fDate(e.end):'')).join(' / ')}</div>` : ''}
-    </div>`;
-  })() : '';
-
-  document.getElementById('modal-detail-title').textContent = `${store?.name || '?'} 구매 상세`;
-  document.getElementById('modal-detail-body').innerHTML = `
-    ${_storeInfoHtml}
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-      ${stBadge(p.status || 'unpurchased')}
-      ${cat ? `<span style="font-size:12px;color:var(--tx3)">${cat.name}</span>` : ''}
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;color:var(--tx2);margin-bottom:12px">
-      ${p.orderDate ? `<div><span style="color:var(--tx3)">주문일</span><br><span style="color:var(--tx1)">${fDate(p.orderDate)}</span></div>` : ''}
-      ${p.orderNumber ? `<div><span style="color:var(--tx3)">주문번호</span><br><code style="color:var(--tx1)">#${p.orderNumber}</code></div>` : ''}
-    </div>
-    <div class="section-divider" style="margin-bottom:8px">구매 항목</div>
-    ${itemsHtml || '<div class="text-muted text-sm">항목 없음</div>'}
-    ${extraCosts.length ? `
-      <div style="margin-top:8px;font-size:12px;color:var(--tx2)">
-        ${extraCosts.map(c=>`<div>${c}</div>`).join('')}
-      </div>` : ''}
-    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;font-size:14px">
-      <span class="fw-600">합계</span>
-      <span class="fw-600" style="color:var(--pk)">${fKRW(total)}</span>
-    </div>
-    ${proxyTotal ? `<div style="font-size:11px;color:var(--tx3);text-align:right">내 지출: ${fKRW(myTotal)}</div>` : ''}
-    ${trackingHtml}
-    ${p.memo ? `<div style="margin-top:10px;font-size:12px;color:var(--tx2);white-space:pre-wrap;background:var(--sur2);border-radius:var(--r-sm);padding:8px">${p.memo}</div>` : ''}
-  `;
-  document.getElementById('modal-detail-foot').innerHTML = `
-    <button class="btn btn-ghost" onclick="closeModal('modal-detail')">닫기</button>
-    <button class="btn btn-p" onclick="closeModal('modal-detail');editPurch('${id}')">편집</button>
-  `;
-  openModal('modal-detail');
 }
 
 function setPurchStatus(id, status) {
@@ -2647,7 +2644,7 @@ function renderUnpo() {
       if (!cardsHtml) return '';
       return `<div style="margin-bottom:12px">
         ${set.memo ? `<div style="font-size:12px;color:var(--tx2);margin-bottom:6px">${set.memo}</div>` : ''}
-        <div class="unpo-grid">${cardsHtml}</div>
+        <div style="display:grid;grid-template-columns:repeat(${Math.max(cards.length,1)},1fr);gap:5px">${cardsHtml}</div>
       </div>`;
     }).filter(Boolean).join('');
 
@@ -2671,7 +2668,7 @@ function renderUnpo() {
       if (bCardsHtml) {
         backSectionHtml = `<div style="margin-top:4px;padding-top:10px;border-top:1px dashed var(--bd)">
           <div style="font-size:11px;color:var(--tx2);font-weight:600;margin-bottom:6px">뒷면 공통 (${bOwnedCount}/${bCards.length})</div>
-          <div class="unpo-grid">${bCardsHtml}</div>
+          <div style="display:grid;grid-template-columns:repeat(${Math.max(bCards.length,1)},1fr);gap:5px">${bCardsHtml}</div>
         </div>`;
       }
     }

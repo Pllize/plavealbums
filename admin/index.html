@@ -80,8 +80,8 @@
   <div class="nav-section">데이터</div>
   <button class="nav-item" onclick="showPage('categories')" data-page="categories">🗂 분류 관리</button>
   <button class="nav-item" onclick="showPage('albums')" data-page="albums">💿 앨범 관리</button>
-  <button class="nav-item" onclick="showPage('stores')" data-page="stores">🏪 플랫폼 관리</button>
   <button class="nav-item" onclick="showPage('distributors')" data-page="distributors">📦 판매처 관리</button>
+  <button class="nav-item" onclick="showPage('stores')" data-page="stores">🏪 플랫폼 관리</button>
   <button class="nav-item" onclick="showPage('unpo')" data-page="unpo">📸 미공포 관리</button>
   <button class="nav-item" onclick="showPage('notices')" data-page="notices">📢 공지사항</button>
 
@@ -1023,30 +1023,6 @@ function openStoreModal(id) {
         <label class="form-check" style="margin-top:8px"><input type="checkbox" id="sp-unpo-back" ${s?.unpoBack ? 'checked':''}><span>뒷면 카드 포함</span></label>
       </div>
     </div>
-    <div class="form-row cols-2">
-      <div><label>미공포 공유: 앨범 (복수 선택)</label>
-        <div id="sp-shared-alb-checks" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;padding:6px;background:var(--sur2);border:1px solid var(--bd);border-radius:var(--r-sm)">
-          ${(() => {
-            const existAlbs = Array.isArray(s?.sharedWithAlbs) ? s.sharedWithAlbs : (s?.sharedWith?.ak ? [s.sharedWith.ak] : []);
-            return albs.map(a => `<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer">
-              <input type="checkbox" value="${a.key}" ${existAlbs.includes(a.key)?'checked':''}> ${a.name}
-            </label>`).join('');
-          })()}
-        </div>
-      </div>
-      <div><label>미공포 공유: 플랫폼 (복수 선택)</label>
-        <div id="sp-shared-store-checks" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;padding:6px;background:var(--sur2);border:1px solid var(--bd);border-radius:var(--r-sm);max-height:100px;overflow-y:auto">
-          ${(() => {
-            const existIds = Array.isArray(s?.sharedWithStoreIds) ? s.sharedWithStoreIds :
-              (s?.sharedWith?.bn ? [(DB.stores||[]).find(st=>st.name===s.sharedWith.bn)?.id||''].filter(Boolean) : []);
-            return (DB.stores||[]).filter(st => st.id !== (s?.id||'')).map(st => `<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer">
-              <input type="checkbox" value="${st.id}" ${existIds.includes(st.id)?'checked':''}> ${st.name}
-            </label>`).join('');
-          })()}
-        </div>
-      </div>
-    </div>
-
     <hr class="divider">
     <div class="form-row cols-2">
       <div><label>구매 시작</label><input type="datetime-local" id="sp-pstart" value="${s?.purchaseStart || ''}"></div>
@@ -1141,11 +1117,17 @@ function renderOfflineEventsList() {
 
 function addOfflineEvent() {
   window._offlineEvents = window._offlineEvents || [];
-  window._offlineEvents.push({ id: 'oe'+Date.now(), start:'', end:'', addressName:'', addressDetail:'', hoursMap:{}, note:'', luckyDraw:false, mapUrl:'' });
+  window._offlineEvents.forEach((_, i) => saveOfflineEventField(i));
+  const last = window._offlineEvents[window._offlineEvents.length - 1];
+  const newEv = last
+    ? { ...JSON.parse(JSON.stringify(last)), id: 'oe'+Date.now() }
+    : { id: 'oe'+Date.now(), start:'', end:'', addressName:'', addressDetail:'', hoursMap:{}, note:'', luckyDraw:false, mapUrl:'' };
+  window._offlineEvents.push(newEv);
   renderOfflineEventsList();
 }
 
 function removeOfflineEvent(idx) {
+  window._offlineEvents.forEach((_, i) => saveOfflineEventField(i));
   window._offlineEvents.splice(idx, 1);
   renderOfflineEventsList();
 }
@@ -1301,8 +1283,6 @@ function saveStore() {
     chartEtc: document.getElementById('sp-chart-etc')?.value || '',
     unpoSets: parseInt(document.getElementById('sp-unpo-sets')?.value || '1') || 1,
     unpoBack: document.getElementById('sp-unpo-back')?.checked || false,
-    sharedWithAlbs: Array.from(document.querySelectorAll('#sp-shared-alb-checks input:checked')).map(x=>x.value),
-    sharedWithStoreIds: Array.from(document.querySelectorAll('#sp-shared-store-checks input:checked')).map(x=>x.value),
     url: document.getElementById('sp-url').value,
     memo: document.getElementById('sp-memo').value,
   };
@@ -1453,7 +1433,7 @@ function renderUnpoSet(store, si, set) {
         <button class="btn btn-err btn-xs" onclick="removeUnpoSet('${storeId}','${albKey}',${si})">세트 삭제</button>
       </div>
     </div>
-    <div class="unpo-grid-admin${store.unpoBack || cards.length > 5 ? ' six' : ''}" id="unpo-grid-${storeId}-${si}">${cardsHtml}</div>
+    <div class="unpo-grid-admin" style="grid-template-columns:repeat(${Math.max(cards.length,1)},1fr)" id="unpo-grid-${storeId}-${si}">${cardsHtml}</div>
     <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
       <button class="btn btn-ghost btn-sm" onclick="addUnpoCardFromUrl('${storeId}','${albKey}',${si})">+ URL로 이미지 추가</button>
       ${store.unpoBack && cards.length <= MEMBERS.length ? `<button class="btn btn-ghost btn-sm" onclick="addBackCardsToSet('${storeId}','${albKey}',${si})">+ 뒷면 카드 추가</button>` : ''}
