@@ -249,22 +249,10 @@
     <select id="store-alb-filter" onchange="render()">
       <option value="">전체 앨범</option>
     </select>
-    <label class="filter-chip">
-      <input type="checkbox" id="store-show-ended" onchange="render()">
-      <span>마감 포함</span>
-    </label>
-    <label class="filter-chip">
-      <input type="checkbox" id="store-music-only" onchange="render()">
-      <span>🎵 음총</span>
-    </label>
-    <label class="filter-chip">
-      <input type="checkbox" id="store-unpo-only" onchange="render()">
-      <span>미공포</span>
-    </label>
-    <label class="filter-chip">
-      <input type="checkbox" id="store-vc-only" onchange="render()">
-      <span>📞 영통</span>
-    </label>
+    <button class="filter-btn" id="btn-show-ended" onclick="S.storeShowEnded=!S.storeShowEnded;render()">마감 포함</button>
+    <button class="filter-btn" id="btn-music-only" onclick="S.storeMusicOnly=!S.storeMusicOnly;render()">🎵 음총</button>
+    <button class="filter-btn" id="btn-unpo-only" onclick="S.storeUnpoOnly=!S.storeUnpoOnly;render()">미공포</button>
+    <button class="filter-btn" id="btn-vc-only" onclick="S.storeVcOnly=!S.storeVcOnly;render()">📞 영통</button>
     <select id="store-country-filter2" onchange="render()" style="display:none"></select>
   </div>
 
@@ -281,7 +269,7 @@
   <div class="page-header">
     <div>
       <div class="page-title">미공포 (Pre-Order Benefits)</div>
-      <div class="page-sub">판매처별 미공개 포토카드 보유 현황</div>
+      <div class="page-sub">판매처별 미공개 포토카드</div>
     </div>
   </div>
 
@@ -289,10 +277,7 @@
 
   <div class="filter-bar" style="margin-top:-8px">
     <input type="text" id="unpo-search" placeholder="판매처 검색..." oninput="render()">
-    <label class="form-check">
-      <input type="checkbox" id="unpo-owned-only" onchange="render()">
-      <span style="font-size:12px">WANT만</span>
-    </label>
+    <button class="filter-btn" id="btn-unpo-owned-only" onclick="S.unpoOwnedOnly=!S.unpoOwnedOnly;render()">WANT만</button>
   </div>
 
   <div id="unpo-content"></div>
@@ -408,7 +393,10 @@
 <div class="modal-bg" id="modal-detail">
   <div class="modal modal-lg">
     <div class="modal-head">
-      <h3 id="modal-detail-title">상세</h3>
+      <div>
+        <h3 id="modal-detail-title" style="margin:0">상세</h3>
+        <div id="modal-detail-subtitle" style="font-size:12px;color:var(--tx3);margin-top:2px;display:none"></div>
+      </div>
       <button class="modal-close" onclick="closeModal('modal-detail')">✕</button>
     </div>
     <div id="detail-tabs" style="display:none;padding:0 16px;border-bottom:1px solid var(--bd);margin-bottom:0"></div>
@@ -518,6 +506,11 @@ let S = {
   detailTab: 'info',
   detailUnpoAlbKey: null,
   detailPurchId: null,
+  storeShowEnded: false,
+  storeMusicOnly: false,
+  storeUnpoOnly: false,
+  storeVcOnly: false,
+  unpoOwnedOnly: false,
 };
 
 // ═══════════════════════════════════════════
@@ -1336,7 +1329,10 @@ function _renderStoreDetailModal() {
     tabsEl.innerHTML = '';
   }
 
-  document.getElementById('modal-detail-title').textContent = store.name + (country ? ` ${country.flag}` : '') + (myPurch ? ' ✓' : '');
+  document.getElementById('modal-detail-title').textContent = store.name + (myPurch ? ' ✓' : '');
+  const _subtitleParts = [country ? `${country.flag} ${country.lb}` : '', distName(store.distId)].filter(Boolean);
+  const _subtitleEl = document.getElementById('modal-detail-subtitle');
+  if (_subtitleEl) { const t = _subtitleParts.join(' · '); _subtitleEl.textContent = t; _subtitleEl.style.display = t ? '' : 'none'; }
 
   if (S.detailTab === 'info') {
     _renderDetailInfoTab(store, storeId, ovs, cur, albums, unpoKeys, myPurch, country);
@@ -1359,7 +1355,6 @@ function _renderDetailInfoTab(store, storeId, ovs, cur, albums, unpoKeys, myPurc
     store.chartEtc ? `<span class="badge badge-gray">${store.chartEtc}</span>` : '',
     store.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : '',
     store.offlineLuckyDraw ? '<span style="font-size:11px;background:rgba(192,132,252,.15);color:var(--pk);padding:2px 6px;border-radius:3px;font-weight:600">럭드</span>' : '',
-    country ? `<span class="badge badge-gray">${country.flag} ${country.lb}</span>` : '',
     store.round ? `<span class="badge badge-info">${store.round}차</span>` : '',
   ].filter(Boolean).join('');
 
@@ -1399,8 +1394,9 @@ function _renderDetailInfoTab(store, storeId, ovs, cur, albums, unpoKeys, myPurc
     const pr = storePrice(store, a.key);
     if (pr === null) return '';
     const prKrw = ovs ? toKRW(pr, cur) : pr;
-    return `<div class="price-row">
-      <span>${a.name}</span>
+    const isUnpoPr = unpoKeys.includes(a.key);
+    return `<div class="price-row" style="${isUnpoPr ? 'background:rgba(168,85,247,.07);border-radius:4px;padding-left:6px;margin-bottom:2px' : ''}">
+      <span>${a.name}${isUnpoPr ? ' <span class="badge badge-pk" style="font-size:9px;vertical-align:middle">미공포</span>' : ''}</span>
       <span class="fw-600">${ovs ? `${cur} ${Number(pr).toLocaleString()} <span style="color:var(--tx3);font-size:11px">(${fKRW(prKrw)})</span>` : fKRW(pr)}</span>
     </div>`;
   }).filter(Boolean).join('');
@@ -1499,8 +1495,10 @@ function _renderDetailUnpoTab(store, storeId, ovs, cur, albums, unpoKeys) {
   const alb = DB.albumTypes?.find(a => a.key === albKey);
   const pr = alb ? storePrice(store, albKey) : null;
   const prKrw = (pr !== null && ovs) ? toKRW(pr, cur) : pr;
-  const priceInfo = pr !== null ? `<div style="font-size:12px;color:var(--tx2);margin-bottom:12px">
-    단가: <span class="fw-600">${ovs ? `${cur} ${Number(pr).toLocaleString()} (${fKRW(prKrw)})` : fKRW(pr)}</span>
+  const priceInfo = (alb && pr !== null) ? `<div style="background:rgba(168,85,247,.08);border-left:3px solid var(--pk);border-radius:var(--r-sm);padding:8px 10px;margin-bottom:12px;font-size:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <span class="badge badge-pk" style="font-size:10px;flex-shrink:0">미공포 포함</span>
+    <span class="fw-600">${alb.name}</span>
+    <span style="color:var(--tx3)">${ovs ? `${cur} ${Number(pr).toLocaleString()} (${fKRW(prKrw)})` : fKRW(pr)}</span>
   </div>` : '';
 
   const uc = (DB.unpoCards || []).find(uc => uc.storeId === storeId && uc.albumTypeId === albKey);
@@ -2384,10 +2382,14 @@ function renderStores() {
   const search = document.getElementById('store-search')?.value.toLowerCase() || '';
   const countryF = document.getElementById('store-country-filter')?.value || '';
   const albF = document.getElementById('store-alb-filter')?.value || S.albKey || '';
-  const showEnded = document.getElementById('store-show-ended')?.checked || false;
-  const musicOnly = document.getElementById('store-music-only')?.checked || false;
-  const unpoOnly = document.getElementById('store-unpo-only')?.checked || false;
-  const videocallOnly = document.getElementById('store-vc-only')?.checked || false;
+  const showEnded = S.storeShowEnded || false;
+  const musicOnly = S.storeMusicOnly || false;
+  const unpoOnly = S.storeUnpoOnly || false;
+  const videocallOnly = S.storeVcOnly || false;
+  document.getElementById('btn-show-ended')?.classList.toggle('active', showEnded);
+  document.getElementById('btn-music-only')?.classList.toggle('active', musicOnly);
+  document.getElementById('btn-unpo-only')?.classList.toggle('active', unpoOnly);
+  document.getElementById('btn-vc-only')?.classList.toggle('active', videocallOnly);
 
   // Album tabs
   const tabsEl = document.getElementById('stores-alb-tabs');
@@ -2572,7 +2574,8 @@ function renderUnpo() {
   const albums = getCatAlbums();
   const albKey = S.unpoAlbKey || (albums[0]?.key || '');
   const search = document.getElementById('unpo-search')?.value.toLowerCase() || '';
-  const ownedOnly = document.getElementById('unpo-owned-only')?.checked || false;
+  const ownedOnly = S.unpoOwnedOnly || false;
+  document.getElementById('btn-unpo-owned-only')?.classList.toggle('active', ownedOnly);
 
   // Album tabs
   const tabsEl = document.getElementById('unpo-alb-tabs');
