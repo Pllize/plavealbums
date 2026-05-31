@@ -1650,12 +1650,17 @@
       "country": "KR",
       "round": null,
       "isMusicStreamTeam": true,
-      "unpoAlbumKey": "",
+      "unpoAlbumKey": "ALB_1779038847739",
       "unpoSets": 1,
       "unpoBack": false,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {},
+      "customPrices": {
+        "ALB_1779038838207": null,
+        "ALB_1779038847739": 13720,
+        "ALB_1779038855533": null,
+        "ALB_1779038864675": null
+      },
       "purchaseStart": "2026-04-07T11:00",
       "purchaseEnd": "2026-04-30T18:00",
       "purchaseEndTxt": "조기소진 시 마감",
@@ -1671,13 +1676,17 @@
       "url": "https://09platform.com/surl/P/1314",
       "videocall": false,
       "memo": "초동반영불가\n출고일정: 6월 말 - 7월 초",
-      "unpoAlbumKeys": [],
+      "unpoAlbumKeys": [
+        "ALB_1779038847739"
+      ],
       "offlineEvents": [],
       "offlineAddressName": "",
       "offlineAddressDetail": "",
       "hanteoChart": false,
       "billboardChart": false,
-      "chartEtc": ""
+      "chartEtc": "",
+      "vcStart": "",
+      "vcEnd": ""
     },
     {
       "id": "cs1775566240225",
@@ -2065,7 +2074,7 @@
       "repo": "plavealbums",
       "branch": "main",
       "filePath": "db/data.json",
-      "sha": "38786bba79dddb65e191e092eb4e1f6b13e079bd"
+      "sha": "22bae0db37c63ea9d8a124036e9f5bbc17c9b11e"
     }
   },
   "unpoCards": [
