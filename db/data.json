@@ -1877,17 +1877,12 @@
       "country": "KR",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "POCAALBUM",
+      "unpoAlbumKey": "ALB_1779038847739",
       "unpoSets": 1,
       "unpoBack": false,
       "sharedWith": null,
-      "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": 20000,
-        "POCAALBUM": 8200,
-        "ID_PASS": 14900,
-        "INVENTORY": 17100
-      },
+      "priceMode": "country",
+      "customPrices": {},
       "purchaseStart": "2026-04-13T18:00",
       "purchaseEnd": "2026-04-20T23:00",
       "purchaseEndTxt": "",
@@ -1902,7 +1897,21 @@
       "defDeliveryDate": "",
       "url": "https://www.youtube.com/@plave_official/store",
       "videocall": true,
-      "memo": ""
+      "memo": "",
+      "vcStart": "",
+      "vcEnd": "",
+      "unpoAlbumKeys": [
+        "ALB_1779038847739"
+      ],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": "",
+      "sharedWithStoreIds": [
+        "cs1774546479074"
+      ]
     },
     {
       "id": "cs1776171151326",
@@ -2027,7 +2036,7 @@
       "repo": "plavealbums",
       "branch": "main",
       "filePath": "db/data.json",
-      "sha": "d9b980f6000bca0a776b2fac2d9caa0b3657a35a"
+      "sha": "38786bba79dddb65e191e092eb4e1f6b13e079bd"
     }
   },
   "unpoCards": [
@@ -3085,6 +3094,43 @@
               "owned": false,
               "note": "하민",
               "img": "https://blog.kakaocdn.net/dna/rZMk0/dJMcafNmjIS/AAAAAAAAAAAAAAAAAAAAAE-HZxvY7EmBCtoKtKV2SeHOPkuVcd2Zt9apyCdLNgRx/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=ANKNwRm2dyt3hFAYJ3tGqy5XIK4%3D&v=4&v=4&v=4&v=4&v=4&v=4&v=4&v=4&v=4&v=4&v=4"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u1780209256397v67d",
+      "storeId": "cs1776085185495",
+      "albumTypeId": "ALB_1779038847739",
+      "sets": [
+        {
+          "memo": "",
+          "cards": [
+            {
+              "owned": false,
+              "note": "예준",
+              "img": "https://blog.kakaocdn.net/dna/dmVXes/dJMcabqDDQ3/AAAAAAAAAAAAAAAAAAAAAGhz9UR1GvvC_egx66QObhYUuihDuuHWwG5_MnlL73lb/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=yoLHmfWEwedlvALIj9CEmLcYYUU%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "노아",
+              "img": "https://blog.kakaocdn.net/dna/beHg8H/dJMcabqDDQ5/AAAAAAAAAAAAAAAAAAAAAEor4fRGwgs0BRR3ExCbpy_kj4SDe5y8e5hIuA195_BA/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=OT4LvPoCoeXcDYH12euHJN0CAds%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "밤비",
+              "img": "https://blog.kakaocdn.net/dna/8JyCj/dJMcaaSNuaj/AAAAAAAAAAAAAAAAAAAAAPj8zi__kYDgDBu6fYvTAlxLi51bgcqqj3nyP0XCBfph/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=Q19%2FOCAvkzuL%2FlOuueGr4kjO6wQ%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "은호",
+              "img": "https://blog.kakaocdn.net/dna/AMi7W/dJMcafNmjIK/AAAAAAAAAAAAAAAAAAAAAMRVSFJ6tz7zwxfWvvPmB-OEqaFhXnlya2NPInZnij9W/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=c5dK3v2EBYGyYddwXLAd3lhseAM%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
+            },
+            {
+              "owned": false,
+              "note": "하민",
+              "img": "https://blog.kakaocdn.net/dna/cU9v5H/dJMcabqDDQ4/AAAAAAAAAAAAAAAAAAAAAHkqLDbAEos_9mv6SmhcVv0N979e2D5LwpCzaGn3Vr_M/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1780239599&allow_ip=&allow_referer=&signature=G6ngISgWV1%2BLMtSaOs%2BaXuTqKpY%3D&v=3&v=3&v=3&v=3&v=3&v=3&v=3"
             }
           ]
         }
