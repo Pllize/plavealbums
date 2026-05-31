@@ -544,6 +544,10 @@ function init() {
     bc.onmessage = () => { reloadDB(); buildCatBar(); buildFilters(); render(); };
   } catch(e) {}
 
+  // Open store popup if ?store= URL param present
+  const _urlStore = new URLSearchParams(location.search).get('store');
+  if (_urlStore) setTimeout(() => openStorePopup(_urlStore), 300);
+
   checkNoticePopup();
   loadServiceData();
   document.addEventListener('visibilitychange', () => {
@@ -859,6 +863,19 @@ function fDeadline(store) {
   if (diff === 0) return '오늘 마감';
   if (diff <= 3) return `D-${diff} ⚠`;
   return `D-${diff}`;
+}
+
+function shareStore(storeId) {
+  const store = (DB.stores || []).find(s => s.id === storeId);
+  const name = store ? store.name : '판매처';
+  const url = location.origin + location.pathname + '?store=' + encodeURIComponent(storeId);
+  if (navigator.share) {
+    navigator.share({ title: name, url });
+  } else {
+    navigator.clipboard.writeText(url).then(() => toast('링크가 복사되었습니다')).catch(() => {
+      prompt('링크를 복사하세요:', url);
+    });
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -1329,7 +1346,8 @@ function _renderStoreDetailModal() {
     tabsEl.innerHTML = '';
   }
 
-  document.getElementById('modal-detail-title').textContent = store.name + (myPurch ? ' ✓' : '');
+  const _titleEl = document.getElementById('modal-detail-title');
+  _titleEl.innerHTML = `${store.name}${store.round ? ` <span style="font-size:12px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px;font-weight:600;vertical-align:middle">${store.round}차</span>` : ''}${myPurch ? ' <span style="color:var(--ok);font-size:14px">✓</span>' : ''}`;
   const _subtitleParts = [country ? `${country.flag} ${country.lb}` : '', distName(store.distId)].filter(Boolean);
   const _subtitleEl = document.getElementById('modal-detail-subtitle');
   if (_subtitleEl) { const t = _subtitleParts.join(' · '); _subtitleEl.textContent = t; _subtitleEl.style.display = t ? '' : 'none'; }
@@ -1346,16 +1364,38 @@ function _renderStoreDetailModal() {
 }
 
 function _renderDetailInfoTab(store, storeId, ovs, cur, albums, unpoKeys, myPurch, country) {
+  function groupOfflineHours(hoursMap) {
+    if (!hoursMap) return '';
+    const D = ['월','화','수','목','금','토','일'];
+    const groups = [];
+    let i = 0;
+    while (i < 7) {
+      const h = hoursMap[i];
+      if (h === null) {
+        let j = i + 1;
+        while (j < 7 && hoursMap[j] === null) j++;
+        groups.push(`${D[i]}${j-i>1?'-'+D[j-1]:''} 휴무`);
+        i = j;
+      } else if (h) {
+        let j = i + 1;
+        while (j < 7 && hoursMap[j] === h) j++;
+        groups.push(`${D[i]}${j-i>1?'-'+D[j-1]:''} ${h}`);
+        i = j;
+      } else {
+        i++;
+      }
+    }
+    return groups.join(' · ');
+  }
   const DAYS_KR = ['월','화','수','목','금','토','일'];
 
   const topBadges = [
-    store.videocall ? '<span class="badge badge-pk">📞 영통</span>' : '',
+    store.videocall ? '<span class="badge badge-pk">📞 영상통화 이벤트</span>' : '',
     store.hanteoChart ? '<span style="font-size:11px;background:rgba(96,165,250,.15);color:var(--info);padding:2px 6px;border-radius:3px">한터</span>' : '',
     store.billboardChart ? '<span style="font-size:11px;background:rgba(34,197,94,.15);color:var(--ok);padding:2px 6px;border-radius:3px">빌보드</span>' : '',
     store.chartEtc ? `<span class="badge badge-gray">${store.chartEtc}</span>` : '',
     store.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : '',
     store.offlineLuckyDraw ? '<span style="font-size:11px;background:rgba(192,132,252,.15);color:var(--pk);padding:2px 6px;border-radius:3px;font-weight:600">럭드</span>' : '',
-    store.round ? `<span class="badge badge-info">${store.round}차</span>` : '',
   ].filter(Boolean).join('');
 
   const deadline = fDeadline(store);
@@ -1386,12 +1426,12 @@ function _renderDetailInfoTab(store, storeId, ovs, cur, albums, unpoKeys, myPurc
   const offlineHtml = offlineEvts.length ? `
     <div class="section-divider">🏪 오프라인 정보</div>
     ${offlineEvts.map(ev => {
-      const hrs = Object.entries(ev.hoursMap||{}).filter(([,v])=>v).map(([di,v])=>`${DAYS_KR[di]} ${v}`).join(' / ');
+      const hrs = groupOfflineHours(ev.hoursMap);
       const addrMapUrl = ev.mapUrl || (ev.addressDetail ? `https://map.naver.com/v5/search/${encodeURIComponent(ev.addressDetail)}` : null);
       const addrText = ev.addressName ? `${ev.addressName}${ev.addressDetail ? ' · ' + ev.addressDetail : ''}` : ev.addressDetail || '';
       return `<div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px;margin-bottom:8px">
         <div style="font-size:13px;font-weight:600">${ev.start?fDate(ev.start):''}${ev.end&&ev.end!==ev.start?' ~ '+fDate(ev.end):''}${ev.luckyDraw?' <span style="font-size:11px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 5px;border-radius:3px;font-weight:600">럭드</span>':''}</div>
-        ${addrText ? `<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 ${addrMapUrl ? `<a href="${addrMapUrl}" target="_blank" style="color:var(--pk)">${addrText} 🗺</a>` : addrText}</div>` : ''}
+        ${addrText ? `<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 ${addrText}${addrMapUrl ? ` <a href="${addrMapUrl}" target="_blank" class="btn btn-ghost btn-xs" style="padding:1px 5px;font-size:10px">지도</a>` : ''}</div>` : ''}
         ${hrs?`<div style="font-size:11px;color:var(--tx3);margin-top:3px">${hrs}</div>`:''}
         ${ev.note?`<div style="font-size:12px;color:var(--tx2);margin-top:4px;white-space:pre-wrap">${ev.note}</div>`:''}
         ${ev.url?`<a href="${ev.url}" target="_blank" class="btn btn-ghost btn-xs" style="margin-top:6px;display:inline-flex">🔗 이벤트 공지</a>`:''}
@@ -1418,6 +1458,7 @@ function _renderDetailInfoTab(store, storeId, ovs, cur, albums, unpoKeys, myPurc
   `;
   document.getElementById('modal-detail-foot').innerHTML = `
     <button class="btn btn-ghost" onclick="closeModal('modal-detail')">닫기</button>
+    <button class="btn btn-ghost" onclick="shareStore('${storeId}')">🔗 공유</button>
     ${store.url ? `<a href="${store.url}" target="_blank" class="btn btn-ghost">구매 링크 ↗</a>` : ''}
     <button class="btn btn-p" onclick="closeModal('modal-detail');addPurchModal('${storeId}')">+ 구매 추가</button>
   `;
@@ -2432,7 +2473,7 @@ function storeMinKrw(store) {
     return isOvs(store) ? toKRW(pr, cur) : pr;
   }).filter(v => v < Infinity);
   if (!prices.length) return Infinity;
-  return prices[0];
+  return Math.min(...prices);
 }
 
 function renderStores() {
@@ -2505,7 +2546,7 @@ function renderStoreCard(s, isCheapest = false) {
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
           <span class="fw-600">${s.name}</span>
           ${country ? `<span style="font-size:11px;color:var(--tx3)">${country.flag} ${country.lb}</span>` : ''}
-          ${expired ? '<span class="badge badge-gray" style="font-size:10px">마감</span>' : ''}
+          ${s.round ? `<span class="badge badge-info" style="font-size:10px">${s.round}차</span>` : ''}
           ${isCheapest ? '<span class="badge badge-ok" style="font-size:10px">최저가</span>' : ''}
         </div>
         <div class="text-sm text-muted">${dist || ''}</div>
@@ -2514,7 +2555,6 @@ function renderStoreCard(s, isCheapest = false) {
         ${s.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : ''}
         ${s.videocall ? '<span class="badge badge-pk" style="font-size:10px">📞 영통</span>' : ''}
         ${s.hanteoChart ? '<span style="font-size:10px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">한터</span>' : ''}
-        ${s.round ? `<span class="badge badge-info">${s.round}차</span>` : ''}
         ${s.offlineLuckyDraw ? '<span style="font-size:11px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 5px;border-radius:3px;font-weight:600;flex-shrink:0">럭드</span>' : ''}
       </div>
     </div>
@@ -2523,10 +2563,15 @@ function renderStoreCard(s, isCheapest = false) {
 
     <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px">
       <span style="color:var(--tx3)">${s.purchaseStart ? fDate(s.purchaseStart, true) + ' ~ ' + (s.purchaseEnd ? fDate(s.purchaseEnd, true) : (s.purchaseEndTxt || '미정')) : ''}</span>
-      ${isUrgent
-        ? `<span style="font-weight:700;background:var(--err);color:#fff;padding:1px 6px;border-radius:4px">${deadline}</span>`
-        : `<span style="font-weight:700;color:${expired?'var(--tx3)':'var(--ok)'}">${deadline}</span>`
-      }
+      <div style="text-align:right">
+        ${isUrgent
+          ? `<div style="font-weight:700;background:var(--err);color:#fff;padding:1px 6px;border-radius:4px">${deadline}</div>`
+          : deadline
+            ? `<div style="font-weight:600;color:${expired?'var(--tx3)':'var(--ok)'};font-size:11px">${deadline}</div>`
+            : ''
+        }
+        ${expired ? '<div style="font-size:10px;font-weight:700;color:var(--err);margin-top:1px">마감</div>' : ''}
+      </div>
     </div>
     ${(s.offlineEvents?.length ? s.offlineEvents : s.offlineStart ? [{ start: s.offlineStart, end: s.offlineEnd }] : []).map(ev =>
       `<div style="font-size:11px;color:var(--warn);margin-top:3px">🏪 ${ev.start ? fDate(ev.start) : ''}${ev.end && ev.end !== ev.start ? ' ~ ' + fDate(ev.end) : ''}</div>`
@@ -2577,7 +2622,7 @@ function showStoreDetail(storeId) {
         ${(() => {
           const addrMapUrl = ev.mapUrl || (ev.addressDetail ? `https://map.naver.com/v5/search/${encodeURIComponent(ev.addressDetail)}` : null);
           const addrText = ev.addressName ? `${ev.addressName}${ev.addressDetail ? ' · ' + ev.addressDetail : ''}` : ev.addressDetail || '';
-          return addrText ? `<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 ${addrMapUrl ? `<a href="${addrMapUrl}" target="_blank" style="color:var(--pk)">${addrText} 🗺</a>` : addrText}</div>` : '';
+          return addrText ? `<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 ${addrText}${addrMapUrl ? ` <a href="${addrMapUrl}" target="_blank" class="btn btn-ghost btn-xs" style="padding:1px 5px;font-size:10px">지도</a>` : ''}</div>` : '';
         })()}
         ${(() => {
           const DAYS = ['월','화','수','목','금','토','일'];
@@ -2796,6 +2841,7 @@ function renderCal() {
 
   const y = S.calYear, m = S.calMonth;
   const today = new Date();
+  const localDateStr = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
   const monthNames = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
   document.getElementById('cal-month-title').textContent = y + '년 ' + monthNames[m];
 
@@ -2840,7 +2886,7 @@ function renderCal() {
         const start = new Date(startStr + 'T00:00:00');
         const end = new Date(endStr + 'T00:00:00');
         for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-          const ds = d.toISOString().slice(0, 10);
+          const ds = localDateStr(d);
           const isStart = ds === startStr;
           const isEnd = ds === endStr && endStr !== startStr;
           addEvent(ds, { type: 'offline', label: '🏪 ' + s.name + (isStart ? ' 시작' : isEnd ? ' 종료' : ''), storeId: s.id });
@@ -2922,17 +2968,17 @@ function renderCal() {
     if (i < firstDay) {
       day = daysInPrev - firstDay + i + 1;
       isOther = true;
-      dateStr = new Date(y, m - 1, day).toISOString().slice(0, 10);
+      dateStr = localDateStr(new Date(y, m-1, day));
     } else if (i - firstDay >= daysInMonth) {
       day = i - firstDay - daysInMonth + 1;
       isOther = true;
-      dateStr = new Date(y, m + 1, day).toISOString().slice(0, 10);
+      dateStr = localDateStr(new Date(y, m+1, day));
     } else {
       day = i - firstDay + 1;
-      dateStr = new Date(y, m, day).toISOString().slice(0, 10);
+      dateStr = localDateStr(new Date(y, m, day));
     }
 
-    const isToday = dateStr === today.toISOString().slice(0, 10);
+    const isToday = dateStr === localDateStr(today);
     const isSelected = dateStr === S.calDay;
     const dayEvs = events[dateStr] || [];
     const isHighlighted = S.calHighlightStore && dayEvs.some(ev => ev.storeId === S.calHighlightStore);
