@@ -1057,7 +1057,7 @@
       "name": "VLAST SHOP",
       "distId": "dcs1774543391747",
       "country": "KR",
-      "round": null,
+      "round": 1,
       "isMusicStreamTeam": false,
       "unpoAlbumKey": "ALB_1779038838207",
       "unpoSets": 2,
@@ -1088,7 +1088,9 @@
       "offlineAddressDetail": "",
       "hanteoChart": false,
       "billboardChart": false,
-      "chartEtc": ""
+      "chartEtc": "",
+      "vcStart": "",
+      "vcEnd": ""
     },
     {
       "id": "s2",
@@ -1933,14 +1935,19 @@
       "name": "VLASTSHOP",
       "distId": "dcs1774543391747",
       "country": "KR",
-      "round": null,
+      "round": 2,
       "isMusicStreamTeam": false,
       "unpoAlbumKey": "ALB_1779038847739",
       "unpoSets": 1,
       "unpoBack": false,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {},
+      "customPrices": {
+        "ALB_1779038838207": null,
+        "ALB_1779038847739": 8200,
+        "ALB_1779038855533": null,
+        "ALB_1779038864675": null
+      },
       "purchaseStart": "2026-04-14T11:00",
       "purchaseEnd": "2026-04-20T23:00",
       "purchaseEndTxt": "",
@@ -1966,7 +1973,9 @@
       "billboardChart": false,
       "chartEtc": "",
       "sharedWithAlbs": [],
-      "sharedWithStoreIds": []
+      "sharedWithStoreIds": [],
+      "vcStart": "2026-05-31",
+      "vcEnd": "2026-05-31"
     },
     {
       "id": "cs1776402107838",
