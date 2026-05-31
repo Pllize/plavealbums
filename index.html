@@ -1361,15 +1361,23 @@ function _renderDetailInfoTab(store, storeId, ovs, cur, albums, unpoKeys, myPurc
   const deadline = fDeadline(store);
   const storeExpired = isExpired(store);
   const storeUrgent = !storeExpired && store.purchaseEnd && Math.ceil((new Date(store.purchaseEnd)-new Date())/86400000) <= 3;
-  const deadlineHtml = deadline
+  const deadlineInline = deadline
     ? storeUrgent
-      ? `<div style="font-size:13px;font-weight:700;background:var(--err);color:#fff;padding:2px 8px;border-radius:4px;display:inline-block;margin-top:2px">${deadline}</div>`
-      : `<div style="font-size:13px;font-weight:700;color:${storeExpired?'var(--tx3)':'var(--ok)'}">${deadline}</div>`
+      ? ` <span style="font-weight:700;background:var(--err);color:#fff;padding:1px 5px;border-radius:3px;font-size:11px">${deadline}</span>`
+      : storeExpired
+        ? ` <span style="color:var(--tx3);font-size:11px">${deadline}</span>`
+        : ` <span style="color:var(--ok);font-size:11px;font-weight:600">${deadline}</span>`
     : '';
+  const vcHtml = store.videocall && (store.vcAnnounceDate || store.vcStart) ? `
+    <div style="font-size:12px;margin-top:6px;padding-top:6px;border-top:1px solid var(--bd)">
+      <span class="badge badge-pk" style="font-size:10px;margin-right:4px">📞 영통</span>
+      ${store.vcAnnounceDate ? `<span class="text-muted">발표</span> <span class="fw-600">${fDate(store.vcAnnounceDate)}</span>` : ''}
+      ${store.vcStart ? `${store.vcAnnounceDate ? ' · ' : ''}<span class="text-muted">진행</span> <span class="fw-600">${fDate(store.vcStart)}</span>` : ''}
+    </div>` : '';
   const periodHtml = `<div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px;margin-bottom:10px">
     ${store.purchaseStart ? `<div style="font-size:12px;margin-bottom:4px"><span class="text-muted">구매 시작</span> <span class="fw-600">${fDate(store.purchaseStart, true)}</span></div>` : ''}
-    <div style="font-size:12px;margin-bottom:4px"><span class="text-muted">구매 마감</span> <span class="fw-600">${store.purchaseEnd ? fDate(store.purchaseEnd, true) : (store.purchaseEndTxt || '미정')}</span></div>
-    ${deadlineHtml}
+    <div style="font-size:12px"><span class="text-muted">구매 마감</span> <span class="fw-600">${store.purchaseEnd ? fDate(store.purchaseEnd, true) : (store.purchaseEndTxt || '미정')}</span>${deadlineInline}</div>
+    ${vcHtml}
   </div>`;
 
   const offlineEvts = store.offlineEvents?.length ? store.offlineEvents
@@ -1473,6 +1481,43 @@ function _renderDetailPurchTab(store, storeId, myPurch) {
     ${proxyTotal ? `<div style="font-size:11px;color:var(--tx3);text-align:right">내 지출: ${fKRW(myTotal)}</div>` : ''}
     ${trackingHtml}
     ${p.memo ? `<div style="margin-top:10px;font-size:12px;color:var(--tx2);white-space:pre-wrap;background:var(--sur2);border-radius:var(--r-sm);padding:8px">${p.memo}</div>` : ''}
+    ${(() => {
+      const proxyRows = [];
+      (p.items || []).forEach(it => {
+        if (!it.proxyDetails?.length) return;
+        const albName = DB.albumTypes?.find(a => a.key === it.albKey)?.name || it.albKey;
+        it.proxyDetails.forEach((e, ei) => {
+          if (!e.name && !e.qty) return;
+          proxyRows.push({ ...e, albName, albKey: it.albKey, entryIdx: ei });
+        });
+      });
+      if (!proxyRows.length) return '';
+      return `<div class="section-divider" style="margin-top:14px">대리구매</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="color:var(--tx3);font-size:11px">
+            <th style="text-align:left;padding:4px 6px;border-bottom:1px solid var(--bd)">구분</th>
+            <th style="text-align:left;padding:4px 6px;border-bottom:1px solid var(--bd)">이름</th>
+            <th style="text-align:left;padding:4px 6px;border-bottom:1px solid var(--bd)">앨범</th>
+            <th style="text-align:center;padding:4px 6px;border-bottom:1px solid var(--bd)">수</th>
+            <th style="text-align:center;padding:4px 6px;border-bottom:1px solid var(--bd)">입금</th>
+            <th style="text-align:center;padding:4px 6px;border-bottom:1px solid var(--bd)">배송</th>
+          </tr></thead>
+          <tbody>${proxyRows.map(e => `
+            <tr>
+              <td style="padding:5px 6px;border-bottom:1px solid var(--bd);font-size:11px;color:var(--tx3)">${e.type==='give'?'해주는것':'받는것'}</td>
+              <td style="padding:5px 6px;border-bottom:1px solid var(--bd)">${e.name||'—'}</td>
+              <td style="padding:5px 6px;border-bottom:1px solid var(--bd)">${e.albName}</td>
+              <td style="padding:5px 6px;text-align:center;border-bottom:1px solid var(--bd)">${e.qty}장</td>
+              <td style="padding:5px 6px;text-align:center;border-bottom:1px solid var(--bd)">
+                <button class="btn btn-xs ${e.paid?'btn-ok':'btn-ghost'}" onclick="toggleProxyPaid('${p.id}','${e.albKey}',${e.entryIdx});reloadDB();_renderStoreDetailModal()">${e.paid?'✓입금':'미입금'}</button>
+              </td>
+              <td style="padding:5px 6px;text-align:center;border-bottom:1px solid var(--bd)">
+                <button class="btn btn-xs ${e.delivered?'btn-ok':'btn-ghost'}" onclick="toggleProxyDelivered('${p.id}','${e.albKey}',${e.entryIdx});reloadDB();_renderStoreDetailModal()">${e.delivered?'✓배송':'미배송'}</button>
+              </td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`;
+    })()}
   `;
   document.getElementById('modal-detail-foot').innerHTML = `
     <button class="btn btn-ghost" onclick="closeModal('modal-detail')">닫기</button>
@@ -1975,6 +2020,9 @@ function buildPurchModal(p) {
 
     <div class="section-divider" style="margin-top:16px">대리구매 내역</div>
     <div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px;margin-bottom:12px">
+      <div style="display:grid;grid-template-columns:2fr 1fr 1.5fr 52px auto auto 28px;gap:4px;font-size:10px;color:var(--tx3);padding-bottom:4px;border-bottom:1px solid var(--bd);margin-bottom:2px">
+        <span>앨범</span><span>구분</span><span>이름</span><span>수</span><span>입금</span><span>배송</span><span></span>
+      </div>
       <div id="mp-proxy-entries" style="margin-bottom:6px"></div>
       <button type="button" class="btn btn-ghost btn-sm" onclick="addProxyEntryNew()">+ 대리구매 추가</button>
     </div>
@@ -2055,6 +2103,18 @@ function buildPurchModal(p) {
 // ═══════════════════════════════════════════
 // PROXY ENTRY HELPERS (NEW - separate box)
 // ═══════════════════════════════════════════
+function _toggleProxyNewBtn(field, idx) {
+  const cb = document.getElementById('pn-' + field + '-' + idx);
+  if (!cb) return;
+  cb.checked = !cb.checked;
+  const btn = document.getElementById('pn-' + field + '-btn-' + idx);
+  if (btn) {
+    const active = cb.checked;
+    btn.className = 'btn btn-xs ' + (active ? 'btn-ok' : 'btn-ghost');
+    btn.textContent = field === 'paid' ? (active ? '✓입금' : '입금') : (active ? '✓배송' : '배송');
+  }
+}
+
 function addProxyEntryNew(albKey, name, qty, paid, delivered, type) {
   window._proxyNewCounter = window._proxyNewCounter || 0;
   const idx = window._proxyNewCounter++;
@@ -2065,24 +2125,22 @@ function addProxyEntryNew(albKey, name, qty, paid, delivered, type) {
   if (!container) return;
   const div = document.createElement('div');
   div.id = 'proxy-new-' + idx;
-  div.style.cssText = 'margin-bottom:6px;padding:6px;background:var(--sur);border-radius:4px';
+  div.style.cssText = 'display:grid;grid-template-columns:2fr 1fr 1.5fr 52px auto auto 28px;gap:4px;align-items:center;padding:5px 0;border-bottom:1px solid var(--bd)';
   div.innerHTML = `
-    <div style="display:flex;gap:6px;align-items:center">
-      <select id="pn-alb-${idx}" style="flex:2;min-width:80px;font-size:12px" onchange="updateProxyTotals()">
-        ${albums.map(a => `<option value="${a.key}" ${(albKey===a.key)?'selected':''}>${a.name}</option>`).join('')}
-      </select>
-      <input id="pn-name-${idx}" type="text" placeholder="이름" style="flex:1;min-width:55px;font-size:12px" value="${name||''}">
-      <input id="pn-qty-${idx}" type="number" min="0" style="width:48px;font-size:12px" placeholder="수량" value="${qty||''}" oninput="updateProxyTotals()">
-      <button type="button" class="btn btn-err btn-xs" onclick="removeProxyEntryNew(${idx})">✕</button>
-    </div>
-    <div style="display:flex;gap:10px;align-items:center;margin-top:4px;padding-left:2px">
-      <select id="pn-type-${idx}" style="font-size:11px;width:75px">
-        <option value="receive" ${(type!=='give')?'selected':''}>받는것</option>
-        <option value="give" ${(type==='give')?'selected':''}>해주는것</option>
-      </select>
-      <label style="font-size:11px;white-space:nowrap"><input type="checkbox" id="pn-paid-${idx}" ${paid?'checked':''}> 입금</label>
-      <label style="font-size:11px;white-space:nowrap"><input type="checkbox" id="pn-deliv-${idx}" ${delivered?'checked':''}> 배송</label>
-    </div>
+    <select id="pn-alb-${idx}" style="font-size:12px" onchange="updateProxyTotals()">
+      ${albums.map(a => `<option value="${a.key}" ${(albKey===a.key)?'selected':''}>${a.name}</option>`).join('')}
+    </select>
+    <select id="pn-type-${idx}" style="font-size:11px">
+      <option value="receive" ${(type!=='give')?'selected':''}>받는것</option>
+      <option value="give" ${(type==='give')?'selected':''}>해주는것</option>
+    </select>
+    <input id="pn-name-${idx}" type="text" placeholder="이름" style="font-size:12px" value="${name||''}">
+    <input id="pn-qty-${idx}" type="number" min="0" style="font-size:12px" placeholder="수" value="${qty||''}" oninput="updateProxyTotals()">
+    <button type="button" class="btn btn-xs ${paid?'btn-ok':'btn-ghost'}" id="pn-paid-btn-${idx}" onclick="_toggleProxyNewBtn('paid',${idx})">${paid?'✓입금':'입금'}</button>
+    <button type="button" class="btn btn-xs ${delivered?'btn-ok':'btn-ghost'}" id="pn-deliv-btn-${idx}" onclick="_toggleProxyNewBtn('deliv',${idx})">${delivered?'✓배송':'배송'}</button>
+    <button type="button" class="btn btn-err btn-xs" onclick="removeProxyEntryNew(${idx})">✕</button>
+    <input type="checkbox" id="pn-paid-${idx}" ${paid?'checked':''} style="display:none">
+    <input type="checkbox" id="pn-deliv-${idx}" ${delivered?'checked':''} style="display:none">
   `;
   container.appendChild(div);
 }
@@ -2793,7 +2851,8 @@ function renderCal() {
 
   if (showVc) {
     stores.forEach(s => {
-      if (s.vcStart) addEvent(s.vcStart.slice(0,10), { type: 'vc', label: '📞 영통 시작: ' + s.name, storeId: s.id });
+      if (s.vcAnnounceDate) addEvent(s.vcAnnounceDate.slice(0,10), { type: 'vc', label: '📞 영통 발표: ' + s.name, storeId: s.id });
+      if (s.vcStart) addEvent(s.vcStart.slice(0,10), { type: 'vc', label: '📞 영통: ' + s.name, storeId: s.id });
       if (s.vcEnd && s.vcEnd !== s.vcStart) addEvent(s.vcEnd.slice(0,10), { type: 'vc', label: '📞 영통 마감: ' + s.name, storeId: s.id });
     });
   }

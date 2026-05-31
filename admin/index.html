@@ -977,10 +977,11 @@ function openStoreModal(id) {
     <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">
       <label class="form-check"><input type="checkbox" id="sp-music" ${s?.isMusicStreamTeam ? 'checked':''}><span>음총 연계</span></label>
       <label class="form-check"><input type="checkbox" id="sp-videocall" ${s?.videocall ? 'checked':''}><span>영통</span></label>
-      <div style="display:flex;align-items:center;gap:4px">
-        <input type="date" id="sp-vc-start" value="${s?.vcStart||''}" style="font-size:11px;padding:2px 4px" title="영통 시작일">
-        <span style="font-size:10px;color:var(--tx3)">~</span>
-        <input type="date" id="sp-vc-end" value="${s?.vcEnd||''}" style="font-size:11px;padding:2px 4px" title="영통 마감일">
+      <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+        <span style="font-size:10px;color:var(--tx3)">발표</span>
+        <input type="date" id="sp-vc-announce" value="${s?.vcAnnounceDate||''}" style="font-size:11px;padding:2px 4px" title="영통 발표일">
+        <span style="font-size:10px;color:var(--tx3)">진행</span>
+        <input type="date" id="sp-vc-start" value="${s?.vcStart||''}" style="font-size:11px;padding:2px 4px" title="영통 진행일">
       </div>
       <label class="form-check"><input type="checkbox" id="sp-hanteo" ${s?.hanteoChart ? 'checked':''}><span>한터차트</span></label>
       <label class="form-check"><input type="checkbox" id="sp-billboard" ${s?.billboardChart ? 'checked':''}><span>빌보드</span></label>
@@ -1260,8 +1261,9 @@ function saveStore() {
     round: parseInt(document.getElementById('sp-round').value) || null,
     isMusicStreamTeam: document.getElementById('sp-music').checked,
     videocall: document.getElementById('sp-videocall').checked,
+    vcAnnounceDate: document.getElementById('sp-vc-announce')?.value || '',
     vcStart: document.getElementById('sp-vc-start')?.value || '',
-    vcEnd: document.getElementById('sp-vc-end')?.value || '',
+    vcEnd: document.getElementById('sp-vc-start')?.value || '',
     unpoAlbumKey,
     unpoAlbumKeys,
     priceMode,
