@@ -21,6 +21,19 @@
 .price-row:last-child { border: none; }
 .total-price-row { font-weight: 700; font-size: 15px; padding-top: 8px; }
 .section-divider { font-size: 11px; color: var(--tx3); letter-spacing: .06em; text-transform: uppercase; padding: 12px 0 6px; font-weight: 600; }
+.proxy-entry-row { display:grid;grid-template-columns:2fr 1fr 1.5fr 52px auto auto 28px;gap:4px;align-items:center;padding:5px 0;border-bottom:1px solid var(--bd); }
+@media (max-width: 480px) {
+  .proxy-entry-row { grid-template-columns:1fr 1fr 52px 28px; }
+  .proxy-entry-row .pn-name { grid-column:1/3; }
+  .proxy-entry-row .pn-paid-btn, .proxy-entry-row .pn-deliv-btn { grid-row:2; }
+  .proxy-entry-row .pn-del-btn { grid-row:1; grid-column:4; }
+}
+.proxy-entry-header { display:grid;grid-template-columns:2fr 1fr 1.5fr 52px auto auto 28px;gap:4px;font-size:10px;color:var(--tx3);padding-bottom:4px;border-bottom:1px solid var(--bd);margin-bottom:2px; }
+@media (max-width: 480px) {
+  .proxy-entry-header { grid-template-columns:1fr 1fr 52px 28px; }
+  .proxy-entry-header span:nth-child(3) { grid-column:1/3; }
+  .proxy-entry-header span:nth-child(n+5) { display:none; }
+}
 </style>
 <script>
   window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
@@ -439,6 +452,10 @@
     <span class="bottom-nav-icon">📢</span>
     <span class="bottom-nav-label">공지</span>
   </button>
+  <button class="bottom-nav-item" onclick="openSettings()">
+    <span class="bottom-nav-icon">⚙</span>
+    <span class="bottom-nav-label">설정</span>
+  </button>
 </nav>
 
 <script src="js/db.js"></script>
@@ -561,10 +578,12 @@ async function loadServiceData() {
     if (!r.ok) return;
     const data = await r.json();
     if (!data.categories?.length && !data.stores?.length && !data.albumTypes?.length) return;
-    const savedPurchases = JSON.parse(JSON.stringify(DB.purchases || []));
-    const localOwnedMap = Object.fromEntries((DB.unpoCards || []).map(c => [c.id, c.owned]));
-    const savedAdminPw = DB.settings?.adminPw || '';
-    const savedGithub = DB.settings?.github || {};
+    // Read local state AFTER fetch completes to avoid race condition with concurrent saves
+    const _local = dbGet();
+    const savedPurchases = JSON.parse(JSON.stringify(_local.purchases || []));
+    const localOwnedMap = Object.fromEntries((_local.unpoCards || []).map(c => [c.id, c.owned]));
+    const savedAdminPw = _local.settings?.adminPw || '';
+    const savedGithub = _local.settings?.github || {};
     dbImportJSON(JSON.stringify(data));
     reloadDB();
     // Merge: use service card structure/images, preserve local owned flags
@@ -1390,7 +1409,7 @@ function _renderDetailInfoTab(store, storeId, ovs, cur, albums, unpoKeys, myPurc
   const DAYS_KR = ['월','화','수','목','금','토','일'];
 
   const topBadges = [
-    store.videocall ? '<span class="badge badge-pk">📞 영상통화 이벤트</span>' : '',
+    store.videocall ? '<span style="font-size:11px;color:var(--tx3);letter-spacing:.06em;font-weight:600">📞 영상통화 이벤트</span>' : '',
     store.hanteoChart ? '<span style="font-size:11px;background:rgba(96,165,250,.15);color:var(--info);padding:2px 6px;border-radius:3px">한터</span>' : '',
     store.billboardChart ? '<span style="font-size:11px;background:rgba(34,197,94,.15);color:var(--ok);padding:2px 6px;border-radius:3px">빌보드</span>' : '',
     store.chartEtc ? `<span class="badge badge-gray">${store.chartEtc}</span>` : '',
@@ -1581,10 +1600,12 @@ function _renderDetailUnpoTab(store, storeId, ovs, cur, albums, unpoKeys) {
   const alb = DB.albumTypes?.find(a => a.key === albKey);
   const pr = alb ? storePrice(store, albKey) : null;
   const prKrw = (pr !== null && ovs) ? toKRW(pr, cur) : pr;
-  const priceInfo = (alb && pr !== null) ? `<div style="background:rgba(168,85,247,.08);border-left:3px solid var(--pk);border-radius:var(--r-sm);padding:8px 10px;margin-bottom:12px;font-size:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-    <span class="badge badge-pk" style="font-size:10px;flex-shrink:0">미공포 포함</span>
-    <span class="fw-600">${alb.name}</span>
-    <span style="color:var(--tx3)">${ovs ? `${cur} ${Number(pr).toLocaleString()} (${fKRW(prKrw)})` : fKRW(pr)}</span>
+  const priceInfo = (alb && pr !== null) ? `<div style="margin-bottom:12px">
+    <div class="section-divider" style="padding-top:0">앨범 단가</div>
+    <div class="price-row" style="background:rgba(168,85,247,.07);border-radius:4px;padding-left:6px">
+      <span>${alb.name} <span class="badge badge-pk" style="font-size:9px;vertical-align:middle">미공포</span></span>
+      <span class="fw-600">${ovs ? `${cur} ${Number(pr).toLocaleString()} <span style="color:var(--tx3);font-size:11px">(${fKRW(prKrw)})</span>` : fKRW(pr)}</span>
+    </div>
   </div>` : '';
 
   const uc = (DB.unpoCards || []).find(uc => uc.storeId === storeId && uc.albumTypeId === albKey);
@@ -2061,7 +2082,7 @@ function buildPurchModal(p) {
 
     <div class="section-divider" style="margin-top:16px">대리구매 내역</div>
     <div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px;margin-bottom:12px">
-      <div style="display:grid;grid-template-columns:2fr 1fr 1.5fr 52px auto auto 28px;gap:4px;font-size:10px;color:var(--tx3);padding-bottom:4px;border-bottom:1px solid var(--bd);margin-bottom:2px">
+      <div class="proxy-entry-header">
         <span>앨범</span><span>구분</span><span>이름</span><span>수</span><span>입금</span><span>배송</span><span></span>
       </div>
       <div id="mp-proxy-entries" style="margin-bottom:6px"></div>
@@ -2151,7 +2172,8 @@ function _toggleProxyNewBtn(field, idx) {
   const btn = document.getElementById('pn-' + field + '-btn-' + idx);
   if (btn) {
     const active = cb.checked;
-    btn.className = 'btn btn-xs ' + (active ? 'btn-ok' : 'btn-ghost');
+    const extraClass = field === 'paid' ? 'pn-paid-btn' : 'pn-deliv-btn';
+    btn.className = `btn btn-xs ${extraClass} ${active ? 'btn-ok' : 'btn-ghost'}`;
     btn.textContent = field === 'paid' ? (active ? '✓입금' : '입금') : (active ? '✓배송' : '배송');
   }
 }
@@ -2166,7 +2188,7 @@ function addProxyEntryNew(albKey, name, qty, paid, delivered, type) {
   if (!container) return;
   const div = document.createElement('div');
   div.id = 'proxy-new-' + idx;
-  div.style.cssText = 'display:grid;grid-template-columns:2fr 1fr 1.5fr 52px auto auto 28px;gap:4px;align-items:center;padding:5px 0;border-bottom:1px solid var(--bd)';
+  div.className = 'proxy-entry-row';
   div.innerHTML = `
     <select id="pn-alb-${idx}" style="font-size:12px" onchange="updateProxyTotals()">
       ${albums.map(a => `<option value="${a.key}" ${(albKey===a.key)?'selected':''}>${a.name}</option>`).join('')}
@@ -2175,11 +2197,11 @@ function addProxyEntryNew(albKey, name, qty, paid, delivered, type) {
       <option value="receive" ${(type!=='give')?'selected':''}>받는것</option>
       <option value="give" ${(type==='give')?'selected':''}>해주는것</option>
     </select>
-    <input id="pn-name-${idx}" type="text" placeholder="이름" style="font-size:12px" value="${name||''}">
+    <input id="pn-name-${idx}" class="pn-name" type="text" placeholder="이름" style="font-size:12px" value="${name||''}">
     <input id="pn-qty-${idx}" type="number" min="0" style="font-size:12px" placeholder="수" value="${qty||''}" oninput="updateProxyTotals()">
-    <button type="button" class="btn btn-xs ${paid?'btn-ok':'btn-ghost'}" id="pn-paid-btn-${idx}" onclick="_toggleProxyNewBtn('paid',${idx})">${paid?'✓입금':'입금'}</button>
-    <button type="button" class="btn btn-xs ${delivered?'btn-ok':'btn-ghost'}" id="pn-deliv-btn-${idx}" onclick="_toggleProxyNewBtn('deliv',${idx})">${delivered?'✓배송':'배송'}</button>
-    <button type="button" class="btn btn-err btn-xs" onclick="removeProxyEntryNew(${idx})">✕</button>
+    <button type="button" class="btn btn-xs pn-paid-btn ${paid?'btn-ok':'btn-ghost'}" id="pn-paid-btn-${idx}" onclick="_toggleProxyNewBtn('paid',${idx})">${paid?'✓입금':'입금'}</button>
+    <button type="button" class="btn btn-xs pn-deliv-btn ${delivered?'btn-ok':'btn-ghost'}" id="pn-deliv-btn-${idx}" onclick="_toggleProxyNewBtn('deliv',${idx})">${delivered?'✓배송':'배송'}</button>
+    <button type="button" class="btn btn-err btn-xs pn-del-btn" onclick="removeProxyEntryNew(${idx})">✕</button>
     <input type="checkbox" id="pn-paid-${idx}" ${paid?'checked':''} style="display:none">
     <input type="checkbox" id="pn-deliv-${idx}" ${delivered?'checked':''} style="display:none">
   `;
