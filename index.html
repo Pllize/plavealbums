@@ -836,7 +836,9 @@ function distName(distId) {
 }
 
 function catStores(catId) {
-  return (DB.stores || []).filter(s => s.categoryId === (catId || S.catId));
+  return (DB.stores || [])
+    .filter(s => s.categoryId === (catId || S.catId))
+    .sort((a, b) => a.name.localeCompare(b.name, 'ko'));
 }
 
 function getCatAlbums(catId) {
@@ -857,7 +859,7 @@ function fDeadline(store) {
   if (isExpired(store)) {
     if (!store.purchaseEnd) return '마감';
     const diff = Math.round((new Date() - new Date(store.purchaseEnd)) / 86400000);
-    return `마감 (${diff}일 전)`;
+    return diff >= 3 ? `${diff}일 경과` : '마감';
   }
   if (!store.purchaseEnd) return store.purchaseEndTxt || '미정';
   const diff = Math.ceil((new Date(store.purchaseEnd) - new Date()) / 86400000);
@@ -1362,11 +1364,17 @@ function _renderDetailInfoTab(store, storeId, ovs, cur, albums, unpoKeys, myPurc
   ].filter(Boolean).join('');
 
   const deadline = fDeadline(store);
-  const deadlineColor = isExpired(store) ? 'var(--err)' : 'var(--ok)';
+  const storeExpired = isExpired(store);
+  const storeUrgent = !storeExpired && store.purchaseEnd && Math.ceil((new Date(store.purchaseEnd)-new Date())/86400000) <= 3;
+  const deadlineHtml = deadline
+    ? storeUrgent
+      ? `<div style="font-size:13px;font-weight:700;background:var(--err);color:#fff;padding:2px 8px;border-radius:4px;display:inline-block;margin-top:2px">${deadline}</div>`
+      : `<div style="font-size:13px;font-weight:700;color:${storeExpired?'var(--tx3)':'var(--ok)'}">${deadline}</div>`
+    : '';
   const periodHtml = `<div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px;margin-bottom:10px">
     ${store.purchaseStart ? `<div style="font-size:12px;margin-bottom:4px"><span class="text-muted">구매 시작</span> <span class="fw-600">${fDate(store.purchaseStart, true)}</span></div>` : ''}
     <div style="font-size:12px;margin-bottom:4px"><span class="text-muted">구매 마감</span> <span class="fw-600">${store.purchaseEnd ? fDate(store.purchaseEnd, true) : (store.purchaseEndTxt || '미정')}</span></div>
-    ${deadline ? `<div style="font-size:13px;font-weight:700;color:${deadlineColor}">${deadline}</div>` : ''}
+    ${deadlineHtml}
   </div>`;
 
   const offlineEvts = store.offlineEvents?.length ? store.offlineEvents
@@ -2431,7 +2439,7 @@ function renderStoreCard(s, isCheapest = false) {
     </div>`;
   }).filter(Boolean).join('');
 
-  return `<div class="card" style="margin-bottom:0;${expired ? 'opacity:.55;' : ''}cursor:pointer" onclick="showStoreDetail('${s.id}')">
+  return `<div class="card" style="margin-bottom:0;${expired ? 'opacity:.55;' : ''}cursor:pointer" onclick="openStorePopup('${s.id}')">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px">
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
@@ -2444,10 +2452,9 @@ function renderStoreCard(s, isCheapest = false) {
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
         ${s.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : ''}
+        ${s.videocall ? '<span class="badge badge-pk" style="font-size:10px">📞 영통</span>' : ''}
         ${s.hanteoChart ? '<span style="font-size:10px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">한터</span>' : ''}
         ${s.round ? `<span class="badge badge-info">${s.round}차</span>` : ''}
-        ${unpoKeys.map(k=>{const alb=(DB.albumTypes||[]).find(a=>a.key===k);return `<span class="badge badge-pk" style="font-size:10px">${alb?.shortName||alb?.name||k} 미공포</span>`;}).join('')}
-        ${s.videocall ? '<span title="영통" style="font-size:14px">📞</span>' : ''}
         ${s.offlineLuckyDraw ? '<span style="font-size:11px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 5px;border-radius:3px;font-weight:600;flex-shrink:0">럭드</span>' : ''}
       </div>
     </div>
@@ -2456,7 +2463,10 @@ function renderStoreCard(s, isCheapest = false) {
 
     <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px">
       <span style="color:var(--tx3)">${s.purchaseStart ? fDate(s.purchaseStart, true) + ' ~ ' + (s.purchaseEnd ? fDate(s.purchaseEnd, true) : (s.purchaseEndTxt || '미정')) : ''}</span>
-      <span style="font-weight:700;color:${expired?'var(--tx3)':isUrgent?'var(--err)':'var(--ok)'}">${deadline}</span>
+      ${isUrgent
+        ? `<span style="font-weight:700;background:var(--err);color:#fff;padding:1px 6px;border-radius:4px">${deadline}</span>`
+        : `<span style="font-weight:700;color:${expired?'var(--tx3)':'var(--ok)'}">${deadline}</span>`
+      }
     </div>
     ${(s.offlineEvents?.length ? s.offlineEvents : s.offlineStart ? [{ start: s.offlineStart, end: s.offlineEnd }] : []).map(ev =>
       `<div style="font-size:11px;color:var(--warn);margin-top:3px">🏪 ${ev.start ? fDate(ev.start) : ''}${ev.end && ev.end !== ev.start ? ' ~ ' + fDate(ev.end) : ''}</div>`
@@ -2604,12 +2614,13 @@ function renderUnpo() {
       : '<span class="badge badge-gray">미구매</span>';
 
     // Build store name header (single or grouped)
+    const stDist = distName(s.distId);
     const nameHtml = linked && linked.length
       ? `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <span class="fw-600">${s.name}</span>
-          ${linked.map(x => `<span class="badge badge-gray" style="font-size:11px">= ${x.name}</span>`).join('')}
+          <span class="fw-600">${s.name}${stDist ? ` <span style="color:var(--tx3);font-size:11px;font-weight:400">(${stDist})</span>` : ''}</span>
+          ${linked.map(x => {const xDist=distName(x.distId);return `<span style="color:var(--tx2);font-size:12px">= ${x.name}${xDist?` <span style="color:var(--tx3);font-size:11px">(${xDist})</span>`:''}</span>`;}).join('')}
         </div>`
-      : `<span class="fw-600">${s.name}${s.sharedWith ? ` <span class="badge badge-gray" style="font-size:10px">→ ${s.sharedWith.bn} (${s.sharedWith.ak})와 동일</span>` : ''}</span>`;
+      : `<span class="fw-600">${s.name}</span>`;
 
     if (!unpo || !unpo.sets?.length) {
       return `<div class="card" style="margin-bottom:12px">
