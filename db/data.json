@@ -1054,13 +1054,13 @@
     {
       "id": "s1",
       "categoryId": "cat_caligopt2",
-      "name": "VLAST SHOP",
+      "name": "VLASTSHOP",
       "distId": "dcs1774543391747",
       "country": "KR",
       "round": 1,
       "isMusicStreamTeam": false,
       "unpoAlbumKey": "ALB_1779038838207",
-      "unpoSets": 2,
+      "unpoSets": 1,
       "unpoBack": false,
       "sharedWith": null,
       "priceMode": "country",
@@ -1687,17 +1687,12 @@
       "country": "JP",
       "round": null,
       "isMusicStreamTeam": false,
-      "unpoAlbumKey": "POCAALBUM",
+      "unpoAlbumKey": "ALB_1779038847739",
       "unpoSets": 1,
       "unpoBack": false,
       "sharedWith": null,
-      "priceMode": "custom",
-      "customPrices": {
-        "PHOTOBOOK": 3245,
-        "POCAALBUM": 1320,
-        "ID_PASS": 2420,
-        "INVENTORY": 2750
-      },
+      "priceMode": "country",
+      "customPrices": {},
       "purchaseStart": "2026-04-07T11:00",
       "purchaseEnd": "",
       "purchaseEndTxt": "특전 소진시까지",
@@ -1712,7 +1707,18 @@
       "defDeliveryDate": "2026-06-09",
       "url": "https://shop.weverse.io/ko/shop/JPY/artists/167/categories/3719",
       "videocall": false,
-      "memo": "포토북, ID Pass: 특전 없음 / 포카앨범: 미공포 5장\n인벤토리: 엽서 1매"
+      "memo": "포토북, ID Pass: 특전 없음 / 포카앨범: 미공포 5장\n인벤토리: 엽서 1매",
+      "vcStart": "",
+      "vcEnd": "",
+      "unpoAlbumKeys": [
+        "ALB_1779038847739"
+      ],
+      "offlineEvents": [],
+      "offlineAddressName": "",
+      "offlineAddressDetail": "",
+      "hanteoChart": false,
+      "billboardChart": false,
+      "chartEtc": ""
     },
     {
       "id": "cs1775566533743",
