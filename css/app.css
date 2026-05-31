@@ -206,6 +206,10 @@ tr:hover td { background: rgba(255,255,255,.02); }
   background:var(--sur2);border:1px solid var(--bd2);color:var(--tx2);transition:all .15s; }
 .filter-chip:hover span { border-color:var(--ac);color:var(--ac); }
 .filter-chip input:checked + span { background:var(--ac);color:#fff;border-color:var(--ac); }
+.filter-btn { display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;
+  background:var(--sur2);border:1px solid var(--bd2);color:var(--tx2);cursor:pointer;transition:all .15s; }
+.filter-btn:hover { border-color:var(--ac);color:var(--ac); }
+.filter-btn.active { background:var(--ac);color:#fff;border-color:var(--ac); }
 .badge-ok { background: rgba(52,211,153,.12); color: var(--ok); }
 .badge-warn { background: rgba(251,191,36,.12); color: var(--warn); }
 .badge-err { background: rgba(248,113,113,.12); color: var(--err); }
@@ -615,6 +619,7 @@ code { font: 12px 'Menlo','Monaco',monospace; background: var(--sur2); padding: 
   .cat-selector { gap: 6px; }
   .unpo-grid { grid-template-columns: repeat(4, 1fr); }
   .unpo-grid.six { grid-template-columns: repeat(4, 1fr); }
+  .settings-btn { display: flex; }
 }
 
 /* ── Section tabs ── */
@@ -897,7 +902,7 @@ code { font: 12px 'Menlo','Monaco',monospace; background: var(--sur2); padding: 
   height: 36px;
   font-size: 18px;
   cursor: pointer;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   transition: border-color .15s;
