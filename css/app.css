@@ -597,7 +597,7 @@ code { font: 12px 'Menlo','Monaco',monospace; background: var(--sur2); padding: 
 /* ── Unpurchased row ── */
 .unpurchased-row {
   display: grid;
-  grid-template-columns: 1fr auto auto 80px;
+  grid-template-columns: 1fr auto auto auto 80px;
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
@@ -624,8 +624,9 @@ code { font: 12px 'Menlo','Monaco',monospace; background: var(--sur2); padding: 
 }
 .store-pick-card:hover { border-color: var(--pk); }
 .store-pick-card.selected { border-color: var(--pk2); background: var(--pk3); }
-.store-pick-card .spc-name { font-weight: 600; flex: 1; }
-.store-pick-card .spc-period { font-size: 12px; color: var(--tx2); }
+.store-pick-card .spc-name { font-weight: 600; min-width: 60px; }
+.store-pick-card .spc-store { font-size: 12px; color: var(--tx2); flex: 1; }
+.store-pick-card .spc-period { font-size: 12px; color: var(--tx3); }
 .store-pick-card .spc-badge { font-size: 11px; }
 
 /* ── Responsive ── */
