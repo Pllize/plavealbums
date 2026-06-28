@@ -347,6 +347,19 @@
         <div><label>설명</label><input type="text" id="mc-desc" placeholder="예: 4th Mini Album"></div>
       </div>
       <div class="form-row">
+        <label>테마 색상 <span style="font-size:11px;color:var(--tx3)">(선택 - 앨범 선택 시 accent 색상 변경)</span></label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="color" id="mc-themecolor" value="#c084fc" oninput="document.getElementById('mc-themecolor-hex').value=this.value">
+          <input type="text" id="mc-themecolor-hex" placeholder="#c084fc (비우면 기본값)" style="width:160px" oninput="syncCatColorPicker()">
+          <button type="button" onclick="document.getElementById('mc-themecolor-hex').value='';document.getElementById('mc-themecolor').value='#c084fc'" style="font-size:12px;background:none;border:1px solid var(--bd2);border-radius:4px;padding:4px 8px;cursor:pointer;color:var(--tx2)">기본</button>
+        </div>
+        <div style="display:flex;gap:4px;margin-top:6px">
+          ${['#c084fc','#fe4f02','#3b82f6','#10b981','#f59e0b','#ef4444'].map(cl =>
+            `<div onclick="document.getElementById('mc-themecolor').value='${cl}';document.getElementById('mc-themecolor-hex').value='${cl}'" style="width:22px;height:22px;background:${cl};border-radius:4px;cursor:pointer;border:2px solid transparent" title="${cl}"></div>`
+          ).join('')}
+        </div>
+      </div>
+      <div class="form-row">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
           <input type="checkbox" id="mc-hidden">
           <span>숨김 (인덱스에서 이 분류를 표시하지 않음)</span>
@@ -679,7 +692,17 @@ function openCatModal(id) {
   document.getElementById('mc-chodongbase').value = c?.chodongBaseDate || '';
   document.getElementById('mc-chodongend').value = c?.chodongEndDate || '';
   document.getElementById('mc-hidden').checked = c?.hidden || false;
+  const themeColor = c?.themeColor || '';
+  document.getElementById('mc-themecolor').value = themeColor || '#c084fc';
+  document.getElementById('mc-themecolor-hex').value = themeColor;
   openModal('modal-cat');
+}
+
+function syncCatColorPicker() {
+  const hex = document.getElementById('mc-themecolor-hex').value.trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(hex)) {
+    document.getElementById('mc-themecolor').value = hex;
+  }
 }
 
 function autoFillChodongEnd(dateStr) {
@@ -696,6 +719,7 @@ function saveCat() {
   const name = document.getElementById('mc-name').value.trim();
   if (!name) { toast('분류명을 입력하세요', 'warn'); return; }
   const physicalReleaseDate = document.getElementById('mc-physicalrelease').value;
+  const themeColorHex = document.getElementById('mc-themecolor-hex').value.trim();
   const data = {
     name,
     artist: document.getElementById('mc-artist').value.trim(),
@@ -707,6 +731,7 @@ function saveCat() {
     chodongEndDate: document.getElementById('mc-chodongend').value,
     description: document.getElementById('mc-desc').value.trim(),
     hidden: document.getElementById('mc-hidden').checked,
+    themeColor: /^#[0-9a-fA-F]{6}$/.test(themeColorHex) ? themeColorHex : '',
     sortOrder: Date.now(),
   };
   if (ADM.editCatId) {

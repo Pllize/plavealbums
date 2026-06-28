@@ -12,6 +12,7 @@
   --pk: #c084fc;
   --pk2: #a855f7;
   --pk3: rgba(192,132,252,.12);
+  --ac: var(--pk2);
   --ok: #34d399;
   --warn: #fbbf24;
   --err: #f87171;
@@ -33,6 +34,7 @@
   --tx2: #6b6880;
   --tx3: #a09db8;
   --pk3: rgba(168,85,247,.1);
+  --ac: var(--pk2);
   --info2: rgba(96,165,250,.1);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -68,7 +70,7 @@ button { cursor: pointer; font-family: inherit; }
 }
 .main-content {
   margin-left: var(--nav-w);
-  padding: 60px 32px 28px;
+  padding: 20px 32px 28px;
   min-height: 100vh;
   overflow-y: auto;
 }
@@ -594,9 +596,9 @@ code { font: 12px 'Menlo','Monaco',monospace; background: var(--sur2); padding: 
 
 /* ── Unpurchased row ── */
 .unpurchased-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto auto 80px;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
   padding: 8px 10px;
   background: var(--sur2);
@@ -606,13 +608,33 @@ code { font: 12px 'Menlo','Monaco',monospace; background: var(--sur2); padding: 
 }
 .unpurchased-row:hover { background: var(--sur3); }
 
+/* ── Store pick card (purchase modal) ── */
+.store-pick-list { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+.store-pick-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--bd2);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  background: var(--sur2);
+  transition: border-color .15s, background .15s;
+  font-size: 13px;
+}
+.store-pick-card:hover { border-color: var(--pk); }
+.store-pick-card.selected { border-color: var(--pk2); background: var(--pk3); }
+.store-pick-card .spc-name { font-weight: 600; flex: 1; }
+.store-pick-card .spc-period { font-size: 12px; color: var(--tx2); }
+.store-pick-card .spc-badge { font-size: 11px; }
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .bottom-nav { display: flex; }
   .menu-btn { display: none; }
   .sidebar { display: none !important; }
   .sidebar-overlay { display: none !important; }
-  .main-content { margin-left: 0; padding: 60px 12px 74px; }
+  .main-content { margin-left: 0; padding: 12px 12px 74px; }
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .form-row.cols-3, .form-row.cols-4 { grid-template-columns: 1fr 1fr; }
   .page-header { flex-wrap: wrap; }
