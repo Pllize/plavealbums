@@ -1031,7 +1031,7 @@ function renderDash() {
           <div class="alb-count-label">${a.name}</div>
           <div class="alb-count-num${total?' ok':''}">${total}</div>
           <div class="alb-count-unit">장</div>
-          ${S.showProxy&&proxy>0?`<div class="alb-count-proxy"><span>대리 ${proxy}장</span></div>`:''}
+          ${proxy>0?`<div class="alb-count-proxy"><span>대리 ${proxy}장</span></div>`:''}
         </div>`;
       }).join('')}
     </div>`;
@@ -1113,7 +1113,7 @@ function renderDash() {
           const items = (p.items || []).filter(it => it.qty > 0);
           const albCounts = items.map(it => {
             const alb = DB.albumTypes?.find(a => a.key === it.albKey);
-            return `<span>${alb?.name || it.albKey} <b>${it.qty}</b>장${it.proxyQty > 0 && S.showProxy ? `<span style="color:var(--warn);font-size:10px"> (대리${it.proxyQty})</span>` : ''}</span>`;
+            return `<span>${alb?.name || it.albKey} <b>${it.qty}</b>장${it.proxyQty > 0 ? `<span style="color:var(--warn);font-size:10px"> (대리${it.proxyQty})</span>` : ''}</span>`;
           }).join('');
           return `<div class="dash-purch-item">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
@@ -1132,7 +1132,7 @@ function renderDash() {
             <div style="font-size:12px;color:var(--tx2);margin-top:5px;display:flex;gap:8px;flex-wrap:wrap">
               ${albCounts}
               ${p.orderDate ? `<span style="color:var(--tx3)">주문: ${fDate(p.orderDate)}</span>` : ''}
-              ${proxy > 0 && S.showProxy ? `<span style="color:var(--warn)">대리 ${fKRW(proxy)}</span>` : ''}
+              ${proxy > 0 ? `<span style="color:var(--warn)">대리 ${fKRW(proxy)}</span>` : ''}
             </div>
             ${p.trackingNumber ? `<div style="font-size:11px;color:var(--tx3);margin-top:3px">📦 ${p.carrier || ''} ${p.trackingNumber}</div>` : ''}
           </div>`;
@@ -2043,7 +2043,14 @@ function buildPurchModal(p) {
         <label>판매처 *</label>
         <select id="mp-store" onchange="updatePurchPrices()">
           <option value="">선택하세요</option>
-          ${stores.map(s => `<option value="${s.id}" ${s.id === selectedStoreId ? 'selected' : ''}>${s.name}</option>`).join('')}
+          ${stores.map(s => {
+            const ctry = COUNTRIES[s.country] || null;
+            const flag = ctry ? ctry.flag + ' ' : '';
+            const round = s.round ? ` ${s.round}차` : '';
+            const end = s.purchaseEnd ? ' ~' + fDate(s.purchaseEnd, true) : (s.purchaseEndTxt ? ' ~' + s.purchaseEndTxt : '');
+            const expired = isExpired(s) ? ' [마감]' : '';
+            return `<option value="${s.id}" ${s.id === selectedStoreId ? 'selected' : ''}>${s.name}${round} ${flag}${end}${expired}</option>`;
+          }).join('')}
         </select>
       </div>
       <div>
