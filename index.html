@@ -2037,20 +2037,47 @@ function buildPurchModal(p) {
   const trackVal = p?.trackingNumber || '';
   const trackUrl = carrierTrackUrl(carrierVal, trackVal);
 
-  document.getElementById('modal-purch-body').innerHTML = `
+  ${(() => {
+    // Build platform groups: distId-based or name-based
+    const platformMap = {};
+    stores.forEach(s => {
+      const key = s.distId ? 'd:' + s.distId : 'n:' + s.name;
+      const label = s.distId ? (distName(s.distId) || s.name) : s.name;
+      if (!platformMap[key]) platformMap[key] = { key, label, stores: [] };
+      platformMap[key].stores.push(s);
+    });
+    const platforms = Object.values(platformMap).sort((a, b) => a.label.localeCompare(b.label, 'ko'));
+
+    // Pre-selected platform from existing purchase or pre-filled storeId
+    const selPlatKey = selectedStore
+      ? (selectedStore.distId ? 'd:' + selectedStore.distId : 'n:' + selectedStore.name)
+      : '';
+    const selPlat = selPlatKey ? platformMap[selPlatKey] : null;
+    const multiEntry = selPlat && selPlat.stores.length > 1;
+
+    // Option labels for the specific store (차수/기간 select)
+    const mkStoreOpts = (pStores) => pStores.map(s => {
+      const flag = COUNTRIES[s.country]?.flag || '';
+      const round = s.round ? `${s.round}차` : '';
+      const end = s.purchaseEnd ? fDate(s.purchaseEnd, true) + '까지' : (s.purchaseEndTxt || '');
+      const expired = isExpired(s) ? ' [마감]' : '';
+      const parts = [round, flag, end].filter(Boolean).join(' · ');
+      return `<option value="${s.id}" ${s.id === selectedStoreId ? 'selected' : ''}>${parts || s.name}${expired}</option>`;
+    }).join('');
+
+    // When platform has only 1 entry, mp-store still exists but is hidden
+    const singleStoreId = (!multiEntry && selPlat) ? selPlat.stores[0].id : '';
+
+    const cs = p?.status || 'unpurchased';
+    const curStatus = ['planned','unpurchased'].includes(cs) ? 'unpurchased' : cs === 'waiting' ? 'waiting' : ['preparing','shipped'].includes(cs) ? 'shipped' : cs;
+
+    return `
     <div class="form-row cols-2">
       <div>
         <label>판매처 *</label>
-        <select id="mp-store" onchange="updatePurchPrices()">
+        <select id="mp-platform" onchange="updatePurchPlatform()">
           <option value="">선택하세요</option>
-          ${stores.map(s => {
-            const ctry = COUNTRIES[s.country] || null;
-            const flag = ctry ? ctry.flag + ' ' : '';
-            const round = s.round ? ` ${s.round}차` : '';
-            const end = s.purchaseEnd ? ' ~' + fDate(s.purchaseEnd, true) : (s.purchaseEndTxt ? ' ~' + s.purchaseEndTxt : '');
-            const expired = isExpired(s) ? ' [마감]' : '';
-            return `<option value="${s.id}" ${s.id === selectedStoreId ? 'selected' : ''}>${s.name}${round} ${flag}${end}${expired}</option>`;
-          }).join('')}
+          ${platforms.map(pl => `<option value="${pl.key}" ${pl.key === selPlatKey ? 'selected' : ''}>${pl.label}${pl.stores.length > 1 ? ` (${pl.stores.length}종)` : ''}</option>`).join('')}
         </select>
       </div>
       <div>
@@ -2058,8 +2085,15 @@ function buildPurchModal(p) {
         <input type="date" id="mp-date" value="${p?.orderDate || new Date().toISOString().slice(0,10)}">
       </div>
     </div>
-
-    <div class="form-row cols-2">
+    <div id="mp-store-wrap" style="${multiEntry ? '' : 'display:none'}">
+      <label>차수 / 기간 *</label>
+      <select id="mp-store" onchange="updatePurchPrices()">
+        <option value="">선택하세요</option>
+        ${selPlat ? mkStoreOpts(selPlat.stores) : ''}
+      </select>
+    </div>
+    <input type="hidden" id="mp-store-auto" value="${singleStoreId}">
+    <div class="form-row cols-2" style="margin-top:6px">
       <div>
         <label>주문번호</label>
         <input type="text" id="mp-ordno" placeholder="주문번호" value="${p?.orderNumber || ''}">
@@ -2067,14 +2101,13 @@ function buildPurchModal(p) {
       <div>
         <label>상태</label>
         <select id="mp-status">
-          ${[{k:'unpurchased',lb:'미구매'},{k:'waiting',lb:'구매대기'},{k:'ordered',lb:'구매완료'},{k:'shipped',lb:'배송중'},{k:'delivered',lb:'배송완료'},{k:'cancelled',lb:'취소'}].map(({k,lb}) => {
-            const cs = p?.status || 'unpurchased';
-            const currentStatus = (['planned','unpurchased'].includes(cs)) ? 'unpurchased' : (['waiting'].includes(cs)) ? 'waiting' : (['preparing','shipped'].includes(cs)) ? 'shipped' : cs;
-            return `<option value="${k}" ${currentStatus===k?'selected':''}>${lb}</option>`;
-          }).join('')}
+          ${[{k:'unpurchased',lb:'미구매'},{k:'waiting',lb:'구매대기'},{k:'ordered',lb:'구매완료'},{k:'shipped',lb:'배송중'},{k:'delivered',lb:'배송완료'},{k:'cancelled',lb:'취소'}].map(({k,lb}) =>
+            `<option value="${k}" ${curStatus===k?'selected':''}>${lb}</option>`
+          ).join('')}
         </select>
       </div>
-    </div>
+    </div>`;
+  })()}
 
     <div class="section-divider">앨범 수량 및 가격</div>
     <table style="width:100%;border-collapse:collapse;margin-bottom:12px">
@@ -2188,7 +2221,7 @@ function _toggleProxyNewBtn(field, idx) {
 function addProxyEntryNew(albKey, name, qty, paid, delivered, type) {
   window._proxyNewCounter = window._proxyNewCounter || 0;
   const idx = window._proxyNewCounter++;
-  const storeId = document.getElementById('mp-store')?.value || S.storeFromId || S.editStoreId;
+  const storeId = getPurchStoreId() || S.storeFromId || S.editStoreId;
   const store = DB.stores?.find(s => s.id === storeId);
   const albums = store ? (DB.albumTypes||[]).filter(a => a.categoryId === store.categoryId) : (DB.albumTypes || []);
   const container = document.getElementById('mp-proxy-entries');
@@ -2328,8 +2361,55 @@ function toggleProxyDelivered(purchId, albKey, entryIdx) {
   render();
 }
 
+function getPurchStoreId() {
+  // mp-store is always in the DOM; for single-entry platforms the value is
+  // set via mp-store-auto. Multi-entry platforms use the visible mp-store select.
+  const storeWrap = document.getElementById('mp-store-wrap');
+  const multiShown = storeWrap && storeWrap.style.display !== 'none';
+  if (multiShown) return document.getElementById('mp-store')?.value || '';
+  return document.getElementById('mp-store-auto')?.value || document.getElementById('mp-store')?.value || '';
+}
+
+function updatePurchPlatform() {
+  const platKey = document.getElementById('mp-platform')?.value;
+  const allStores = catStores();
+  // Re-build platform map
+  const platMap = {};
+  allStores.forEach(s => {
+    const key = s.distId ? 'd:' + s.distId : 'n:' + s.name;
+    if (!platMap[key]) platMap[key] = [];
+    platMap[key].push(s);
+  });
+  const platStores = platKey ? (platMap[platKey] || []) : [];
+  const multi = platStores.length > 1;
+
+  // Populate mp-store options (used for multi-entry selection AND auto-value for single)
+  const storeSelect = document.getElementById('mp-store');
+  if (storeSelect) {
+    storeSelect.innerHTML = (multi ? '<option value="">선택하세요</option>' : '') +
+      platStores.map(s => {
+        const flag = COUNTRIES[s.country]?.flag || '';
+        const round = s.round ? `${s.round}차` : '';
+        const end = s.purchaseEnd ? fDate(s.purchaseEnd, true) + '까지' : (s.purchaseEndTxt || '');
+        const expired = isExpired(s) ? ' [마감]' : '';
+        const parts = [round, flag, end].filter(Boolean).join(' · ');
+        return `<option value="${s.id}">${parts || s.name}${expired}</option>`;
+      }).join('');
+    if (!multi && platStores.length === 1) storeSelect.value = platStores[0].id;
+  }
+  // Update hidden auto input
+  const autoInput = document.getElementById('mp-store-auto');
+  if (autoInput && !multi) autoInput.value = platStores[0]?.id || '';
+
+  // Show/hide the 차수/기간 row
+  const wrap = document.getElementById('mp-store-wrap');
+  if (wrap) wrap.style.display = multi ? '' : 'none';
+
+  updatePurchPrices();
+}
+
 function updatePurchPrices() {
-  const storeId = document.getElementById('mp-store')?.value;
+  const storeId = getPurchStoreId();
   const store = DB.stores?.find(s => s.id === storeId);
   if (!store) return;
   const albums = getCatAlbums();
@@ -2357,7 +2437,7 @@ function updatePurchItemSub(albKey) {
   const sub = qty * price;
   const el = document.getElementById('item-sub-' + albKey);
   if (!el) return;
-  const storeId = document.getElementById('mp-store')?.value;
+  const storeId = getPurchStoreId();
   const store = DB.stores?.find(s => s.id === storeId);
   const ovs = store ? isOvs(store) : false;
   const cur = store ? getStoreCur(store) : 'KRW';
@@ -2367,7 +2447,7 @@ function updatePurchItemSub(albKey) {
 function updatePurchTotal() {
   const el = document.getElementById('mp-total-num');
   if (!el) return;
-  const storeId = document.getElementById('mp-store')?.value;
+  const storeId = getPurchStoreId();
   const store = DB.stores?.find(s => s.id === storeId);
   if (!store) { el.textContent = '—'; return; }
   const ovs = isOvs(store);
@@ -2418,7 +2498,7 @@ function updatePurchTotal() {
 }
 
 function savePurch() {
-  const storeId = document.getElementById('mp-store')?.value;
+  const storeId = getPurchStoreId();
   if (!storeId) { toast('판매처를 선택하세요.', 'warn'); return; }
 
   const store = DB.stores?.find(s => s.id === storeId);
