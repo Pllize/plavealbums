@@ -6,13 +6,15 @@
       "artist": "PLAVE",
       "releaseDate": "2026-04-14",
       "description": "PLAVE 4th Mini Album",
-      "sortOrder": 1779113609743,
+      "sortOrder": 1782661247317,
       "createdAt": "2026-03-24",
       "preReleaseDate": "",
       "digitalReleaseDate": "2026-04-13",
       "physicalReleaseDate": "2026-04-14",
       "chodongBaseDate": "2026-04-14",
-      "chodongEndDate": "2026-04-21"
+      "chodongEndDate": "2026-04-21",
+      "hidden": false,
+      "themeColor": "#ff9705"
     },
     {
       "name": "Caligo Pt.3",
@@ -2075,7 +2077,7 @@
       "repo": "plavealbums",
       "branch": "main",
       "filePath": "db/data.json",
-      "sha": "22bae0db37c63ea9d8a124036e9f5bbc17c9b11e"
+      "sha": "9461c907bc17fea5e824dc72f6b4962842413888"
     }
   },
   "unpoCards": [
