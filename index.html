@@ -2037,6 +2037,7 @@ function buildPurchModal(p) {
   const trackVal = p?.trackingNumber || '';
   const trackUrl = carrierTrackUrl(carrierVal, trackVal);
 
+  document.getElementById('modal-purch-body').innerHTML = `
   ${(() => {
     // Build platform groups: distId-based or name-based
     const platformMap = {};
