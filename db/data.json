@@ -1787,7 +1787,12 @@
       "unpoBack": false,
       "sharedWith": null,
       "priceMode": "custom",
-      "customPrices": {},
+      "customPrices": {
+        "ALB_1779038838207": 32740,
+        "ALB_1779038847739": null,
+        "ALB_1779038855533": null,
+        "ALB_1779038864675": null
+      },
       "purchaseStart": "2026-04-07T11:00",
       "purchaseEnd": "2026-04-11T23:59",
       "purchaseEndTxt": "",
@@ -1809,7 +1814,10 @@
       "offlineAddressDetail": "",
       "hanteoChart": false,
       "billboardChart": false,
-      "chartEtc": ""
+      "chartEtc": "",
+      "vcAnnounceDate": "",
+      "vcStart": "",
+      "vcEnd": ""
     },
     {
       "id": "cs1775737775955",
@@ -2088,7 +2096,7 @@
       "repo": "plavealbums",
       "branch": "main",
       "filePath": "db/data.json",
-      "sha": "8a885e0fd4effc1745687fd26ceda9877e106896"
+      "sha": "e47a32ea5d0d47588299caddeec789817cc0b643"
     }
   },
   "unpoCards": [
