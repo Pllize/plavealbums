@@ -2880,15 +2880,24 @@ function renderUnpo() {
   const filteredStores = allUnpoStores.filter(s => !search || s.name.toLowerCase().includes(search));
 
   // Group stores sharing the same unpo sets (via sharedWithStoreIds)
+  // A store that appears in another store's sharedWithStoreIds is a "linked" store, not a primary
+  const linkedStoreIds = new Set(
+    filteredStores.flatMap(s => s.sharedWithStoreIds || [])
+  );
   const shownIds = new Set();
   const storeGroups = [];
   filteredStores.forEach(s => {
     if (shownIds.has(s.id)) return;
+    if (linkedStoreIds.has(s.id)) return; // will be added under its primary
     const linkedIds = s.sharedWithStoreIds || [];
     const linked = filteredStores.filter(x => linkedIds.includes(x.id) && !shownIds.has(x.id) && x.id !== s.id);
     shownIds.add(s.id);
     linked.forEach(x => shownIds.add(x.id));
     storeGroups.push({ primary: s, linked });
+  });
+  // Any store not yet shown (edge case: linked to a primary outside filteredStores) is shown standalone
+  filteredStores.forEach(s => {
+    if (!shownIds.has(s.id)) storeGroups.push({ primary: s, linked: [] });
   });
 
   function renderStoreUnpoCard(s, linked) {
