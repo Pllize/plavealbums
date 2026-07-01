@@ -1,18 +1,27 @@
 /**
  * db.js — localStorage CRUD layer
- * All app state lives here. Admin writes, index reads.
+ *
+ * Storage keys:
+ *   albumapp_v1          — shared data (categories, stores, etc. synced via GitHub)
+ *   albumapp_v1_personal — personal data (purchases, settings; never overwritten by sync)
+ *   albumapp_v1_imgs     — unpoCard images (base64, separated for quota)
  */
 
 const DB_KEY = 'albumapp_v1';
+const PERSONAL_KEY = 'albumapp_v1_personal';
+const PERSONAL_FIELDS = ['purchases', 'settings'];
 
-const _defaultState = () => ({
+const _defaultShared = () => ({
   categories: [],
   albumTypes: [],
   distributors: [],
   stores: [],
   unpoCards: [],
-  purchases: [],
   notices: [],
+});
+
+const _defaultPersonal = () => ({
+  purchases: [],
   settings: {
     rates: {
       JPY: { rate: 9.4537, manual: false, updAt: null },
@@ -29,58 +38,56 @@ const _defaultState = () => ({
   },
 });
 
-function dbLoad() {
-  try {
-    const raw = localStorage.getItem(DB_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    return parsed;
-  } catch (e) {
-    return null;
-  }
-}
-
 let _bc = null;
 try { _bc = new BroadcastChannel('albumapp_sync'); } catch(e) {}
 
-function dbSave(state) {
-  // Separate large image data to avoid quota issues
-  const lightState = { ...state };
+function _parseLS(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+
+function _saveShared(shared) {
+  // Separate images from unpoCards to avoid quota issues
   const imgData = {};
-
-  if (state.unpoCards) {
-    lightState.unpoCards = state.unpoCards.map(uc => ({
-      ...uc,
-      sets: uc.sets.map(set => ({
-        memo: set.memo || '',
-        cards: set.cards.map(c => ({ owned: c.owned || false, note: c.note || '' })),
-      })),
-    }));
-
-    state.unpoCards.forEach(uc => {
-      uc.sets.forEach((set, si) => {
-        set.cards.forEach((c, ci) => {
-          if (c.img) {
-            if (!imgData[uc.id]) imgData[uc.id] = {};
-            if (!imgData[uc.id][si]) imgData[uc.id][si] = {};
-            imgData[uc.id][si][ci] = c.img;
-          }
-        });
+  const lightUnpoCards = (shared.unpoCards || []).map(uc => {
+    (uc.sets || []).forEach((set, si) => {
+      (set.cards || []).forEach((c, ci) => {
+        if (c.img) {
+          if (!imgData[uc.id]) imgData[uc.id] = {};
+          if (!imgData[uc.id][si]) imgData[uc.id][si] = {};
+          imgData[uc.id][si][ci] = c.img;
+        }
       });
     });
-  }
+    return {
+      ...uc,
+      sets: (uc.sets || []).map(set => ({
+        memo: set.memo || '',
+        luckyDraw: set.luckyDraw || false,
+        cards: (set.cards || []).map(c => ({ owned: c.owned || false, note: c.note || '' })),
+      })),
+    };
+  });
+
+  const lightShared = { ...shared, unpoCards: lightUnpoCards };
 
   try {
-    localStorage.setItem(DB_KEY, JSON.stringify(lightState));
+    localStorage.setItem(DB_KEY, JSON.stringify(lightShared));
     localStorage.setItem(DB_KEY + '_imgs', JSON.stringify(imgData));
     try { if (_bc) _bc.postMessage({ type: 'db-updated', ts: Date.now() }); } catch(e) {}
-  } catch (e) {
-    // Retry without purchases if quota exceeded
+  } catch(e) {
     try {
-      const minimal = { ...lightState, unpoCards: [] };
-      localStorage.setItem(DB_KEY, JSON.stringify(minimal));
-    } catch (e2) {}
+      localStorage.setItem(DB_KEY, JSON.stringify({ ...lightShared, unpoCards: [] }));
+    } catch(e2) {}
   }
+}
+
+function _savePersonal(personal) {
+  try {
+    localStorage.setItem(PERSONAL_KEY, JSON.stringify(personal));
+  } catch(e) {}
 }
 
 function dbMergeImages(state) {
@@ -92,39 +99,66 @@ function dbMergeImages(state) {
       ...state,
       unpoCards: (state.unpoCards || []).map(uc => ({
         ...uc,
-        sets: uc.sets.map((set, si) => ({
+        sets: (uc.sets || []).map((set, si) => ({
           ...set,
-          cards: set.cards.map((c, ci) => ({
+          cards: (set.cards || []).map((c, ci) => ({
             ...c,
             img: imgData[uc.id]?.[si]?.[ci] || c.img || null,
           })),
         })),
       })),
     };
-  } catch (e) {
+  } catch(e) {
     return state;
   }
 }
 
-function dbInit() {
-  let state = dbLoad();
-  if (!state) {
-    state = _defaultState();
-    dbSave(state);
-  }
-  return dbMergeImages(state);
-}
-
 function dbGet() {
-  const state = dbLoad() || _defaultState();
-  return dbMergeImages(state);
+  let shared = _parseLS(DB_KEY);
+  let personal = _parseLS(PERSONAL_KEY);
+
+  if (!shared && !personal) {
+    _saveShared(_defaultShared());
+    _savePersonal(_defaultPersonal());
+    return { ..._defaultShared(), ..._defaultPersonal() };
+  }
+
+  if (!shared) shared = _defaultShared();
+
+  if (!personal) {
+    // Migration: extract personal fields from old single-key format
+    personal = {
+      purchases: shared.purchases || [],
+      settings: shared.settings || _defaultPersonal().settings,
+    };
+    const cleanShared = { ...shared };
+    PERSONAL_FIELDS.forEach(k => delete cleanShared[k]);
+    _saveShared(cleanShared);
+    _savePersonal(personal);
+    shared = cleanShared;
+  }
+
+  return dbMergeImages({ ...shared, ...personal });
 }
 
 function dbUpdate(updater) {
   const state = dbGet();
   const next = updater(state);
-  dbSave(next);
+
+  const shared = {}, personal = {};
+  Object.keys(next).forEach(k => {
+    if (PERSONAL_FIELDS.includes(k)) personal[k] = next[k];
+    else shared[k] = next[k];
+  });
+
+  _saveShared(shared);
+  _savePersonal(personal);
   return next;
+}
+
+// dbInit for backward compat (called on app start)
+function dbInit() {
+  return dbGet();
 }
 
 // ── ID generator ──
@@ -181,31 +215,65 @@ function dbExportJSON() {
 }
 
 function dbExportForSync() {
-  const state = dbGet();
-  // Strip owned flag (personal) from each unpo card; keep service fields (img, note, etc.)
-  const unpoCards = (state.unpoCards || []).map(({ owned, ...rest }) => rest);
-  const safe = {
-    ...state,
-    purchases: undefined,   // personal data — not synced to GitHub
-    unpoCards,
-    settings: {
-      ...state.settings,
-      adminPw: undefined,
-      github: {
-        ...state.settings?.github,
-        token: undefined,
-      },
-    },
-  };
-  return JSON.stringify(safe, null, 2);
+  // Export shared data only — personal (purchases, settings) never included
+  let shared = _parseLS(DB_KEY) || {};
+
+  // Strip per-card owned flags from unpoCards before sync export
+  if (shared.unpoCards) {
+    shared = {
+      ...shared,
+      unpoCards: shared.unpoCards.map(uc => ({
+        ...uc,
+        sets: (uc.sets || []).map(set => ({
+          ...set,
+          cards: (set.cards || []).map(({ owned, ...card }) => card),
+        })),
+      })),
+    };
+  }
+
+  return JSON.stringify(shared, null, 2);
 }
 
 function dbImportJSON(json) {
   try {
-    const parsed = JSON.parse(json);
-    dbSave(parsed);
+    const data = JSON.parse(json);
+
+    // Build owned-flag map from existing shared unpoCards using composite key
+    const existingShared = _parseLS(DB_KEY) || {};
+    const ownedMap = {};
+    (existingShared.unpoCards || []).forEach(uc => {
+      (uc.sets || []).forEach((set, si) => {
+        (set.cards || []).forEach((card, ci) => {
+          if (card.owned) ownedMap[`${uc.storeId}__${uc.albumTypeId}__${si}__${ci}`] = true;
+        });
+      });
+    });
+
+    // Build new shared data; personal fields (purchases, settings) are NEVER overwritten
+    const shared = {};
+    Object.keys(data).forEach(k => {
+      if (!PERSONAL_FIELDS.includes(k)) shared[k] = data[k];
+    });
+
+    // Restore owned flags in incoming unpoCards
+    if (shared.unpoCards?.length) {
+      shared.unpoCards = shared.unpoCards.map(uc => ({
+        ...uc,
+        sets: (uc.sets || []).map((set, si) => ({
+          ...set,
+          cards: (set.cards || []).map((card, ci) => ({
+            ...card,
+            owned: ownedMap[`${uc.storeId}__${uc.albumTypeId}__${si}__${ci}`] || false,
+          })),
+        })),
+      }));
+    }
+
+    // Write to shared key only — PERSONAL_KEY is never touched
+    localStorage.setItem(DB_KEY, JSON.stringify(shared));
     return true;
-  } catch (e) {
+  } catch(e) {
     return false;
   }
 }
