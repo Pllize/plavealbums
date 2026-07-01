@@ -589,14 +589,37 @@ async function loadServiceData() {
     const localOwnedMap = Object.fromEntries((_local.unpoCards || []).map(c => [c.id, c.owned]));
     const savedAdminPw = _local.settings?.adminPw || '';
     const savedGithub = _local.settings?.github || {};
+
+    // Preserve locally-added entities not yet pushed to GitHub
+    const ghCatIds = new Set((data.categories || []).map(c => c.id));
+    const ghStoreIds = new Set((data.stores || []).map(s => s.id));
+    const ghAlbIds = new Set((data.albumTypes || []).map(a => a.id));
+    const ghDistIds = new Set((data.distributors || []).map(d => d.id));
+    const ghNoticeIds = new Set((data.notices || []).map(n => n.id));
+    const extraCats = (_local.categories || []).filter(c => !ghCatIds.has(c.id));
+    const extraStores = (_local.stores || []).filter(s => !ghStoreIds.has(s.id));
+    const extraAlbs = (_local.albumTypes || []).filter(a => !ghAlbIds.has(a.id));
+    const extraDists = (_local.distributors || []).filter(d => !ghDistIds.has(d.id));
+    const extraNotices = (_local.notices || []).filter(n => !ghNoticeIds.has(n.id));
+
     dbImportJSON(JSON.stringify(data));
     reloadDB();
-    // Merge: use service card structure/images, preserve local owned flags
+
+    // Restore locally-added items and merge unpo ownership
     const mergedUnpoCards = (DB.unpoCards || []).map(c => ({
       ...c,
       owned: localOwnedMap[c.id] ?? c.owned,
     }));
-    dbUpdate(s => ({ ...s, purchases: savedPurchases, unpoCards: mergedUnpoCards }));
+    dbUpdate(s => ({
+      ...s,
+      purchases: savedPurchases,
+      unpoCards: mergedUnpoCards,
+      categories: [...s.categories, ...extraCats],
+      stores: [...s.stores, ...extraStores],
+      albumTypes: [...s.albumTypes, ...extraAlbs],
+      distributors: [...s.distributors, ...extraDists],
+      notices: [...s.notices, ...extraNotices],
+    }));
     dbUpdateSettings({ adminPw: savedAdminPw, github: savedGithub });
     reloadDB(); buildCatBar(); buildFilters(); render();
   } catch(e) {}
@@ -1152,7 +1175,7 @@ function renderDash() {
               <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
                 <span class="fw-600">${store?.name || '?'}</span>
                 ${store?.isMusicStreamTeam ? '<span class="music-tag">🎵</span>' : ''}
-                ${store?.hanteoChart ? '<span style="font-size:10px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">한터</span>' : ''}
+                ${(store?.chodongIncluded || store?.hanteoChart || store?.billboardChart) ? '<span style="font-size:10px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">초동</span>' : ''}
                 ${stBadge(p.status || 'waiting')}
               </div>
               <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
@@ -1191,10 +1214,9 @@ function renderDash() {
             s.isMusicStreamTeam ? '<span class="music-tag" style="flex-shrink:0">🎵</span>' : '',
             s.videocall ? '<span style="font-size:12px;flex-shrink:0" title="영통">📞</span>' : '',
           ].filter(Boolean).join('');
-          const chartBadges = [
-            s.hanteoChart ? '<span style="font-size:11px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px;white-space:nowrap">한터</span>' : '',
-            s.billboardChart ? '<span style="font-size:11px;background:rgba(52,211,153,.12);color:var(--ok);padding:1px 5px;border-radius:3px;white-space:nowrap">빌보드</span>' : '',
-          ].filter(Boolean).join('');
+          const chartBadges = (s.chodongIncluded || s.hanteoChart || s.billboardChart)
+            ? '<span style="font-size:11px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px;white-space:nowrap">초동</span>'
+            : '';
           return `<div class="unpurchased-row" onclick="openStorePopup('${s.id}')">
             <div style="display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden">
               <span class="fw-600" style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</span>
@@ -1452,9 +1474,7 @@ function _renderDetailInfoTab(store, storeId, ovs, cur, albums, unpoKeys, myPurc
 
   const topBadges = [
     store.videocall ? '<span style="font-size:11px;color:var(--tx3);letter-spacing:.06em;font-weight:600">📞 영상통화 이벤트</span>' : '',
-    store.hanteoChart ? '<span style="font-size:11px;background:rgba(96,165,250,.15);color:var(--info);padding:2px 6px;border-radius:3px">한터</span>' : '',
-    store.billboardChart ? '<span style="font-size:11px;background:rgba(34,197,94,.15);color:var(--ok);padding:2px 6px;border-radius:3px">빌보드</span>' : '',
-    store.chartEtc ? `<span class="badge badge-gray">${store.chartEtc}</span>` : '',
+    (store.chodongIncluded || store.hanteoChart || store.billboardChart) ? '<span style="font-size:11px;background:rgba(96,165,250,.15);color:var(--info);padding:2px 6px;border-radius:3px">초동</span>' : '',
     store.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : '',
     store.offlineLuckyDraw ? '<span style="font-size:11px;background:rgba(192,132,252,.15);color:var(--pk);padding:2px 6px;border-radius:3px;font-weight:600">럭드</span>' : '',
   ].filter(Boolean).join('');
@@ -1516,6 +1536,7 @@ function _renderDetailInfoTab(store, storeId, ovs, cur, albums, unpoKeys, myPurc
     ${offlineHtml}
     <div class="section-divider">앨범 단가</div>
     ${priceRows || '<div class="text-muted text-sm">가격 정보 없음</div>'}
+    ${store.memo ? `<div class="section-divider">메모</div><div style="font-size:13px;color:var(--tx2);white-space:pre-wrap">${store.memo}</div>` : ''}
   `;
   document.getElementById('modal-detail-foot').innerHTML = `
     <button class="btn btn-ghost" onclick="closeModal('modal-detail')">닫기</button>
@@ -1910,7 +1931,7 @@ function renderPurchCard(p) {
     <div class="purch-card-header">
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
-          <div class="purch-store-name" style="min-width:0">${store?.name || '?'} ${store?.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : ''} ${store?.hanteoChart ? '<span style="font-size:10px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">한터</span>' : ''}</div>
+          <div class="purch-store-name" style="min-width:0">${store?.name || '?'} ${store?.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : ''} ${(store?.chodongIncluded || store?.hanteoChart || store?.billboardChart) ? '<span style="font-size:10px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">초동</span>' : ''}</div>
           <div class="flex gap-8" style="align-items:center;flex-shrink:0">
             <button class="btn btn-ghost btn-xs" onclick="viewPurchDetail('${p.id}')">상세</button>
             <button class="btn btn-ghost btn-xs" onclick="editPurch('${p.id}')">편집</button>
@@ -2717,7 +2738,7 @@ function renderStoreCard(s, isCheapest = false) {
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
         ${s.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : ''}
         ${s.videocall ? '<span class="badge badge-pk" style="font-size:10px">📞 영통</span>' : ''}
-        ${s.hanteoChart ? '<span style="font-size:10px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">한터</span>' : ''}
+        ${(s.chodongIncluded || s.hanteoChart || s.billboardChart) ? '<span style="font-size:10px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">초동</span>' : ''}
         ${s.offlineLuckyDraw ? '<span style="font-size:11px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 5px;border-radius:3px;font-weight:600;flex-shrink:0">럭드</span>' : ''}
       </div>
     </div>
