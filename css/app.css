@@ -76,7 +76,7 @@ button { cursor: pointer; font-family: inherit; }
 }
 .main-content {
   margin-left: var(--nav-w);
-  padding: 20px 32px 28px;
+  padding: 16px 28px 24px;
   min-height: 100vh;
   overflow-y: auto;
 }
@@ -138,7 +138,7 @@ button { cursor: pointer; font-family: inherit; }
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   gap: 12px;
 }
 .page-title { font-size: var(--fs-lg); font-weight: 700; }
@@ -616,16 +616,17 @@ code { font: 12px 'Menlo','Monaco',monospace; background: var(--sur2); padding: 
 /* ── Unpurchased row ── */
 .unpurchased-row {
   display: grid;
-  grid-template-columns: 1fr auto auto auto 80px;
+  grid-template-columns: 1fr auto auto 72px 28px;
   align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
+  gap: 6px;
+  padding: 7px 8px;
   background: var(--sur2);
   border-radius: var(--r-sm);
   cursor: pointer;
   transition: background .15s;
 }
 .unpurchased-row:hover { background: var(--sur3); }
+.unpurchased-row.watched { border-left: 3px solid var(--pk); padding-left: 5px; }
 
 /* ── Store pick card (purchase modal) ── */
 .store-pick-list { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
@@ -662,6 +663,7 @@ code { font: 12px 'Menlo','Monaco',monospace; background: var(--sur2); padding: 
   .unpo-grid { grid-template-columns: repeat(4, 1fr); }
   .unpo-grid.six { grid-template-columns: repeat(4, 1fr); }
   .settings-btn { display: flex; }
+  .fab { bottom: 68px; right: 16px; }
 }
 
 /* ── Section tabs ── */
@@ -1063,7 +1065,7 @@ code { font: 12px 'Menlo','Monaco',monospace; background: var(--sur2); padding: 
 /* ── Site footer ── */
 .site-footer {
   display: flex; flex-direction: column; align-items: flex-start;
-  gap: 8px; padding: 20px 0 40px;
+  gap: 8px; padding: 16px 0 12px;
   border-top: 1px solid var(--bd); margin-top: 24px;
 }
 .site-footer-credit {
@@ -1073,6 +1075,3 @@ code { font: 12px 'Menlo','Monaco',monospace; background: var(--sur2); padding: 
   font-size: var(--fs-xs); color: var(--tx3); line-height: 1.7;
 }
 .site-footer-copyright p { margin: 0; }
-@media (max-width: 767px) {
-  .site-footer { margin-bottom: 72px; }
-}

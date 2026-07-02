@@ -999,6 +999,16 @@ function buildFilters() {
 // ═══════════════════════════════════════════
 // DASHBOARD
 // ═══════════════════════════════════════════
+function toggleStoreWatch(storeId) {
+  DB = dbUpdate(s => {
+    const w = [...(s.watchedStores || [])];
+    const i = w.indexOf(storeId);
+    if (i >= 0) w.splice(i, 1); else w.push(storeId);
+    return { ...s, watchedStores: w };
+  });
+  renderDash();
+}
+
 function renderDash() {
   const cat = getCat();
   if (!cat) {
@@ -1183,11 +1193,17 @@ function renderDash() {
       : '<div class="empty" style="padding:20px">구매 기록 없음</div>';
   }
 
-  // Unpurchased — list with 영통/음총/한터/deadline
+  // Unpurchased — list with 영통/음총/초동/deadline + watch toggle
   const purchasedStoreIds = new Set(purches.map(p => p.storeId));
-  const unpurchased = stores
+  const watched = DB.watchedStores || [];
+  const unpurchasedAll = stores
     .filter(s => !purchasedStoreIds.has(s.id))
     .filter(s => !S.hideExpired || !isExpired(s));
+  // Watched stores first
+  const unpurchased = [
+    ...unpurchasedAll.filter(s => watched.includes(s.id)),
+    ...unpurchasedAll.filter(s => !watched.includes(s.id)),
+  ];
   document.getElementById('hide-exp-txt').textContent = S.hideExpired ? '마감 포함' : '마감 숨김';
 
   document.getElementById('dash-unpurchased').innerHTML = unpurchased.length
@@ -1196,24 +1212,26 @@ function renderDash() {
           const deadline = fDeadline(s);
           const expired = isExpired(s);
           const unpoKeys = getStoreUnpoKeys(s);
+          const country = COUNTRIES[s.country];
+          const flag = country?.flag || '';
           const roundBadge = s.round ? `<span style="font-size:var(--fs-xs);background:var(--sur3);border-radius:3px;padding:1px 5px;color:var(--tx2)">${s.round}차</span>` : '';
           const unpoBadges = unpoKeys.map(k=>{const alb=(DB.albumTypes||[]).find(a=>a.key===k);return `<span class="badge badge-pk" style="font-size:var(--fs-xs);flex-shrink:0">${alb?.shortName||alb?.name||k}</span>`;}).join('');
           const featureBadges = [
-            s.isMusicStreamTeam ? '<span class="music-tag" style="flex-shrink:0">🎵</span>' : '',
+            (s.chodongIncluded || s.hanteoChart || s.billboardChart) ? '<span style="font-size:var(--fs-xs);background:rgba(96,165,250,.15);color:var(--info);padding:1px 4px;border-radius:3px;white-space:nowrap">초동</span>' : '',
             s.videocall ? '<span style="font-size:var(--fs-sm);flex-shrink:0" title="영통">📞</span>' : '',
+            s.isMusicStreamTeam ? '<span class="music-tag" style="flex-shrink:0">🎵</span>' : '',
           ].filter(Boolean).join('');
-          const chartBadges = (s.chodongIncluded || s.hanteoChart || s.billboardChart)
-            ? '<span style="font-size:var(--fs-xs);background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px;white-space:nowrap">초동</span>'
-            : '';
-          return `<div class="unpurchased-row" onclick="openStorePopup('${s.id}')">
+          const isWatched = watched.includes(s.id);
+          return `<div class="unpurchased-row${isWatched ? ' watched' : ''}" onclick="openStorePopup('${s.id}')">
             <div style="display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden">
+              ${flag ? `<span style="flex-shrink:0">${flag}</span>` : ''}
               <span class="fw-600" style="font-size:var(--fs-sm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</span>
               ${roundBadge}
             </div>
             <div style="display:flex;align-items:center;gap:3px;flex-wrap:wrap">${unpoBadges}</div>
             <div style="display:flex;align-items:center;gap:3px">${featureBadges}</div>
-            <div style="display:flex;align-items:center;gap:3px">${chartBadges}</div>
             <div class="text-sm fw-600" style="color:${expired ? 'var(--err)' : 'var(--tx2)'};text-align:right;white-space:nowrap">${deadline}</div>
+            <button onclick="event.stopPropagation();toggleStoreWatch('${s.id}')" title="${isWatched ? '즐겨찾기 해제' : '즐겨찾기 추가'}" style="background:none;border:none;cursor:pointer;font-size:14px;padding:2px;line-height:1;color:${isWatched ? 'var(--pk)' : 'var(--tx3)'}">${isWatched ? '★' : '☆'}</button>
           </div>`;
         }).join('')}
       </div>`
@@ -1363,8 +1381,9 @@ function showAlbumDetail(albKey) {
 // STORE DETAIL (unified tabbed modal)
 // ═══════════════════════════════════════════
 function openStorePopup(storeId, tab, unpoAlbKey) {
-  S.detailStoreId = storeId;
   if (tab) S.detailTab = tab;
+  else if (S.detailStoreId !== storeId) S.detailTab = 'info';
+  S.detailStoreId = storeId;
   if (unpoAlbKey) S.detailUnpoAlbKey = unpoAlbKey;
   _renderStoreDetailModal();
 }
@@ -1429,6 +1448,9 @@ function _renderStoreDetailModal() {
     _renderDetailPurchTab(store, storeId, myPurch);
   } else if (S.detailTab === 'unpo' && hasUnpo) {
     _renderDetailUnpoTab(store, storeId, ovs, cur, albums, unpoKeys);
+  } else {
+    S.detailTab = 'info';
+    _renderDetailInfoTab(store, storeId, ovs, cur, albums, unpoKeys, myPurch, country);
   }
 
   openModal('modal-detail');
@@ -1518,6 +1540,27 @@ function _renderDetailInfoTab(store, storeId, ovs, cur, albums, unpoKeys, myPurc
     </div>`;
   }).filter(Boolean).join('');
 
+  let purchSummaryHtml = '';
+  if (myPurch) {
+    const total = calcPurchTotal(myPurch);
+    const itemsSummary = (myPurch.items || []).filter(it => it.qty > 0).map(it => {
+      const alb = DB.albumTypes?.find(a => a.key === it.albKey);
+      return `${alb?.shortName || alb?.name || it.albKey} ×${it.qty}`;
+    }).join(' · ');
+    purchSummaryHtml = `
+      <div class="section-divider" style="display:flex;align-items:center;justify-content:space-between">
+        <span>내 구매 기록</span>
+        <button class="btn btn-ghost btn-xs" onclick="S.detailTab='purchase';_renderStoreDetailModal()">자세히 →</button>
+      </div>
+      <div style="background:var(--sur2);border-radius:var(--r-sm);padding:9px 10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          ${stBadge(myPurch.status || 'waiting')}
+          <span class="fw-600 text-sm">${fKRW(total)}</span>
+        </div>
+        ${itemsSummary ? `<div style="font-size:var(--fs-xs);color:var(--tx2)">${itemsSummary}</div>` : ''}
+      </div>`;
+  }
+
   document.getElementById('modal-detail-body').innerHTML = `
     ${topBadges ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${topBadges}</div>` : ''}
     ${periodHtml}
@@ -1525,12 +1568,15 @@ function _renderDetailInfoTab(store, storeId, ovs, cur, albums, unpoKeys, myPurc
     <div class="section-divider">앨범 단가</div>
     ${priceRows || '<div class="text-muted text-sm">가격 정보 없음</div>'}
     ${store.memo ? `<div class="section-divider">메모</div><div style="font-size:var(--fs-sm);color:var(--tx2);white-space:pre-wrap">${store.memo}</div>` : ''}
+    ${purchSummaryHtml}
   `;
   document.getElementById('modal-detail-foot').innerHTML = `
     <button class="btn btn-ghost" onclick="closeModal('modal-detail')">닫기</button>
     <button class="btn btn-ghost" onclick="shareStore('${storeId}')">🔗 공유</button>
     ${store.url ? `<a href="${store.url}" target="_blank" class="btn btn-ghost">구매 링크 ↗</a>` : ''}
-    <button class="btn btn-p" onclick="closeModal('modal-detail');addPurchModal('${storeId}')">+ 구매 추가</button>
+    ${myPurch
+      ? `<button class="btn btn-p" onclick="editPurch('${myPurch.id}')">구매 수정</button>`
+      : `<button class="btn btn-p" onclick="closeModal('modal-detail');addPurchModal('${storeId}')">+ 구매 추가</button>`}
   `;
 }
 
@@ -2108,7 +2154,23 @@ function buildPurchModal(p) {
     const cs = p?.status || 'unpurchased';
     const curStatus = ['planned','unpurchased'].includes(cs) ? 'unpurchased' : cs === 'waiting' ? 'waiting' : ['preparing','shipped'].includes(cs) ? 'shipped' : cs;
 
+    // Watched stores quick-select (unpurchased only)
+    const purchasedIds = new Set((DB.purchases || []).map(pr => pr.storeId));
+    const watchedNow = DB.watchedStores || [];
+    const watchedStoresInCat = stores.filter(s => watchedNow.includes(s.id) && !purchasedIds.has(s.id));
+    const watchedQuickHtml = watchedStoresInCat.length && !p ? `
+      <div style="margin-bottom:10px">
+        <label style="font-size:var(--fs-xs);color:var(--tx3);font-weight:600;margin-bottom:4px;display:block">⭐ 즐겨찾기 판매처</label>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">
+          ${watchedStoresInCat.map(s => {
+            const flag = COUNTRIES[s.country]?.flag || '';
+            return `<button type="button" class="btn btn-ghost btn-xs" onclick="quickSelectWatched('${s.id}')" style="font-size:var(--fs-xs)">${flag} ${s.name}${s.round ? ' '+s.round+'차' : ''}</button>`;
+          }).join('')}
+        </div>
+      </div>` : '';
+
     return `
+    ${watchedQuickHtml}
     <div class="form-row cols-2">
       <div>
         <label>판매처 *</label>
@@ -2395,6 +2457,15 @@ function toggleProxyDelivered(purchId, albKey, entryIdx) {
 
 function getPurchStoreId() {
   return document.getElementById('mp-store-auto')?.value || '';
+}
+
+function quickSelectWatched(storeId) {
+  const s = DB.stores?.find(st => st.id === storeId);
+  if (!s) return;
+  const platKey = s.distId ? 'd:' + s.distId : 'n:' + s.name;
+  const platSelect = document.getElementById('mp-platform');
+  if (platSelect) { platSelect.value = platKey; updatePurchPlatform(); }
+  setTimeout(() => selectPurchStore(storeId), 30);
 }
 
 function selectPurchStore(storeId) {
