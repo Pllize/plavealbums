@@ -8,19 +8,19 @@
 <link rel="stylesheet" href="css/app.css">
 <style>
 /* ── inline overrides ── */
-.purch-items-table td { padding: 5px 8px; font-size: 12px; }
-.purch-items-table th { padding: 5px 8px; font-size: 11px; }
-.store-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; }
+.purch-items-table td { padding: 5px 8px; font-size:var(--fs-sm); }
+.purch-items-table th { padding: 5px 8px; font-size:var(--fs-xs); }
+.store-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size:var(--fs-sm); }
 .store-detail-row { display: flex; flex-direction: column; gap: 2px; }
-.store-detail-label { font-size: 11px; color: var(--tx3); }
+.store-detail-label { font-size:var(--fs-xs); color: var(--tx3); }
 .store-detail-val { color: var(--tx); }
 .cal-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-.cal-nav-title { font-size: 16px; font-weight: 700; flex: 1; text-align: center; }
+.cal-nav-title { font-size:var(--fs-base); font-weight: 700; flex: 1; text-align: center; }
 .cal-day-panel { background: var(--sur2); border-radius: var(--r); padding: 14px; margin-top: 12px; }
 .price-row { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--bd); }
 .price-row:last-child { border: none; }
-.total-price-row { font-weight: 700; font-size: 15px; padding-top: 8px; }
-.section-divider { font-size: 11px; color: var(--tx3); letter-spacing: .06em; text-transform: uppercase; padding: 12px 0 6px; font-weight: 600; }
+.total-price-row { font-weight: 700; font-size:var(--fs-base); padding-top: 8px; }
+.section-divider { font-size:var(--fs-xs); color: var(--tx3); letter-spacing: .06em; text-transform: uppercase; padding: 12px 0 6px; font-weight: 600; }
 .proxy-entry-row { display:grid;grid-template-columns:1fr 1.5fr 2fr 52px;gap:4px;align-items:center;padding:5px 0 8px;border-bottom:1px solid var(--bd); }
 .proxy-entry-row .pn-paid-btn { grid-row:2; grid-column:1; }
 .proxy-entry-row .pn-deliv-btn { grid-row:2; grid-column:2; }
@@ -33,7 +33,7 @@
   .proxy-entry-row .pn-deliv-btn { grid-row:2; grid-column:2; }
   .proxy-entry-row .pn-del-btn { grid-row:2; grid-column:3; }
 }
-.proxy-entry-header { display:grid;grid-template-columns:1fr 1.5fr 2fr 52px;gap:4px;font-size:10px;color:var(--tx3);padding-bottom:4px;border-bottom:1px solid var(--bd);margin-bottom:2px; }
+.proxy-entry-header { display:grid;grid-template-columns:1fr 1.5fr 2fr 52px;gap:4px;font-size:var(--fs-xs);color:var(--tx3);padding-bottom:4px;border-bottom:1px solid var(--bd);margin-bottom:2px; }
 @media (max-width: 480px) {
   .proxy-entry-header { grid-template-columns:1fr 1.5fr 52px; }
 }
@@ -45,6 +45,19 @@
 <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
+
+<!-- Mobile-only top header -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo-link">
+      <span class="logo-main">PLAVE</span>
+      <span class="logo-sub">ALBUMS</span>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <button class="icon-btn" onclick="openSettings()" title="설정"><i class="ph ph-gear"></i></button>
+    </div>
+  </div>
+</header>
 
 <!-- Toast -->
 <div id="toast"></div>
@@ -58,8 +71,8 @@
 <!-- Settings panel -->
 <div id="settings-panel" class="settings-panel">
   <div class="settings-panel-head">
-    <span style="font-weight:600;font-size:15px">설정</span>
-    <button onclick="closeSettings()" style="background:none;border:none;color:var(--tx2);font-size:18px;line-height:1;cursor:pointer">✕</button>
+    <span style="font-weight:600;font-size:var(--fs-base)">설정</span>
+    <button onclick="closeSettings()" style="background:none;border:none;color:var(--tx2);font-size:var(--fs-lg);line-height:1;cursor:pointer">✕</button>
   </div>
   <div class="settings-panel-body">
     <div class="section-divider">테마</div>
@@ -69,7 +82,7 @@
     </div>
     <div class="section-divider" style="display:flex;align-items:center;justify-content:space-between">
       <span>환율</span>
-      <span id="rate-updated-label" style="font-size:10px;color:var(--tx3)"></span>
+      <span id="rate-updated-label" style="font-size:var(--fs-xs);color:var(--tx3)"></span>
     </div>
     <div id="settings-rates" style="margin-bottom:8px"></div>
     <button class="btn btn-ghost btn-sm" onclick="fetchRatesIndex()" style="margin-bottom:4px">🔄 환율 자동 갱신</button>
@@ -102,7 +115,10 @@
 <div class="app-layout">
 <!-- ── Sidebar ── -->
 <nav class="sidebar" id="sidebar">
-  <div class="logo">🎵 PLAVE 앨범 구매 관리<span id="cat-label"></span></div>
+  <div class="logo">
+    <span class="logo-main">PLAVE</span>
+    <span class="logo-sub">ALBUMS<span id="cat-label"></span></span>
+  </div>
 
   <div class="nav-section">메뉴</div>
   <button class="nav-item active" onclick="nav('dash')" data-tab="dash">
@@ -310,10 +326,10 @@
       <div class="page-sub">발매일 기준 일정 정리</div>
     </div>
     <div class="flex gap-8" id="cal-header-checks">
-      <label class="form-check"><input type="checkbox" id="cal-show-pur" checked onchange="render()"><span style="font-size:12px">구매기간</span></label>
-      <label class="form-check"><input type="checkbox" id="cal-show-off" checked onchange="render()"><span style="font-size:12px">오프라인</span></label>
-      <label class="form-check"><input type="checkbox" id="cal-show-del" checked onchange="render()"><span style="font-size:12px">배송예정</span></label>
-      <label class="form-check"><input type="checkbox" id="cal-show-vc" checked onchange="render()"><span style="font-size:12px">영통</span></label>
+      <label class="form-check"><input type="checkbox" id="cal-show-pur" checked onchange="render()"><span style="font-size:var(--fs-sm)">구매기간</span></label>
+      <label class="form-check"><input type="checkbox" id="cal-show-off" checked onchange="render()"><span style="font-size:var(--fs-sm)">오프라인</span></label>
+      <label class="form-check"><input type="checkbox" id="cal-show-del" checked onchange="render()"><span style="font-size:var(--fs-sm)">배송예정</span></label>
+      <label class="form-check"><input type="checkbox" id="cal-show-vc" checked onchange="render()"><span style="font-size:var(--fs-sm)">영통</span></label>
     </div>
   </div>
 
@@ -354,6 +370,14 @@
   </div>
   <div id="notices-list"></div>
 </div>
+
+<footer class="site-footer">
+  <div class="site-footer-credit">Made with Love for PLAVE &amp; PLLIs 💙💜💗❤️🖤 &nbsp;|&nbsp; @plli_ze</div>
+  <div class="site-footer-copyright">
+    <p>© 2026 plavealbums.pllilog.com(@plli_ze). 본 사이트의 UI 디자인·구성 및 코드는 저작권법의 보호를 받습니다.</p>
+    <p>앨범 이미지 및 관련 정보의 저작권은 VLAST Co., Ltd. 및 각 권리 소유자에게 있습니다. PLLI가 제작한 비공식 개인 트래커입니다.</p>
+  </div>
+</footer>
 
 </main>
 </div>
@@ -412,7 +436,7 @@
     <div class="modal-head">
       <div>
         <h3 id="modal-detail-title" style="margin:0">상세</h3>
-        <div id="modal-detail-subtitle" style="font-size:12px;color:var(--tx3);margin-top:2px;display:none"></div>
+        <div id="modal-detail-subtitle" style="font-size:var(--fs-sm);color:var(--tx3);margin-top:2px;display:none"></div>
       </div>
       <button class="modal-close" onclick="closeModal('modal-detail')">✕</button>
     </div>
@@ -583,44 +607,8 @@ async function loadServiceData() {
     if (!r.ok) return;
     const data = await r.json();
     if (!data.categories?.length && !data.stores?.length && !data.albumTypes?.length) return;
-    // Read local state AFTER fetch completes to avoid race condition with concurrent saves
-    const _local = dbGet();
-    const savedPurchases = JSON.parse(JSON.stringify(_local.purchases || []));
-    const localOwnedMap = Object.fromEntries((_local.unpoCards || []).map(c => [c.id, c.owned]));
-    const savedAdminPw = _local.settings?.adminPw || '';
-    const savedGithub = _local.settings?.github || {};
-
-    // Preserve locally-added entities not yet pushed to GitHub
-    const ghCatIds = new Set((data.categories || []).map(c => c.id));
-    const ghStoreIds = new Set((data.stores || []).map(s => s.id));
-    const ghAlbIds = new Set((data.albumTypes || []).map(a => a.id));
-    const ghDistIds = new Set((data.distributors || []).map(d => d.id));
-    const ghNoticeIds = new Set((data.notices || []).map(n => n.id));
-    const extraCats = (_local.categories || []).filter(c => !ghCatIds.has(c.id));
-    const extraStores = (_local.stores || []).filter(s => !ghStoreIds.has(s.id));
-    const extraAlbs = (_local.albumTypes || []).filter(a => !ghAlbIds.has(a.id));
-    const extraDists = (_local.distributors || []).filter(d => !ghDistIds.has(d.id));
-    const extraNotices = (_local.notices || []).filter(n => !ghNoticeIds.has(n.id));
-
+    // dbImportJSON writes to shared key only — purchases/settings in personal key are never touched
     dbImportJSON(JSON.stringify(data));
-    reloadDB();
-
-    // Restore locally-added items and merge unpo ownership
-    const mergedUnpoCards = (DB.unpoCards || []).map(c => ({
-      ...c,
-      owned: localOwnedMap[c.id] ?? c.owned,
-    }));
-    dbUpdate(s => ({
-      ...s,
-      purchases: savedPurchases,
-      unpoCards: mergedUnpoCards,
-      categories: [...s.categories, ...extraCats],
-      stores: [...s.stores, ...extraStores],
-      albumTypes: [...s.albumTypes, ...extraAlbs],
-      distributors: [...s.distributors, ...extraDists],
-      notices: [...s.notices, ...extraNotices],
-    }));
-    dbUpdateSettings({ adminPw: savedAdminPw, github: savedGithub });
     reloadDB(); buildCatBar(); buildFilters(); render();
   } catch(e) {}
 }
@@ -691,8 +679,8 @@ function renderSettingsRates() {
     const r = rates[k];
     if (!r) return '';
     return `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-      <span style="font-size:12px;color:var(--tx2);min-width:100px">${RATE_LABELS[k]||k}</span>
-      <input type="number" step="0.01" value="${r.rate}" style="width:110px;font-size:12px"
+      <span style="font-size:var(--fs-sm);color:var(--tx2);min-width:100px">${RATE_LABELS[k]||k}</span>
+      <input type="number" step="0.01" value="${r.rate}" style="width:110px;font-size:var(--fs-sm)"
         onchange="saveRateFromSettings('${k}',this.value)">
     </div>`;
   }).join('');
@@ -944,7 +932,7 @@ function buildCatBar() {
   const el = document.getElementById('cat-bar');
   el.innerHTML = (DB.categories || []).filter(c => !c.hidden).map(c =>
     `<button class="cat-chip${c.id === S.catId ? ' active' : ''}" onclick="selectCat('${c.id}')">
-      ${c.name} <span style="font-size:11px;opacity:.6">${c.artist}</span>
+      ${c.name} <span style="font-size:var(--fs-xs);opacity:.6">${c.artist}</span>
     </button>`
   ).join('');
 
@@ -1103,9 +1091,9 @@ function renderDash() {
       <div style="background:var(--sur2);border-radius:var(--r);padding:10px 14px;margin-bottom:6px;${NOTICE_STYLE[n.type] || ''}">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:${n.body ? 4 : 0}px">
           ${n.pinned ? '<span>📌</span>' : ''}
-          <span class="fw-600" style="font-size:14px">${n.title}</span>
+          <span class="fw-600" style="font-size:var(--fs-base)">${n.title}</span>
         </div>
-        ${n.body ? `<div style="font-size:13px;color:var(--tx2);white-space:pre-wrap">${n.body}</div>` : ''}
+        ${n.body ? `<div style="font-size:var(--fs-sm);color:var(--tx2);white-space:pre-wrap">${n.body}</div>` : ''}
       </div>
     `).join('');
   }
@@ -1134,7 +1122,7 @@ function renderDash() {
     stripEl.innerHTML = filterDefs.map(f => {
       const isActive = activeFilter === f.k;
       return `<span class="badge ${f.cls}"
-        style="cursor:pointer;padding:5px 12px;font-size:12px;${isActive ? 'box-shadow:0 0 0 2px var(--pk2)' : f.cnt === 0 ? 'opacity:.4' : ''}"
+        style="cursor:pointer;padding:5px 12px;font-size:var(--fs-sm);${isActive ? 'box-shadow:0 0 0 2px var(--pk2)' : f.cnt === 0 ? 'opacity:.4' : ''}"
         onclick="S.dashStatusFilter=${f.k === null ? 'null' : `'${f.k}'`};render()"
         >${f.lb} <b>${f.cnt}</b></span>`;
     }).join('');
@@ -1168,14 +1156,14 @@ function renderDash() {
           const items = (p.items || []).filter(it => it.qty > 0);
           const albCounts = items.map(it => {
             const alb = DB.albumTypes?.find(a => a.key === it.albKey);
-            return `<span>${alb?.name || it.albKey} <b>${it.qty}</b>장${it.proxyQty > 0 && S.showProxy ? `<span style="color:var(--warn);font-size:10px"> (대리${it.proxyQty})</span>` : ''}</span>`;
+            return `<span>${alb?.name || it.albKey} <b>${it.qty}</b>장${it.proxyQty > 0 && S.showProxy ? `<span style="color:var(--warn);font-size:var(--fs-xs)"> (대리${it.proxyQty})</span>` : ''}</span>`;
           }).join('');
           return `<div class="dash-purch-item">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
               <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
                 <span class="fw-600">${store?.name || '?'}</span>
                 ${store?.isMusicStreamTeam ? '<span class="music-tag">🎵</span>' : ''}
-                ${(store?.chodongIncluded || store?.hanteoChart || store?.billboardChart) ? '<span style="font-size:10px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">초동</span>' : ''}
+                ${(store?.chodongIncluded || store?.hanteoChart || store?.billboardChart) ? '<span style="font-size:var(--fs-xs);background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">초동</span>' : ''}
                 ${stBadge(p.status || 'waiting')}
               </div>
               <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
@@ -1184,12 +1172,12 @@ function renderDash() {
                 <button class="btn btn-ghost btn-xs" onclick="editPurch('${p.id}')">편집</button>
               </div>
             </div>
-            <div style="font-size:12px;color:var(--tx2);margin-top:5px;display:flex;gap:8px;flex-wrap:wrap">
+            <div style="font-size:var(--fs-sm);color:var(--tx2);margin-top:5px;display:flex;gap:8px;flex-wrap:wrap">
               ${albCounts}
               ${p.orderDate ? `<span style="color:var(--tx3)">주문: ${fDate(p.orderDate)}</span>` : ''}
               ${proxy > 0 && S.showProxy ? `<span style="color:var(--warn)">대리 ${fKRW(proxy)}</span>` : ''}
             </div>
-            ${p.trackingNumber ? `<div style="font-size:11px;color:var(--tx3);margin-top:3px">📦 ${p.carrier || ''} ${p.trackingNumber}</div>` : ''}
+            ${p.trackingNumber ? `<div style="font-size:var(--fs-xs);color:var(--tx3);margin-top:3px">📦 ${p.carrier || ''} ${p.trackingNumber}</div>` : ''}
           </div>`;
         }).join('')
       : '<div class="empty" style="padding:20px">구매 기록 없음</div>';
@@ -1208,18 +1196,18 @@ function renderDash() {
           const deadline = fDeadline(s);
           const expired = isExpired(s);
           const unpoKeys = getStoreUnpoKeys(s);
-          const roundBadge = s.round ? `<span style="font-size:10px;background:var(--sur3);border-radius:3px;padding:1px 5px;color:var(--tx2)">${s.round}차</span>` : '';
-          const unpoBadges = unpoKeys.map(k=>{const alb=(DB.albumTypes||[]).find(a=>a.key===k);return `<span class="badge badge-pk" style="font-size:10px;flex-shrink:0">${alb?.shortName||alb?.name||k}</span>`;}).join('');
+          const roundBadge = s.round ? `<span style="font-size:var(--fs-xs);background:var(--sur3);border-radius:3px;padding:1px 5px;color:var(--tx2)">${s.round}차</span>` : '';
+          const unpoBadges = unpoKeys.map(k=>{const alb=(DB.albumTypes||[]).find(a=>a.key===k);return `<span class="badge badge-pk" style="font-size:var(--fs-xs);flex-shrink:0">${alb?.shortName||alb?.name||k}</span>`;}).join('');
           const featureBadges = [
             s.isMusicStreamTeam ? '<span class="music-tag" style="flex-shrink:0">🎵</span>' : '',
-            s.videocall ? '<span style="font-size:12px;flex-shrink:0" title="영통">📞</span>' : '',
+            s.videocall ? '<span style="font-size:var(--fs-sm);flex-shrink:0" title="영통">📞</span>' : '',
           ].filter(Boolean).join('');
           const chartBadges = (s.chodongIncluded || s.hanteoChart || s.billboardChart)
-            ? '<span style="font-size:11px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px;white-space:nowrap">초동</span>'
+            ? '<span style="font-size:var(--fs-xs);background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px;white-space:nowrap">초동</span>'
             : '';
           return `<div class="unpurchased-row" onclick="openStorePopup('${s.id}')">
             <div style="display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden">
-              <span class="fw-600" style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</span>
+              <span class="fw-600" style="font-size:var(--fs-sm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</span>
               ${roundBadge}
             </div>
             <div style="display:flex;align-items:center;gap:3px;flex-wrap:wrap">${unpoBadges}</div>
@@ -1258,14 +1246,14 @@ function buildSpendDetail(sid, purches) {
           <button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();editPurch('${p.id}')">편집</button>
         </div>
       </div>
-      <div style="font-size:12px;color:var(--tx2);display:flex;gap:8px;flex-wrap:wrap">
+      <div style="font-size:var(--fs-sm);color:var(--tx2);display:flex;gap:8px;flex-wrap:wrap">
         ${items.map(it => {
           const alb = DB.albumTypes?.find(a => a.key === it.albKey);
           return `<span>${alb?.name || it.albKey} ${it.qty}장</span>`;
         }).join('')}
       </div>
-      ${extras.length ? `<div style="font-size:11px;color:var(--tx3);margin-top:3px">${extras.join(' · ')}</div>` : ''}
-      ${p.trackingNumber ? `<div style="font-size:11px;color:var(--tx3);margin-top:3px">📦 ${p.carrier || ''} ${p.trackingNumber}</div>` : ''}
+      ${extras.length ? `<div style="font-size:var(--fs-xs);color:var(--tx3);margin-top:3px">${extras.join(' · ')}</div>` : ''}
+      ${p.trackingNumber ? `<div style="font-size:var(--fs-xs);color:var(--tx3);margin-top:3px">📦 ${p.carrier || ''} ${p.trackingNumber}</div>` : ''}
     </div>`;
   }).join('');
 }
@@ -1294,7 +1282,7 @@ function showStatusDetail(key) {
     const purchasedIds = new Set(purches.map(p => p.storeId));
     const unpurchased = stores.filter(s => !purchasedIds.has(s.id));
     html = unpurchased.length
-      ? `<div style="margin-bottom:10px;font-size:13px;color:var(--tx2)">총 ${unpurchased.length}개 판매처 미구매</div>` +
+      ? `<div style="margin-bottom:10px;font-size:var(--fs-sm);color:var(--tx2)">총 ${unpurchased.length}개 판매처 미구매</div>` +
         unpurchased.map(s => `
           <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd)">
             <div>
@@ -1422,7 +1410,7 @@ function _renderStoreDetailModal() {
   if (tabs.length > 1) {
     tabsEl.style.display = '';
     tabsEl.innerHTML = tabs.map(t => `<button
-      style="padding:10px 16px;font-size:13px;border:none;background:none;cursor:pointer;border-bottom:2px solid ${S.detailTab===t.id?'var(--pk)':'transparent'};color:${S.detailTab===t.id?'var(--pk)':'var(--tx2)'};font-weight:${S.detailTab===t.id?'700':'400'}"
+      style="padding:10px 16px;font-size:var(--fs-sm);border:none;background:none;cursor:pointer;border-bottom:2px solid ${S.detailTab===t.id?'var(--pk)':'transparent'};color:${S.detailTab===t.id?'var(--pk)':'var(--tx2)'};font-weight:${S.detailTab===t.id?'700':'400'}"
       onclick="S.detailTab='${t.id}';_renderStoreDetailModal()">${t.label}</button>`).join('');
   } else {
     tabsEl.style.display = 'none';
@@ -1430,7 +1418,7 @@ function _renderStoreDetailModal() {
   }
 
   const _titleEl = document.getElementById('modal-detail-title');
-  _titleEl.innerHTML = `${store.name}${store.round ? ` <span style="font-size:12px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px;font-weight:600;vertical-align:middle">${store.round}차</span>` : ''}${myPurch ? ' <span style="color:var(--ok);font-size:14px">✓</span>' : ''}`;
+  _titleEl.innerHTML = `${store.name}${store.round ? ` <span style="font-size:var(--fs-sm);background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px;font-weight:600;vertical-align:middle">${store.round}차</span>` : ''}${myPurch ? ' <span style="color:var(--ok);font-size:var(--fs-base)">✓</span>' : ''}`;
   const _subtitleParts = [country ? `${country.flag} ${country.lb}` : '', distName(store.distId)].filter(Boolean);
   const _subtitleEl = document.getElementById('modal-detail-subtitle');
   if (_subtitleEl) { const t = _subtitleParts.join(' · '); _subtitleEl.textContent = t; _subtitleEl.style.display = t ? '' : 'none'; }
@@ -1473,10 +1461,10 @@ function _renderDetailInfoTab(store, storeId, ovs, cur, albums, unpoKeys, myPurc
   const DAYS_KR = ['월','화','수','목','금','토','일'];
 
   const topBadges = [
-    store.videocall ? '<span style="font-size:11px;color:var(--tx3);letter-spacing:.06em;font-weight:600">영상통화 이벤트</span>' : '',
-    (store.chodongIncluded || store.hanteoChart || store.billboardChart) ? '<span style="font-size:11px;background:rgba(96,165,250,.15);color:var(--info);padding:2px 6px;border-radius:3px">초동</span>' : '',
+    store.videocall ? '<span style="font-size:var(--fs-xs);color:var(--tx3);letter-spacing:.06em;font-weight:600">영상통화 이벤트</span>' : '',
+    (store.chodongIncluded || store.hanteoChart || store.billboardChart) ? '<span style="font-size:var(--fs-xs);background:rgba(96,165,250,.15);color:var(--info);padding:2px 6px;border-radius:3px">초동</span>' : '',
     store.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : '',
-    store.offlineLuckyDraw ? '<span style="font-size:11px;background:rgba(192,132,252,.15);color:var(--pk);padding:2px 6px;border-radius:3px;font-weight:600">럭드</span>' : '',
+    store.offlineLuckyDraw ? '<span style="font-size:var(--fs-xs);background:rgba(192,132,252,.15);color:var(--pk);padding:2px 6px;border-radius:3px;font-weight:600">럭드</span>' : '',
   ].filter(Boolean).join('');
 
   const deadline = fDeadline(store);
@@ -1484,20 +1472,20 @@ function _renderDetailInfoTab(store, storeId, ovs, cur, albums, unpoKeys, myPurc
   const storeUrgent = !storeExpired && store.purchaseEnd && Math.ceil((new Date(store.purchaseEnd)-new Date())/86400000) <= 3;
   const deadlineInline = deadline
     ? storeUrgent
-      ? ` <span style="font-weight:700;background:var(--err);color:#fff;padding:1px 5px;border-radius:3px;font-size:11px">${deadline}</span>`
+      ? ` <span style="font-weight:700;background:var(--err);color:#fff;padding:1px 5px;border-radius:3px;font-size:var(--fs-xs)">${deadline}</span>`
       : storeExpired
-        ? ` <span style="color:var(--tx3);font-size:11px">${deadline}</span>`
-        : ` <span style="color:var(--ok);font-size:11px;font-weight:600">${deadline}</span>`
+        ? ` <span style="color:var(--tx3);font-size:var(--fs-xs)">${deadline}</span>`
+        : ` <span style="color:var(--ok);font-size:var(--fs-xs);font-weight:600">${deadline}</span>`
     : '';
   const vcHtml = store.videocall && (store.vcAnnounceDate || store.vcStart) ? `
-    <div style="font-size:12px;margin-top:6px;padding-top:6px;border-top:1px solid var(--bd)">
-      <span class="badge badge-pk" style="font-size:10px;margin-right:4px">📞 영통</span>
+    <div style="font-size:var(--fs-sm);margin-top:6px;padding-top:6px;border-top:1px solid var(--bd)">
+      <span class="badge badge-pk" style="font-size:var(--fs-xs);margin-right:4px">📞 영통</span>
       ${store.vcAnnounceDate ? `<span class="text-muted">발표</span> <span class="fw-600">${fDate(store.vcAnnounceDate)}</span>` : ''}
       ${store.vcStart ? `${store.vcAnnounceDate ? ' · ' : ''}<span class="text-muted">진행</span> <span class="fw-600">${fDate(store.vcStart)}</span>` : ''}
     </div>` : '';
   const periodHtml = `<div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px;margin-bottom:10px">
-    ${store.purchaseStart ? `<div style="font-size:12px;margin-bottom:4px"><span class="text-muted">구매 시작</span> <span class="fw-600">${fDate(store.purchaseStart, true)}</span></div>` : ''}
-    <div style="font-size:12px"><span class="text-muted">구매 마감</span> <span class="fw-600">${store.purchaseEnd ? fDate(store.purchaseEnd, true) : (store.purchaseEndTxt || '미정')}</span>${deadlineInline}</div>
+    ${store.purchaseStart ? `<div style="font-size:var(--fs-sm);margin-bottom:4px"><span class="text-muted">구매 시작</span> <span class="fw-600">${fDate(store.purchaseStart, true)}</span></div>` : ''}
+    <div style="font-size:var(--fs-sm)"><span class="text-muted">구매 마감</span> <span class="fw-600">${store.purchaseEnd ? fDate(store.purchaseEnd, true) : (store.purchaseEndTxt || '미정')}</span>${deadlineInline}</div>
     ${vcHtml}
   </div>`;
 
@@ -1511,10 +1499,10 @@ function _renderDetailInfoTab(store, storeId, ovs, cur, albums, unpoKeys, myPurc
       const addrMapUrl = ev.mapUrl || (ev.addressDetail ? `https://map.naver.com/v5/search/${encodeURIComponent(ev.addressDetail)}` : null);
       const addrText = ev.addressName ? `${ev.addressName}${ev.addressDetail ? ' · ' + ev.addressDetail : ''}` : ev.addressDetail || '';
       return `<div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px;margin-bottom:8px">
-        <div style="font-size:13px;font-weight:600">${ev.start?fDate(ev.start):''}${ev.end&&ev.end!==ev.start?' ~ '+fDate(ev.end):''}${ev.luckyDraw?' <span style="font-size:11px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 5px;border-radius:3px;font-weight:600">럭드</span>':''}</div>
-        ${addrText ? `<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 ${addrText}${addrMapUrl ? ` <a href="${addrMapUrl}" target="_blank" class="btn btn-ghost btn-xs" style="padding:1px 5px;font-size:10px">지도</a>` : ''}</div>` : ''}
-        ${hrs?`<div style="font-size:11px;color:var(--tx3);margin-top:3px">${hrs}</div>`:''}
-        ${ev.note?`<div style="font-size:12px;color:var(--tx2);margin-top:4px;white-space:pre-wrap">${ev.note}</div>`:''}
+        <div style="font-size:var(--fs-sm);font-weight:600">${ev.start?fDate(ev.start):''}${ev.end&&ev.end!==ev.start?' ~ '+fDate(ev.end):''}${ev.luckyDraw?' <span style="font-size:var(--fs-xs);background:rgba(192,132,252,.15);color:var(--pk);padding:1px 5px;border-radius:3px;font-weight:600">럭드</span>':''}</div>
+        ${addrText ? `<div style="font-size:var(--fs-sm);color:var(--tx2);margin-top:3px">📍 ${addrText}${addrMapUrl ? ` <a href="${addrMapUrl}" target="_blank" class="btn btn-ghost btn-xs" style="padding:1px 5px;font-size:var(--fs-xs)">지도</a>` : ''}</div>` : ''}
+        ${hrs?`<div style="font-size:var(--fs-xs);color:var(--tx3);margin-top:3px">${hrs}</div>`:''}
+        ${ev.note?`<div style="font-size:var(--fs-sm);color:var(--tx2);margin-top:4px;white-space:pre-wrap">${ev.note}</div>`:''}
         ${ev.url?`<a href="${ev.url}" target="_blank" class="btn btn-ghost btn-xs" style="margin-top:6px;display:inline-flex">🔗 이벤트 공지</a>`:''}
       </div>`;
     }).join('')}` : '';
@@ -1526,7 +1514,7 @@ function _renderDetailInfoTab(store, storeId, ovs, cur, albums, unpoKeys, myPurc
     const isUnpoPr = unpoKeys.includes(a.key);
     return `<div class="price-row" style="${isUnpoPr ? 'background:rgba(168,85,247,.07);border-radius:4px;padding-left:6px;margin-bottom:2px' : ''}">
       <span>${a.name}${isUnpoPr ? ' <span class="badge badge-pk" style="font-size:9px;vertical-align:middle">미공포</span>' : ''}</span>
-      <span class="fw-600">${ovs ? `${cur} ${Number(pr).toLocaleString()} <span style="color:var(--tx3);font-size:11px">(${fKRW(prKrw)})</span>` : fKRW(pr)}</span>
+      <span class="fw-600">${ovs ? `${cur} ${Number(pr).toLocaleString()} <span style="color:var(--tx3);font-size:var(--fs-xs)">(${fKRW(prKrw)})</span>` : fKRW(pr)}</span>
     </div>`;
   }).filter(Boolean).join('');
 
@@ -1536,7 +1524,7 @@ function _renderDetailInfoTab(store, storeId, ovs, cur, albums, unpoKeys, myPurc
     ${offlineHtml}
     <div class="section-divider">앨범 단가</div>
     ${priceRows || '<div class="text-muted text-sm">가격 정보 없음</div>'}
-    ${store.memo ? `<div class="section-divider">메모</div><div style="font-size:13px;color:var(--tx2);white-space:pre-wrap">${store.memo}</div>` : ''}
+    ${store.memo ? `<div class="section-divider">메모</div><div style="font-size:var(--fs-sm);color:var(--tx2);white-space:pre-wrap">${store.memo}</div>` : ''}
   `;
   document.getElementById('modal-detail-foot').innerHTML = `
     <button class="btn btn-ghost" onclick="closeModal('modal-detail')">닫기</button>
@@ -1561,7 +1549,7 @@ function _renderDetailPurchTab(store, storeId, myPurch) {
     const alb = DB.albumTypes?.find(a => a.key === it.albKey);
     const pr = it.unitPrice > 0 ? it.unitPrice : (store ? storePrice(store, it.albKey) : 0);
     const sub = pr ? (ovs ? toKRW(pr, cur) * it.qty : pr * it.qty) : 0;
-    return `<div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--bd)">
+    return `<div style="display:flex;justify-content:space-between;font-size:var(--fs-sm);padding:5px 0;border-bottom:1px solid var(--bd)">
       <span>${alb?.name || it.albKey} <span style="color:var(--tx3)">× ${it.qty}장</span></span>
       <span class="fw-600">${sub ? fKRW(sub) : '—'}</span>
     </div>`;
@@ -1577,7 +1565,7 @@ function _renderDetailPurchTab(store, storeId, myPurch) {
 
   const trackingHtml = p.trackingNumber ? (() => {
     const url = carrierTrackUrl(p.carrier, p.trackingNumber);
-    return `<div style="font-size:12px;color:var(--tx2);margin-top:8px">
+    return `<div style="font-size:var(--fs-sm);color:var(--tx2);margin-top:8px">
       📦 ${p.carrier || '택배'}: ${url ? `<a href="${url}" target="_blank" style="color:var(--pk)"><code>${p.trackingNumber}</code> 조회↗</a>` : `<code>${p.trackingNumber}</code>`}
       ${p.shippedAt ? `<br>발송일: ${fDate(p.shippedAt)}` : ''}
       ${p.deliveredAt ? `<br>수령일: ${fDate(p.deliveredAt)}` : ''}
@@ -1588,22 +1576,22 @@ function _renderDetailPurchTab(store, storeId, myPurch) {
   document.getElementById('modal-detail-body').innerHTML = `
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
       ${stBadge(p.status || 'unpurchased')}
-      ${cat ? `<span style="font-size:12px;color:var(--tx3)">${cat.name}</span>` : ''}
+      ${cat ? `<span style="font-size:var(--fs-sm);color:var(--tx3)">${cat.name}</span>` : ''}
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;color:var(--tx2);margin-bottom:12px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:var(--fs-sm);color:var(--tx2);margin-bottom:12px">
       ${p.orderDate ? `<div><span style="color:var(--tx3)">주문일</span><br><span style="color:var(--tx1)">${fDate(p.orderDate)}</span></div>` : ''}
       ${p.orderNumber ? `<div><span style="color:var(--tx3)">주문번호</span><br><code style="color:var(--tx1)">#${p.orderNumber}</code></div>` : ''}
     </div>
     <div class="section-divider" style="margin-bottom:8px">구매 항목</div>
     ${itemsHtml || '<div class="text-muted text-sm">항목 없음</div>'}
-    ${extraCosts.length ? `<div style="margin-top:8px;font-size:12px;color:var(--tx2)">${extraCosts.map(c=>`<div>${c}</div>`).join('')}</div>` : ''}
-    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;font-size:14px">
+    ${extraCosts.length ? `<div style="margin-top:8px;font-size:var(--fs-sm);color:var(--tx2)">${extraCosts.map(c=>`<div>${c}</div>`).join('')}</div>` : ''}
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;font-size:var(--fs-base)">
       <span class="fw-600">합계</span>
       <span class="fw-600" style="color:var(--pk)">${fKRW(total)}</span>
     </div>
-    ${proxyTotal ? `<div style="font-size:11px;color:var(--tx3);text-align:right">내 지출: ${fKRW(myTotal)}</div>` : ''}
+    ${proxyTotal ? `<div style="font-size:var(--fs-xs);color:var(--tx3);text-align:right">내 지출: ${fKRW(myTotal)}</div>` : ''}
     ${trackingHtml}
-    ${p.memo ? `<div style="margin-top:10px;font-size:12px;color:var(--tx2);white-space:pre-wrap;background:var(--sur2);border-radius:var(--r-sm);padding:8px">${p.memo}</div>` : ''}
+    ${p.memo ? `<div style="margin-top:10px;font-size:var(--fs-sm);color:var(--tx2);white-space:pre-wrap;background:var(--sur2);border-radius:var(--r-sm);padding:8px">${p.memo}</div>` : ''}
     ${(() => {
       const proxyRows = [];
       (p.items || []).forEach(it => {
@@ -1616,8 +1604,8 @@ function _renderDetailPurchTab(store, storeId, myPurch) {
       });
       if (!proxyRows.length) return '';
       return `<div class="section-divider" style="margin-top:14px">대리구매</div>
-        <table style="width:100%;border-collapse:collapse;font-size:12px">
-          <thead><tr style="color:var(--tx3);font-size:11px">
+        <table style="width:100%;border-collapse:collapse;font-size:var(--fs-sm)">
+          <thead><tr style="color:var(--tx3);font-size:var(--fs-xs)">
             <th style="text-align:left;padding:4px 6px;border-bottom:1px solid var(--bd)">구분</th>
             <th style="text-align:left;padding:4px 6px;border-bottom:1px solid var(--bd)">이름</th>
             <th style="text-align:left;padding:4px 6px;border-bottom:1px solid var(--bd)">앨범</th>
@@ -1627,7 +1615,7 @@ function _renderDetailPurchTab(store, storeId, myPurch) {
           </tr></thead>
           <tbody>${proxyRows.map(e => `
             <tr>
-              <td style="padding:5px 6px;border-bottom:1px solid var(--bd);font-size:11px;color:var(--tx3)">${e.type==='give'?'해주는것':'받는것'}</td>
+              <td style="padding:5px 6px;border-bottom:1px solid var(--bd);font-size:var(--fs-xs);color:var(--tx3)">${e.type==='give'?'해주는것':'받는것'}</td>
               <td style="padding:5px 6px;border-bottom:1px solid var(--bd)">${e.name||'—'}</td>
               <td style="padding:5px 6px;border-bottom:1px solid var(--bd)">${e.albName}</td>
               <td style="padding:5px 6px;text-align:center;border-bottom:1px solid var(--bd)">${e.qty}장</td>
@@ -1667,7 +1655,7 @@ function _renderDetailUnpoTab(store, storeId, ovs, cur, albums, unpoKeys) {
     <div class="section-divider" style="padding-top:0">앨범 단가</div>
     <div class="price-row" style="background:rgba(168,85,247,.07);border-radius:4px;padding-left:6px">
       <span>${alb.name} <span class="badge badge-pk" style="font-size:9px;vertical-align:middle">미공포</span></span>
-      <span class="fw-600">${ovs ? `${cur} ${Number(pr).toLocaleString()} <span style="color:var(--tx3);font-size:11px">(${fKRW(prKrw)})</span>` : fKRW(pr)}</span>
+      <span class="fw-600">${ovs ? `${cur} ${Number(pr).toLocaleString()} <span style="color:var(--tx3);font-size:var(--fs-xs)">(${fKRW(prKrw)})</span>` : fKRW(pr)}</span>
     </div>
   </div>` : '';
 
@@ -1684,7 +1672,7 @@ function _renderDetailUnpoTab(store, storeId, ovs, cur, albums, unpoKeys) {
     return `<div style="margin-bottom:16px">
       <div class="text-sm fw-600" style="margin-bottom:6px;display:flex;align-items:center;gap:6px">
         <span>세트 ${si+1}${set.memo ? ': ' + set.memo : ''}</span>
-        ${set.luckyDraw ? '<span style="font-size:10px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 5px;border-radius:3px;font-weight:600">럭드</span>' : ''}
+        ${set.luckyDraw ? '<span style="font-size:var(--fs-xs);background:rgba(192,132,252,.15);color:var(--pk);padding:1px 5px;border-radius:3px;font-weight:600">럭드</span>' : ''}
       </div>
       <div style="display:grid;grid-template-columns:repeat(${colCount},1fr);gap:5px">
         ${cards.map((c, ci) => `
@@ -1758,7 +1746,7 @@ function renderPurch() {
           <span class="text-sm fw-600">총 ${fKRW(total)}</span>
           <span class="text-sm text-muted">내 지출 ${fKRW(myTotal)}</span>
         </div>
-        ${proxyTotal > 0 ? `<div style="font-size:11px;color:var(--warn);margin-top:3px">대리구매 포함 ${fKRW(proxyTotal)}</div>` : ''}
+        ${proxyTotal > 0 ? `<div style="font-size:var(--fs-xs);color:var(--warn);margin-top:3px">대리구매 포함 ${fKRW(proxyTotal)}</div>` : ''}
       </div>` : '';
 
   document.getElementById('purch-list').innerHTML = purches.length
@@ -1904,14 +1892,14 @@ function renderPurchCard(p) {
       <td>${pr ? (ovs ? (COUNTRIES[store.country]?.cur?.slice(0,2) || '') + Number(pr).toLocaleString() : fKRW(pr * (it.qty || 0))) : '—'}</td>
       ${(it.proxyDetails?.length)
         ? `<td style="padding:4px 6px">${it.proxyDetails.map((e,ei) => `
-            <div style="display:flex;align-items:center;gap:4px;font-size:11px;margin-bottom:2px">
+            <div style="display:flex;align-items:center;gap:4px;font-size:var(--fs-xs);margin-bottom:2px">
               <span style="color:var(--warn);font-weight:600">${e.name||'?'} ${e.qty}장</span>
               <button class="btn btn-xs" style="padding:1px 4px;font-size:9px;background:${e.paid?'rgba(52,211,153,.15)':'rgba(248,113,113,.15)'};color:${e.paid?'var(--ok)':'var(--err)'};border-color:${e.paid?'var(--ok)':'var(--err)'}"
                 onclick="event.stopPropagation();toggleProxyPaid('${p.id}','${it.albKey}',${ei})">${e.paid?'입금✓':'입금?'}</button>
               <button class="btn btn-xs" style="padding:1px 4px;font-size:9px;background:${e.delivered?'rgba(52,211,153,.15)':'var(--sur2)'};color:${e.delivered?'var(--ok)':'var(--tx3)'};border-color:${e.delivered?'var(--ok)':'var(--bd)'}"
                 onclick="event.stopPropagation();toggleProxyDelivered('${p.id}','${it.albKey}',${ei})">${e.delivered?'배송✓':'배송'}</button>
             </div>`).join('')}</td>`
-        : it.proxyQty ? `<td class="text-warn" style="font-size:12px">${it.proxyQty}장</td>` : '<td style="color:var(--tx3);font-size:12px">-</td>'}
+        : it.proxyQty ? `<td class="text-warn" style="font-size:var(--fs-sm)">${it.proxyQty}장</td>` : '<td style="color:var(--tx3);font-size:var(--fs-sm)">-</td>'}
     </tr>`;
   }).join('');
 
@@ -1931,7 +1919,7 @@ function renderPurchCard(p) {
     <div class="purch-card-header">
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
-          <div class="purch-store-name" style="min-width:0">${store?.name || '?'} ${store?.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : ''} ${(store?.chodongIncluded || store?.hanteoChart || store?.billboardChart) ? '<span style="font-size:10px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">초동</span>' : ''}</div>
+          <div class="purch-store-name" style="min-width:0">${store?.name || '?'} ${store?.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : ''} ${(store?.chodongIncluded || store?.hanteoChart || store?.billboardChart) ? '<span style="font-size:var(--fs-xs);background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">초동</span>' : ''}</div>
           <div class="flex gap-8" style="align-items:center;flex-shrink:0">
             <button class="btn btn-ghost btn-xs" onclick="viewPurchDetail('${p.id}')">상세</button>
             <button class="btn btn-ghost btn-xs" onclick="editPurch('${p.id}')">편집</button>
@@ -1945,7 +1933,7 @@ function renderPurchCard(p) {
         </div>
         <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
           ${stBadge(p.status || 'waiting')}
-          <div class="price-total" style="font-size:15px">${fKRW(total)}</div>
+          <div class="price-total" style="font-size:var(--fs-base)">${fKRW(total)}</div>
           ${proxyTotal ? `<div class="text-xs text-muted">내 지출: ${fKRW(myTotal)}</div>` : ''}
         </div>
       </div>
@@ -1955,16 +1943,16 @@ function renderPurchCard(p) {
 
     <table class="purch-items-table" style="width:100%;border-collapse:collapse;margin-bottom:8px">
       <thead><tr style="background:var(--sur2)">
-        <th style="padding:5px 8px;font-size:11px;text-align:left">앨범</th>
-        <th style="padding:5px 8px;font-size:11px;text-align:left">수량</th>
-        <th style="padding:5px 8px;font-size:11px;text-align:left">금액</th>
-        <th style="padding:5px 8px;font-size:11px;text-align:left">대리구매</th>
+        <th style="padding:5px 8px;font-size:var(--fs-xs);text-align:left">앨범</th>
+        <th style="padding:5px 8px;font-size:var(--fs-xs);text-align:left">수량</th>
+        <th style="padding:5px 8px;font-size:var(--fs-xs);text-align:left">금액</th>
+        <th style="padding:5px 8px;font-size:var(--fs-xs);text-align:left">대리구매</th>
       </tr></thead>
       <tbody>${itemsHtml}</tbody>
     </table>
 
     ${(p.domShip || p.intlShip || p.fwdFee || p.customs || p.discount) ? `
-      <div style="font-size:12px;color:var(--tx2);display:flex;gap:12px;flex-wrap:wrap">
+      <div style="font-size:var(--fs-sm);color:var(--tx2);display:flex;gap:12px;flex-wrap:wrap">
         ${p.domShip ? `<span>국내배송 +${fKRW(p.domShip)}</span>` : ''}
         ${p.intlShip ? `<span>국제배송 +${fKRW(p.intlShip)}</span>` : ''}
         ${p.fwdFee ? `<span>포워딩 +${fKRW(p.fwdFee)}</span>` : ''}
@@ -1974,7 +1962,7 @@ function renderPurchCard(p) {
     ` : ''}
 
     ${p.trackingNumber ? `
-      <div style="margin-top:8px;font-size:12px">
+      <div style="margin-top:8px;font-size:var(--fs-sm)">
         📦 ${p.carrier || '택배'}: ${(() => {
           const url = carrierTrackUrl(p.carrier, p.trackingNumber);
           return url
@@ -1986,7 +1974,7 @@ function renderPurchCard(p) {
       </div>
     ` : ''}
 
-    ${p.memo ? `<div style="margin-top:8px;font-size:12px;color:var(--tx2);white-space:pre-wrap">${p.memo}</div>` : ''}
+    ${p.memo ? `<div style="margin-top:8px;font-size:var(--fs-sm);color:var(--tx2);white-space:pre-wrap">${p.memo}</div>` : ''}
   </div>`;
 }
 
@@ -2085,13 +2073,13 @@ function buildPurchModal(p) {
     window._proxyCounters[a.key] = existProxy.length;
 
     return `<tr${isUnpo ? ' style="background:rgba(168,85,247,.07)"' : ''}>
-      <td style="padding:6px 8px;font-size:13px">
+      <td style="padding:6px 8px;font-size:var(--fs-sm)">
         ${a.name}${isUnpo ? ' <span class="badge badge-pk" style="font-size:9px">미공포</span>' : ''}
-        <div id="item-proxy-sum-${a.key}" style="font-size:10px;color:var(--warn)"></div>
+        <div id="item-proxy-sum-${a.key}" style="font-size:var(--fs-xs);color:var(--warn)"></div>
       </td>
       <td style="padding:6px 4px"><input type="number" min="0" value="${item.qty || 0}" style="width:55px" id="item-qty-${a.key}" oninput="updatePurchItemSub('${a.key}');updatePurchTotal()"></td>
       <td style="padding:6px 4px"><input type="number" min="0" value="${item.unitPrice > 0 ? item.unitPrice : (price || '')}" placeholder="${price || '가격입력'}" style="width:85px" id="item-price-${a.key}" oninput="updatePurchItemSub('${a.key}');updatePurchTotal()"></td>
-      <td style="padding:6px 4px;font-size:11px;color:var(--tx2);min-width:60px" id="item-sub-${a.key}">${sub>0?`${ovs?cur+' ':fKRW(0).slice(0,-1)}${Number(sub).toLocaleString()}${ovs?'':'원'}`:''}</td>
+      <td style="padding:6px 4px;font-size:var(--fs-xs);color:var(--tx2);min-width:60px" id="item-sub-${a.key}">${sub>0?`${ovs?cur+' ':fKRW(0).slice(0,-1)}${Number(sub).toLocaleString()}${ovs?'':'원'}`:''}</td>
     </tr>`;
   }).join('');
 
@@ -2155,10 +2143,10 @@ function buildPurchModal(p) {
     <div class="section-divider">앨범 수량 및 가격</div>
     <table style="width:100%;border-collapse:collapse;margin-bottom:12px">
       <thead><tr style="background:var(--sur2)">
-        <th style="padding:6px 8px;font-size:11px;text-align:left">앨범</th>
-        <th style="padding:6px 8px;font-size:11px;text-align:left">수량</th>
-        <th style="padding:6px 8px;font-size:11px;text-align:left">단가 (${ovs ? cur : '₩'})</th>
-        <th style="padding:6px 8px;font-size:11px;text-align:left">소계</th>
+        <th style="padding:6px 8px;font-size:var(--fs-xs);text-align:left">앨범</th>
+        <th style="padding:6px 8px;font-size:var(--fs-xs);text-align:left">수량</th>
+        <th style="padding:6px 8px;font-size:var(--fs-xs);text-align:left">단가 (${ovs ? cur : '₩'})</th>
+        <th style="padding:6px 8px;font-size:var(--fs-xs);text-align:left">소계</th>
       </tr></thead>
       <tbody id="mp-items">${itemRows}</tbody>
     </table>
@@ -2175,7 +2163,7 @@ function buildPurchModal(p) {
     <div class="section-divider">배송 및 추가비용</div>
     ${ovs ? `
     <div class="form-row cols-2">
-      <div><label>해외배송비 (${cur})</label><input type="number" min="0" step="0.01" id="mp-intlship-cur" value="${p?.intlShipCur || 0}" oninput="updatePurchTotal()"></div>
+      <div><label>해외배송비 (${cur})</label><input type="number" min="0" step="0.01" id="mp-intlship-cur" value="${p?.intlShipCur ?? p?.intlShip ?? 0}" oninput="updatePurchTotal()"></div>
       <div><label>할인 (${cur})</label><input type="number" min="0" step="0.01" id="mp-discount-cur" value="${p?.discountCur || 0}" oninput="updatePurchTotal()"></div>
     </div>
     <div class="form-row">
@@ -2220,14 +2208,14 @@ function buildPurchModal(p) {
         </select>
       </div>
       <div>
-        <label>운송장번호 <a id="mp-track-link" target="_blank" style="color:var(--pk);font-size:11px;display:${trackUrl?'inline':'none'}" href="${trackUrl||'#'}">📦 조회</a></label>
+        <label>운송장번호 <a id="mp-track-link" target="_blank" style="color:var(--pk);font-size:var(--fs-xs);display:${trackUrl?'inline':'none'}" href="${trackUrl||'#'}">📦 조회</a></label>
         <input type="text" id="mp-tracking" placeholder="운송장번호" value="${trackVal}" oninput="updateCarrierLink()">
       </div>
     </div>
     <div class="form-row cols-3">
       <div><label>발송일</label><input type="date" id="mp-shipdate" value="${p?.shippedAt || ''}"></div>
       <div><label>수령일</label><input type="date" id="mp-delivdate" value="${p?.deliveredAt || ''}"></div>
-      <div><label>배송예정일</label><input type="date" id="mp-estdeliv" value="${p?.estDelivDate || defEstDeliv}"></div>
+      <div><label>배송예정일</label><input type="date" id="mp-estdeliv" value="${p?.estDelivery || p?.estDelivDate || defEstDeliv}"></div>
     </div>
 
     <div class="form-row">
@@ -2274,15 +2262,15 @@ function addProxyEntryNew(albKey, name, qty, paid, delivered, type) {
   div.id = 'proxy-new-' + idx;
   div.className = 'proxy-entry-row';
   div.innerHTML = `
-    <select id="pn-type-${idx}" class="pn-type" style="font-size:11px">
+    <select id="pn-type-${idx}" class="pn-type" style="font-size:var(--fs-xs)">
       <option value="receive" ${(type!=='give')?'selected':''}>받는것</option>
       <option value="give" ${(type==='give')?'selected':''}>해주는것</option>
     </select>
-    <input id="pn-name-${idx}" class="pn-name" type="text" placeholder="이름" style="font-size:12px" value="${name||''}">
-    <select id="pn-alb-${idx}" class="pn-alb" style="font-size:12px" onchange="updateProxyTotals()">
+    <input id="pn-name-${idx}" class="pn-name" type="text" placeholder="이름" style="font-size:var(--fs-sm)" value="${name||''}">
+    <select id="pn-alb-${idx}" class="pn-alb" style="font-size:var(--fs-sm)" onchange="updateProxyTotals()">
       ${albums.map(a => `<option value="${a.key}" ${(albKey===a.key)?'selected':''}>${a.name}</option>`).join('')}
     </select>
-    <input id="pn-qty-${idx}" class="pn-qty" type="number" min="0" style="font-size:12px" placeholder="수" value="${qty||''}" oninput="updateProxyTotals()">
+    <input id="pn-qty-${idx}" class="pn-qty" type="number" min="0" style="font-size:var(--fs-sm)" placeholder="수" value="${qty||''}" oninput="updateProxyTotals()">
     <button type="button" class="btn btn-xs pn-paid-btn ${paid?'btn-ok':'btn-ghost'}" id="pn-paid-btn-${idx}" onclick="_toggleProxyNewBtn('paid',${idx})">${paid?'✓입금':'입금'}</button>
     <button type="button" class="btn btn-xs pn-deliv-btn ${delivered?'btn-ok':'btn-ghost'}" id="pn-deliv-btn-${idx}" onclick="_toggleProxyNewBtn('deliv',${idx})">${delivered?'✓배송':'배송'}</button>
     <button type="button" class="btn btn-err btn-xs pn-del-btn" onclick="removeProxyEntryNew(${idx})">✕</button>
@@ -2321,15 +2309,15 @@ function updateProxyTotals() {
 // ═══════════════════════════════════════════
 function buildProxyEntryHTML(albKey, idx, name, qty, paid, delivered) {
   return `<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin-bottom:4px" id="proxy-row-${albKey}-${idx}">
-    <input type="text" placeholder="이름" value="${name}" style="width:80px;font-size:12px;padding:4px 6px" id="proxy-name-${albKey}-${idx}" oninput="recalcProxyQty('${albKey}')">
-    <input type="number" min="0" value="${qty}" style="width:56px;font-size:12px;padding:4px 6px" id="proxy-qty-${albKey}-${idx}" oninput="recalcProxyQty('${albKey}')">
-    <label style="font-size:11px;display:flex;align-items:center;gap:3px;cursor:pointer">
+    <input type="text" placeholder="이름" value="${name}" style="width:80px;font-size:var(--fs-sm);padding:4px 6px" id="proxy-name-${albKey}-${idx}" oninput="recalcProxyQty('${albKey}')">
+    <input type="number" min="0" value="${qty}" style="width:56px;font-size:var(--fs-sm);padding:4px 6px" id="proxy-qty-${albKey}-${idx}" oninput="recalcProxyQty('${albKey}')">
+    <label style="font-size:var(--fs-xs);display:flex;align-items:center;gap:3px;cursor:pointer">
       <input type="checkbox" ${paid?'checked':''} id="proxy-paid-${albKey}-${idx}" style="width:13px;height:13px"> 입금
     </label>
-    <label style="font-size:11px;display:flex;align-items:center;gap:3px;cursor:pointer">
+    <label style="font-size:var(--fs-xs);display:flex;align-items:center;gap:3px;cursor:pointer">
       <input type="checkbox" ${delivered?'checked':''} id="proxy-deliv-${albKey}-${idx}" style="width:13px;height:13px"> 배송
     </label>
-    <button type="button" onclick="removeProxyEntry('${albKey}',${idx})" style="background:none;border:none;color:var(--err);font-size:12px;cursor:pointer;padding:0 2px">✕</button>
+    <button type="button" onclick="removeProxyEntry('${albKey}',${idx})" style="background:none;border:none;color:var(--err);font-size:var(--fs-sm);cursor:pointer;padding:0 2px">✕</button>
   </div>`;
 }
 
@@ -2452,7 +2440,7 @@ function updatePurchPlatform() {
   if (wrap) {
     wrap.style.display = '';
     const prevSelected = autoInput?.value || '';
-    wrap.innerHTML = `<label style="font-size:12px;color:var(--tx3);font-weight:600;margin-bottom:4px;display:block">차수 / 기간 선택 *</label>
+    wrap.innerHTML = `<label style="font-size:var(--fs-sm);color:var(--tx3);font-weight:600;margin-bottom:4px;display:block">차수 / 기간 선택 *</label>
       <div class="store-pick-list">
         ${platStores.map(s => {
           const flag = COUNTRIES[s.country]?.flag || '';
@@ -2568,7 +2556,7 @@ function updatePurchTotal() {
 
   if (el) {
     el.innerHTML = fKRW(Math.max(0, total)) +
-      (proxySubtotal > 0 ? `<span style="display:block;font-size:11px;color:var(--warn);margin-top:2px">대리구매 ${fKRW(proxySubtotal)}</span>` : '');
+      (proxySubtotal > 0 ? `<span style="display:block;font-size:var(--fs-xs);color:var(--warn);margin-top:2px">대리구매 ${fKRW(proxySubtotal)}</span>` : '');
   }
 }
 
@@ -2618,6 +2606,7 @@ function savePurch() {
     orderNumber: document.getElementById('mp-ordno')?.value || '',
     status: document.getElementById('mp-status')?.value || 'waiting',
     domShip: parseFloat(document.getElementById('mp-domship')?.value || '0'),
+    intlShipCur: parseFloat(document.getElementById('mp-intlship-cur')?.value || '0'),
     intlShip: parseFloat(document.getElementById('mp-intlship-cur')?.value || '0'),
     fwdFee: parseFloat(document.getElementById('mp-fwdfee')?.value || '0'),
     customs: parseFloat(document.getElementById('mp-customs')?.value || '0'),
@@ -2629,7 +2618,7 @@ function savePurch() {
     trackingNumber: document.getElementById('mp-tracking')?.value || '',
     shippedAt: document.getElementById('mp-shipdate')?.value || '',
     deliveredAt: document.getElementById('mp-delivdate')?.value || '',
-    estDelivDate: document.getElementById('mp-estdeliv')?.value || '',
+    estDelivery: document.getElementById('mp-estdeliv')?.value || '',
     memo: document.getElementById('mp-memo')?.value || '',
     createdAt: new Date().toISOString(),
   };
@@ -2718,9 +2707,9 @@ function renderStoreCard(s, isCheapest = false) {
     const cur = getStoreCur(s);
     const prKRW = isOvs(s) ? toKRW(pr, cur) : pr;
     const isUnpo = unpoKeys.includes(a.key);
-    return `<div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0${isUnpo?';background:rgba(168,85,247,.07);border-radius:3px;padding-left:4px':''}">
+    return `<div style="display:flex;justify-content:space-between;font-size:var(--fs-sm);padding:2px 0${isUnpo?';background:rgba(168,85,247,.07);border-radius:3px;padding-left:4px':''}">
       <span class="text-muted">${a.name}${isUnpo?` <span class="badge badge-pk" style="font-size:9px">미공포</span>`:''}</span>
-      <span class="fw-600">${isOvs(s) ? `${cur} ${Number(pr).toLocaleString()} <span style="font-size:10px;color:var(--tx3)">(${fKRW(prKRW)})</span>` : fKRW(pr)}</span>
+      <span class="fw-600">${isOvs(s) ? `${cur} ${Number(pr).toLocaleString()} <span style="font-size:var(--fs-xs);color:var(--tx3)">(${fKRW(prKRW)})</span>` : fKRW(pr)}</span>
     </div>`;
   }).filter(Boolean).join('');
 
@@ -2729,36 +2718,36 @@ function renderStoreCard(s, isCheapest = false) {
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
           <span class="fw-600">${s.name}</span>
-          ${country ? `<span style="font-size:11px;color:var(--tx3)">${country.flag} ${country.lb}</span>` : ''}
-          ${s.round ? `<span class="badge badge-info" style="font-size:10px">${s.round}차</span>` : ''}
-          ${isCheapest ? '<span class="badge badge-ok" style="font-size:10px">최저가</span>' : ''}
+          ${country ? `<span style="font-size:var(--fs-xs);color:var(--tx3)">${country.flag} ${country.lb}</span>` : ''}
+          ${s.round ? `<span class="badge badge-info" style="font-size:var(--fs-xs)">${s.round}차</span>` : ''}
+          ${isCheapest ? '<span class="badge badge-ok" style="font-size:var(--fs-xs)">최저가</span>' : ''}
         </div>
         <div class="text-sm text-muted">${dist || ''}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
         ${s.isMusicStreamTeam ? '<span class="music-tag">🎵음총</span>' : ''}
-        ${s.videocall ? '<span class="badge badge-pk" style="font-size:10px">📞 영통</span>' : ''}
-        ${(s.chodongIncluded || s.hanteoChart || s.billboardChart) ? '<span style="font-size:10px;background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">초동</span>' : ''}
-        ${s.offlineLuckyDraw ? '<span style="font-size:11px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 5px;border-radius:3px;font-weight:600;flex-shrink:0">럭드</span>' : ''}
+        ${s.videocall ? '<span class="badge badge-pk" style="font-size:var(--fs-xs)">📞 영통</span>' : ''}
+        ${(s.chodongIncluded || s.hanteoChart || s.billboardChart) ? '<span style="font-size:var(--fs-xs);background:rgba(96,165,250,.15);color:var(--info);padding:1px 5px;border-radius:3px">초동</span>' : ''}
+        ${s.offlineLuckyDraw ? '<span style="font-size:var(--fs-xs);background:rgba(192,132,252,.15);color:var(--pk);padding:1px 5px;border-radius:3px;font-weight:600;flex-shrink:0">럭드</span>' : ''}
       </div>
     </div>
 
     <div style="margin-bottom:8px">${priceRows || '<div class="text-muted text-sm">가격 정보 없음</div>'}</div>
 
-    <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px">
+    <div style="display:flex;align-items:center;justify-content:space-between;font-size:var(--fs-xs)">
       <span style="color:var(--tx3)">${s.purchaseStart ? fDate(s.purchaseStart, true) + ' ~ ' + (s.purchaseEnd ? fDate(s.purchaseEnd, true) : (s.purchaseEndTxt || '미정')) : ''}</span>
       <div style="text-align:right">
         ${isUrgent
           ? `<div style="font-weight:700;background:var(--err);color:#fff;padding:1px 6px;border-radius:4px">${deadline}</div>`
           : deadline
-            ? `<div style="font-weight:600;color:${expired?'var(--tx3)':'var(--ok)'};font-size:11px">${deadline}</div>`
+            ? `<div style="font-weight:600;color:${expired?'var(--tx3)':'var(--ok)'};font-size:var(--fs-xs)">${deadline}</div>`
             : ''
         }
-        ${expired ? '<div style="font-size:10px;font-weight:700;color:var(--err);margin-top:1px">마감</div>' : ''}
+        ${expired ? '<div style="font-size:var(--fs-xs);font-weight:700;color:var(--err);margin-top:1px">마감</div>' : ''}
       </div>
     </div>
     ${(s.offlineEvents?.length ? s.offlineEvents : s.offlineStart ? [{ start: s.offlineStart, end: s.offlineEnd }] : []).map(ev =>
-      `<div style="font-size:11px;color:var(--warn);margin-top:3px">🏪 ${ev.start ? fDate(ev.start) : ''}${ev.end && ev.end !== ev.start ? ' ~ ' + fDate(ev.end) : ''}</div>`
+      `<div style="font-size:var(--fs-xs);color:var(--warn);margin-top:3px">🏪 ${ev.start ? fDate(ev.start) : ''}${ev.end && ev.end !== ev.start ? ' ~ ' + fDate(ev.end) : ''}</div>`
     ).join('')}
   </div>`;
 }
@@ -2772,7 +2761,7 @@ function showStoreDetail(storeId) {
   const albums = getCatAlbums(s.categoryId);
 
   const storeIsOvs = isOvs(s);
-  const priceTable = `<table style="width:100%;border-collapse:collapse;font-size:13px">
+  const priceTable = `<table style="width:100%;border-collapse:collapse;font-size:var(--fs-sm)">
     <thead><tr style="background:var(--sur2)">
       <th style="padding:6px 8px;text-align:left">앨범</th>
       <th style="padding:6px 8px;text-align:right">가격</th>
@@ -2800,20 +2789,20 @@ function showStoreDetail(storeId) {
     <div class="section-divider">오프라인 행사</div>
     ${offlineEvents.map(ev => `
       <div style="background:var(--sur2);border-radius:var(--r-sm);padding:10px;margin-bottom:8px">
-        <div style="font-size:13px;font-weight:600">${ev.start ? fDate(ev.start) : ''}${ev.end && ev.end !== ev.start ? ' ~ ' + fDate(ev.end) : ''}
-          ${ev.luckyDraw ? ' <span style="font-size:10px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 4px;border-radius:3px;font-weight:600">럭드</span>' : ''}
+        <div style="font-size:var(--fs-sm);font-weight:600">${ev.start ? fDate(ev.start) : ''}${ev.end && ev.end !== ev.start ? ' ~ ' + fDate(ev.end) : ''}
+          ${ev.luckyDraw ? ' <span style="font-size:var(--fs-xs);background:rgba(192,132,252,.15);color:var(--pk);padding:1px 4px;border-radius:3px;font-weight:600">럭드</span>' : ''}
         </div>
         ${(() => {
           const addrMapUrl = ev.mapUrl || (ev.addressDetail ? `https://map.naver.com/v5/search/${encodeURIComponent(ev.addressDetail)}` : null);
           const addrText = ev.addressName ? `${ev.addressName}${ev.addressDetail ? ' · ' + ev.addressDetail : ''}` : ev.addressDetail || '';
-          return addrText ? `<div style="font-size:12px;color:var(--tx2);margin-top:3px">📍 ${addrText}${addrMapUrl ? ` <a href="${addrMapUrl}" target="_blank" class="btn btn-ghost btn-xs" style="padding:1px 5px;font-size:10px">지도</a>` : ''}</div>` : '';
+          return addrText ? `<div style="font-size:var(--fs-sm);color:var(--tx2);margin-top:3px">📍 ${addrText}${addrMapUrl ? ` <a href="${addrMapUrl}" target="_blank" class="btn btn-ghost btn-xs" style="padding:1px 5px;font-size:var(--fs-xs)">지도</a>` : ''}</div>` : '';
         })()}
         ${(() => {
           const DAYS = ['월','화','수','목','금','토','일'];
           const hrs = Object.entries(ev.hoursMap||{}).filter(([,v])=>v).map(([di,v])=>`${DAYS[di]} ${v}`).join(' / ');
-          return hrs ? `<div style="font-size:11px;color:var(--tx3);margin-top:3px">${hrs}</div>` : '';
+          return hrs ? `<div style="font-size:var(--fs-xs);color:var(--tx3);margin-top:3px">${hrs}</div>` : '';
         })()}
-        ${ev.note ? `<div style="font-size:12px;color:var(--tx2);margin-top:4px;white-space:pre-wrap">${ev.note}</div>` : ''}
+        ${ev.note ? `<div style="font-size:var(--fs-sm);color:var(--tx2);margin-top:4px;white-space:pre-wrap">${ev.note}</div>` : ''}
         ${ev.url ? `<a href="${ev.url}" target="_blank" class="btn btn-ghost btn-xs" style="margin-top:6px;display:inline-flex">🔗 이벤트 공지</a>` : ''}
       </div>
     `).join('')}` : '';
@@ -2841,7 +2830,7 @@ function showStoreDetail(storeId) {
 
     ${s.memo ? `
       <div class="section-divider">메모</div>
-      <div style="font-size:13px;color:var(--tx2);white-space:pre-wrap">${s.memo}</div>
+      <div style="font-size:var(--fs-sm);color:var(--tx2);white-space:pre-wrap">${s.memo}</div>
     ` : ''}
 
     ${s.url ? `
@@ -2916,8 +2905,8 @@ function renderUnpo() {
     const stDist = distName(s.distId);
     const nameHtml = linked && linked.length
       ? `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <span class="fw-600">${s.name}${stDist ? ` <span style="color:var(--tx3);font-size:11px;font-weight:400">(${stDist})</span>` : ''}</span>
-          ${linked.map(x => {const xDist=distName(x.distId);return `<span style="color:var(--tx2);font-size:12px">= ${x.name}${xDist?` <span style="color:var(--tx3);font-size:11px">(${xDist})</span>`:''}</span>`;}).join('')}
+          <span class="fw-600">${s.name}${stDist ? ` <span style="color:var(--tx3);font-size:var(--fs-xs);font-weight:400">(${stDist})</span>` : ''}</span>
+          ${linked.map(x => {const xDist=distName(x.distId);return `<span style="color:var(--tx2);font-size:var(--fs-sm)">= ${x.name}${xDist?` <span style="color:var(--tx3);font-size:var(--fs-xs)">(${xDist})</span>`:''}</span>`;}).join('')}
         </div>`
       : `<span class="fw-600">${s.name}</span>`;
 
@@ -2946,14 +2935,14 @@ function renderUnpo() {
           <div class="unpo-card${c.owned ? ' owned' : ''}" onclick="toggleUnpoOwned('${s.id}','${albKey}',${si},${actualCi})">
             ${c.img ? `<img src="${c.img}" loading="lazy">` : '<div class="no-img">📷<br>미등록</div>'}
           </div>
-          ${c.note ? `<div style="font-size:10px;color:var(--tx3);text-align:center">${c.note}</div>` : ''}
+          ${c.note ? `<div style="font-size:var(--fs-xs);color:var(--tx3);text-align:center">${c.note}</div>` : ''}
           ${c.owned ? '<div class="unpo-owned-badge">WANT</div>' : ''}
         </div>`;
       }).filter(Boolean).join('');
 
       if (!cardsHtml) return '';
       return `<div style="margin-bottom:12px">
-        ${set.memo ? `<div style="font-size:12px;color:var(--tx2);margin-bottom:6px">${set.memo}</div>` : ''}
+        ${set.memo ? `<div style="font-size:var(--fs-sm);color:var(--tx2);margin-bottom:6px">${set.memo}</div>` : ''}
         <div style="display:grid;grid-template-columns:repeat(${Math.max(cards.length,1)},1fr);gap:5px">${cardsHtml}</div>
       </div>`;
     }).filter(Boolean).join('');
@@ -2971,13 +2960,13 @@ function renderUnpo() {
           <div class="unpo-card${c.owned ? ' owned' : ''}" onclick="toggleUnpoOwned('${s.id}','${albKey}',${bSi},${actualCi})">
             ${c.img ? `<img src="${c.img}" loading="lazy">` : '<div class="no-img">📷<br>미등록</div>'}
           </div>
-          ${c.note ? `<div style="font-size:10px;color:var(--tx3);text-align:center">${c.note.replace(' (뒷)', '')}</div>` : ''}
+          ${c.note ? `<div style="font-size:var(--fs-xs);color:var(--tx3);text-align:center">${c.note.replace(' (뒷)', '')}</div>` : ''}
           ${c.owned ? '<div class="unpo-owned-badge">WANT</div>' : ''}
         </div>`;
       }).filter(Boolean).join('');
       if (bCardsHtml) {
         backSectionHtml = `<div style="margin-top:4px;padding-top:10px;border-top:1px dashed var(--bd)">
-          <div style="font-size:11px;color:var(--tx2);font-weight:600;margin-bottom:6px">뒷면 공통 (${bOwnedCount}/${bCards.length})</div>
+          <div style="font-size:var(--fs-xs);color:var(--tx2);font-weight:600;margin-bottom:6px">뒷면 공통 (${bOwnedCount}/${bCards.length})</div>
           <div style="display:grid;grid-template-columns:repeat(${Math.max(bCards.length,1)},1fr);gap:5px">${bCardsHtml}</div>
         </div>`;
       }
@@ -3214,7 +3203,7 @@ function renderCal() {
       ];
       const grouped = CAL_GROUPS.map(g => ({ ...g, evs: dayEvs.filter(ev => g.types.includes(ev.type)) })).filter(g => g.evs.length);
       const groupedHtml = grouped.map(g => `
-        <div style="font-size:11px;font-weight:600;color:var(--tx3);margin:10px 0 4px;text-transform:uppercase;letter-spacing:.4px">${g.label}</div>
+        <div style="font-size:var(--fs-xs);font-weight:600;color:var(--tx3);margin:10px 0 4px;text-transform:uppercase;letter-spacing:.4px">${g.label}</div>
         ${g.evs.map(ev => buildCalDayItem(ev)).join('')}
       `).join('');
       detailHtml += `<div style="margin-top:14px">
@@ -3222,7 +3211,7 @@ function renderCal() {
         ${groupedHtml}
       </div>`;
     } else {
-      detailHtml += `<div style="margin-top:10px;font-size:12px;color:var(--tx3);text-align:center">${formatDateKo(S.calDay)} — 일정 없음</div>`;
+      detailHtml += `<div style="margin-top:10px;font-size:var(--fs-sm);color:var(--tx3);text-align:center">${formatDateKo(S.calDay)} — 일정 없음</div>`;
     }
   }
   document.getElementById('cal-day-detail').innerHTML = detailHtml;
@@ -3273,18 +3262,18 @@ function renderCalEvents() {
       <div class="card-header" style="cursor:pointer" onclick="openStorePopup('${s.id}')">
         <div class="fw-600">${s.name}</div>
         <div style="display:flex;gap:4px;align-items:center">
-          ${s.offlineLuckyDraw ? '<span style="font-size:11px;background:rgba(192,132,252,.15);color:var(--pk);padding:2px 6px;border-radius:3px;font-weight:600">럭드</span>' : ''}
-          ${s.videocall ? '<span class="badge badge-info" style="font-size:10px">📞 영통</span>' : ''}
+          ${s.offlineLuckyDraw ? '<span style="font-size:var(--fs-xs);background:rgba(192,132,252,.15);color:var(--pk);padding:2px 6px;border-radius:3px;font-weight:600">럭드</span>' : ''}
+          ${s.videocall ? '<span class="badge badge-info" style="font-size:var(--fs-xs)">📞 영통</span>' : ''}
         </div>
       </div>
       ${evts.map(ev => {
         const loc = ev.addressName || ev.addressDetail || '';
         const mapUrl = ev.mapUrl || (ev.addressDetail ? `https://map.naver.com/v5/search/${encodeURIComponent(ev.addressDetail)}` : null);
-        const luckyTag = ev.luckyDraw ? ' <span style="font-size:10px;background:rgba(192,132,252,.15);color:var(--pk);padding:1px 4px;border-radius:3px;font-weight:600">럭드</span>' : '';
+        const luckyTag = ev.luckyDraw ? ' <span style="font-size:var(--fs-xs);background:rgba(192,132,252,.15);color:var(--pk);padding:1px 4px;border-radius:3px;font-weight:600">럭드</span>' : '';
         return `<div style="padding:8px 0;border-top:1px solid var(--bd)">
-          <div style="font-size:13px;color:var(--tx2);margin-bottom:4px">📅 ${fDate(ev.start)}${ev.end&&ev.end!==ev.start?' ~ '+fDate(ev.end):''}${luckyTag}</div>
-          ${loc ? `<div style="font-size:12px;color:var(--tx2);margin-bottom:3px">📍 ${mapUrl ? `<a href="${mapUrl}" target="_blank" style="color:var(--pk)">${loc} 🗺</a>` : loc}</div>` : ''}
-          ${ev.note ? `<div style="font-size:12px;color:var(--tx2);white-space:pre-wrap">${ev.note}</div>` : ''}
+          <div style="font-size:var(--fs-sm);color:var(--tx2);margin-bottom:4px">📅 ${fDate(ev.start)}${ev.end&&ev.end!==ev.start?' ~ '+fDate(ev.end):''}${luckyTag}</div>
+          ${loc ? `<div style="font-size:var(--fs-sm);color:var(--tx2);margin-bottom:3px">📍 ${mapUrl ? `<a href="${mapUrl}" target="_blank" style="color:var(--pk)">${loc} 🗺</a>` : loc}</div>` : ''}
+          ${ev.note ? `<div style="font-size:var(--fs-sm);color:var(--tx2);white-space:pre-wrap">${ev.note}</div>` : ''}
         </div>`;
       }).join('')}
     </div>`;
@@ -3334,14 +3323,14 @@ function buildCalDayItem(ev) {
       : [];
     const matchEvt = evts.find(e => S.calDay >= (e.start||'') && S.calDay <= (e.end||e.start||''));
     const loc = matchEvt?.addressName || matchEvt?.addressDetail || '';
-    if (loc) extraInfo = `<div style="font-size:11px;color:var(--tx3);margin-top:2px;margin-left:4px">📍 ${loc}</div>`;
+    if (loc) extraInfo = `<div style="font-size:var(--fs-xs);color:var(--tx3);margin-top:2px;margin-left:4px">📍 ${loc}</div>`;
   }
 
   return `<div class="cal-day-item${isHL ? ' hl' : ''}" onclick="${ev.storeId ? `calHighlightStore('${ev.storeId}')` : ''}">
     <div style="flex:1;min-width:0">
       <div style="display:flex;align-items:center;gap:6px">
         <span class="cal-event ${meta.cls}" style="flex-shrink:0;white-space:nowrap">${meta.icon} ${meta.label}</span>
-        <span style="font-size:12px;color:var(--tx1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${cleanLabel}</span>
+        <span style="font-size:var(--fs-sm);color:var(--tx1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${cleanLabel}</span>
       </div>
       ${extraInfo}
     </div>
@@ -3392,10 +3381,10 @@ function renderNotices() {
         <div style="background:var(--sur2);border-radius:var(--r);padding:14px 16px;margin-bottom:10px;${NOTICE_STYLE[n.type]||'border-left:3px solid var(--bd2)'}">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:${n.body?'8':'0'}px">
             ${n.pinned ? '<span>📌</span>' : ''}
-            <span class="fw-600" style="font-size:15px">${n.title}</span>
-            <span style="margin-left:auto;font-size:11px;color:var(--tx3)">${n.createdAt ? fDate(n.createdAt) : ''}</span>
+            <span class="fw-600" style="font-size:var(--fs-base)">${n.title}</span>
+            <span style="margin-left:auto;font-size:var(--fs-xs);color:var(--tx3)">${n.createdAt ? fDate(n.createdAt) : ''}</span>
           </div>
-          ${n.body ? `<div style="font-size:13px;color:var(--tx2);white-space:pre-wrap;line-height:1.7">${n.body}</div>` : ''}
+          ${n.body ? `<div style="font-size:var(--fs-sm);color:var(--tx2);white-space:pre-wrap;line-height:1.7">${n.body}</div>` : ''}
         </div>`).join('')
     : '<div class="empty">공지사항이 없습니다.</div>';
 }

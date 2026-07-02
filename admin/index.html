@@ -741,6 +741,21 @@ function saveCat() {
   const name = document.getElementById('mc-name').value.trim();
   if (!name) { toast('분류명을 입력하세요', 'warn'); return; }
   const physicalReleaseDate = document.getElementById('mc-physicalrelease').value;
+
+  // Date order validation (non-empty dates must be in ascending order)
+  const dateOrder = [
+    ['preReleaseDate', document.getElementById('mc-prerelease').value],
+    ['digitalReleaseDate', document.getElementById('mc-digitalrelease').value],
+    ['physicalReleaseDate', physicalReleaseDate],
+    ['chodongBaseDate', document.getElementById('mc-chodongbase').value],
+    ['chodongEndDate', document.getElementById('mc-chodongend').value],
+  ].filter(([, v]) => v);
+  for (let i = 1; i < dateOrder.length; i++) {
+    if (dateOrder[i][1] < dateOrder[i - 1][1]) {
+      toast(`날짜 순서 오류: ${dateOrder[i - 1][0]} → ${dateOrder[i][0]}`, 'warn'); return;
+    }
+  }
+
   const themeColorHex = document.getElementById('mc-themecolor-hex').value.trim();
   const data = {
     name,
@@ -965,6 +980,7 @@ function getStoreUnpoKeys(s) {
 }
 
 function openStoreModal(id) {
+  window._offlineEvents = [];
   ADM.editStoreId = id || null;
   const s = id ? (DB.stores || []).find(x => x.id === id) : null;
   const cats = DB.categories || [];
@@ -1024,8 +1040,10 @@ function openStoreModal(id) {
       <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
         <span style="font-size:10px;color:var(--tx3)">발표</span>
         <input type="date" id="sp-vc-announce" value="${s?.vcAnnounceDate||''}" style="font-size:11px;padding:2px 4px" title="영통 발표일">
-        <span style="font-size:10px;color:var(--tx3)">진행</span>
-        <input type="date" id="sp-vc-start" value="${s?.vcStart||''}" style="font-size:11px;padding:2px 4px" title="영통 진행일">
+        <span style="font-size:10px;color:var(--tx3)">시작</span>
+        <input type="date" id="sp-vc-start" value="${s?.vcStart||''}" style="font-size:11px;padding:2px 4px" title="영통 시작일">
+        <span style="font-size:10px;color:var(--tx3)">종료</span>
+        <input type="date" id="sp-vc-end" value="${s?.vcEnd||''}" style="font-size:11px;padding:2px 4px" title="영통 종료일">
       </div>
       <label class="form-check"><input type="checkbox" id="sp-chodong" ${(s?.chodongIncluded || s?.hanteoChart || s?.billboardChart) ? 'checked':''}><span>초동 반영</span></label>
     </div>
@@ -1288,6 +1306,13 @@ function saveStore() {
   const unpoAlbumKeys = Array.from(document.querySelectorAll('#sp-unpo-checks input:checked')).map(cb => cb.value);
   const unpoAlbumKey = unpoAlbumKeys[0] || '';
 
+  // Date validation
+  const pStart = document.getElementById('sp-pstart').value;
+  const pEnd = document.getElementById('sp-pend').value;
+  if (pStart && pEnd && pStart > pEnd) {
+    toast('구매 시작일이 종료일보다 늦습니다', 'warn'); return;
+  }
+
   // Save current offline event fields before collecting
   (window._offlineEvents || []).forEach((_, idx) => saveOfflineEventField(idx));
   const offlineEventsData = window._offlineEvents || [];
@@ -1302,23 +1327,17 @@ function saveStore() {
     videocall: document.getElementById('sp-videocall').checked,
     vcAnnounceDate: document.getElementById('sp-vc-announce')?.value || '',
     vcStart: document.getElementById('sp-vc-start')?.value || '',
-    vcEnd: document.getElementById('sp-vc-start')?.value || '',
+    vcEnd: document.getElementById('sp-vc-end')?.value || '',
     unpoAlbumKey,
     unpoAlbumKeys,
     priceMode,
     customPrices: priceMode === 'custom' ? customPrices : {},
-    purchaseStart: document.getElementById('sp-pstart').value,
-    purchaseEnd: document.getElementById('sp-pend').value,
+    purchaseStart: pStart,
+    purchaseEnd: pEnd,
     purchaseEndTxt: document.getElementById('sp-pendtxt').value,
     defDeliveryDate: document.getElementById('sp-delivdate').value,
     offlineEvents: offlineEventsData,
-    offlineStart: offlineEventsData[0]?.start || '',
-    offlineEnd: offlineEventsData[0]?.end || '',
-    offlineAddress: offlineEventsData[0]?.addressDetail || '',
-    offlineAddressName: offlineEventsData[0]?.addressName || '',
-    offlineAddressDetail: offlineEventsData[0]?.addressDetail || '',
     offlineLuckyDraw: offlineEventsData.some(e => e.luckyDraw) || false,
-    offlineNote: offlineEventsData[0]?.note || '',
     chodongIncluded: document.getElementById('sp-chodong')?.checked || false,
     unpoSets: parseInt(document.getElementById('sp-unpo-sets')?.value || '1') || 1,
     unpoBack: document.getElementById('sp-unpo-back')?.checked || false,
@@ -1416,14 +1435,15 @@ function renderUnpo() {
 
       const storeForRender = { ...s, unpoAlbumKey: albKey };
       const linkedStoreIds = new Set(s.sharedWithStoreIds || []);
-      const sameAlbStores = (DB.stores||[]).filter(x => x.id !== s.id && (x.categoryId === s.categoryId || getStoreUnpoKeys(x).includes(albKey)));
-      const linkRows = sameAlbStores.map(x =>
-        `<label style="display:flex;align-items:center;gap:6px;font-size:12px;padding:4px 0;cursor:pointer">
+      const allOtherStores = (DB.stores||[]).filter(x => x.id !== s.id);
+      const linkRows = allOtherStores.map(x => {
+        const catName = (DB.categories||[]).find(c => c.id === x.categoryId)?.name || '';
+        return `<label style="display:flex;align-items:center;gap:6px;font-size:12px;padding:4px 0;cursor:pointer">
           <input type="checkbox" value="${x.id}" ${linkedStoreIds.has(x.id)?'checked':''}
             onchange="updateUnpoStoreLink('${s.id}','${albKey}','${x.id}',this.checked)">
-          <span>${x.name}${x.round?` <span class='badge badge-gray' style='font-size:10px'>${x.round}차</span>`:''}</span>
-        </label>`
-      ).join('');
+          <span>${x.name}${x.round?` <span class='badge badge-gray' style='font-size:10px'>${x.round}차</span>`:''}${catName?` <span class='badge badge-gray' style='font-size:10px'>[${catName}]</span>`:''}</span>
+        </label>`;
+      }).join('');
       return `<div class="card" style="margin-bottom:12px">
         <div class="card-header">
           <div>
@@ -1436,7 +1456,7 @@ function renderUnpo() {
             <button class="btn btn-ghost btn-sm" onclick="addUnpoSet('${s.id}','${albKey}')">+ 세트 추가</button>
           </div>
         </div>
-        ${sameAlbStores.length ? `<details data-link="${s.id}-${albKey}" style="padding:0 2px 8px;font-size:12px">
+        ${allOtherStores.length ? `<details data-link="${s.id}-${albKey}" style="padding:0 2px 8px;font-size:12px">
           <summary style="cursor:pointer;color:var(--tx2);padding:4px 0;user-select:none">
             연결 판매처 (${linkedStoreIds.size}개 연결됨)
           </summary>
@@ -1567,16 +1587,17 @@ function renderUnpoLinkStores() {
   const albKey = document.getElementById('unpo-link-alb').value;
   const container = document.getElementById('unpo-link-stores');
   if (!albKey) { container.innerHTML = ''; return; }
-  const alb = (DB.albumTypes || []).find(a => a.key === albKey);
-  const stores = (DB.stores || []).filter(s => s.categoryId === alb?.categoryId);
-  if (!stores.length) { container.innerHTML = '<div class="text-muted text-sm">해당 분류의 판매처가 없습니다.</div>'; return; }
+  const stores = DB.stores || [];
+  if (!stores.length) { container.innerHTML = '<div class="text-muted text-sm">판매처가 없습니다.</div>'; return; }
   container.innerHTML = stores.map(s => {
     const keys = getStoreUnpoKeys(s);
     const checked = keys.includes(albKey);
+    const catName = (DB.categories||[]).find(c => c.id === s.categoryId)?.name || '';
     return `<label style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--sur2);border-radius:var(--r-sm);cursor:pointer">
       <input type="checkbox" value="${s.id}" ${checked ? 'checked' : ''}>
       <span style="font-size:13px;font-weight:600">${s.name}</span>
       ${s.round ? `<span class="badge badge-gray" style="font-size:10px">${s.round}차</span>` : ''}
+      ${catName ? `<span class="badge badge-gray" style="font-size:10px">[${catName}]</span>` : ''}
     </label>`;
   }).join('');
 }
@@ -1811,11 +1832,14 @@ async function fetchRates() {
   toast('환율 조회중...', 'warn');
   const now = new Date().toISOString();
   const existing = DB.settings?.rates || {};
+
   const apply = kk => {
     const rates = {};
     ['JPY','CNY','USD','TWD','HKD'].forEach(c => {
       const cur = c.toLowerCase();
-      if (kk[cur] && !existing[c]?.manual) rates[c] = { rate: parseFloat((1/kk[cur]).toFixed(4)), manual: false, updAt: now };
+      const val = kk[cur];
+      if (val == null) return;
+      if (!existing[c]?.manual) rates[c] = { rate: parseFloat((1 / val).toFixed(4)), manual: false, updAt: now };
       else if (existing[c]) rates[c] = existing[c];
     });
     rates['OTHER'] = existing['OTHER'] || { rate: 1, manual: true, name: '기타', updAt: null };
@@ -1823,21 +1847,39 @@ async function fetchRates() {
     reloadDB(); renderSettings();
     toast('환율 업데이트 완료');
   };
-  try {
-    const r = await fetch('https://latest.currency-api.pages.dev/v1/currencies/krw.json');
-    if (!r.ok) throw new Error('primary failed');
-    const d = await r.json();
-    apply(d.krw);
-  } catch {
+
+  const fetchWithTimeout = (url, ms = 10000) => {
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), ms);
+    return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(tid));
+  };
+
+  const APIS = [
+    { url: 'https://latest.currency-api.pages.dev/v1/currencies/krw.json', extract: d => d.krw },
+    { url: 'https://open.er-api.com/v6/latest/KRW', extract: d => {
+      const m = {};
+      Object.entries(d.rates || {}).forEach(([k, v]) => { m[k.toLowerCase()] = v; });
+      return m;
+    }},
+    { url: 'https://api.frankfurter.app/latest?base=KRW&symbols=JPY,CNY,USD,TWD,HKD', extract: d => {
+      const m = {};
+      Object.entries(d.rates || {}).forEach(([k, v]) => { m[k.toLowerCase()] = v; });
+      return m;
+    }},
+  ];
+
+  for (const api of APIS) {
     try {
-      const r2 = await fetch('https://open.er-api.com/v6/latest/KRW');
-      if (!r2.ok) throw new Error('fallback failed');
-      const d2 = await r2.json();
-      apply(d2.rates);
-    } catch {
-      toast('자동조회 실패 — 수동입력하세요', 'err');
+      const r = await fetchWithTimeout(api.url);
+      if (!r.ok) { console.warn('fetchRates', api.url, r.status); continue; }
+      const d = await r.json();
+      apply(api.extract(d));
+      return;
+    } catch(e) {
+      console.warn('fetchRates', api.url, e.message);
     }
   }
+  toast('자동조회 실패 — 수동입력하세요', 'err');
 }
 
 function changePw() {
@@ -1998,21 +2040,15 @@ async function pullFromGithub() {
   if (!gh.token || !gh.owner || !gh.repo) { toast('GitHub 설정을 먼저 저장하세요', 'warn'); return; }
   const setStatus = t => { ['gh-status','gh-sync-status','sidebar-gh-status'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = t; }); };
   setStatus('불러오는 중...');
-  const savedToken = gh.token || '';
-  const savedPw = DB.settings?.adminPw || '';
-  const savedPurchases = JSON.parse(JSON.stringify(DB.purchases || []));
-  const savedUnpoCards = JSON.parse(JSON.stringify(DB.unpoCards || []));
   const url = `https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${gh.filePath}?ref=${gh.branch || 'main'}`;
   try {
     const r = await fetch(url, { headers: { Authorization: `token ${gh.token}`, Accept: 'application/vnd.github.v3+json' } });
     if (!r.ok) throw new Error((await r.text()).slice(0, 200));
     const d = await r.json();
     const json = decodeURIComponent(escape(atob(d.content.replace(/\n/g, ''))));
-    const parsed = JSON.parse(json);
-    dbImportJSON(JSON.stringify(parsed));
-    reloadDB();
-    dbUpdate(s => ({ ...s, purchases: savedPurchases, unpoCards: savedUnpoCards }));
-    dbUpdateSettings({ adminPw: savedPw, github: { ...(DB.settings?.github || {}), token: savedToken, sha: d.sha } });
+    // dbImportJSON only overwrites shared data; purchases/settings auto-preserved in personal key
+    dbImportJSON(json);
+    dbUpdateSettings({ github: { ...(DB.settings?.github || {}), sha: d.sha } });
     reloadDB(); buildCatFilters(); renderPage();
     setStatus('불러오기 완료 ✓ (' + new Date().toLocaleTimeString('ko-KR') + ')');
     toast('GitHub에서 불러오기 완료');
