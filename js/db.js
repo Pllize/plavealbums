@@ -9,7 +9,7 @@
 
 const DB_KEY = 'albumapp_v1';
 const PERSONAL_KEY = 'albumapp_v1_personal';
-const PERSONAL_FIELDS = ['purchases', 'settings'];
+const PERSONAL_FIELDS = ['purchases', 'settings', 'watchedStores'];
 
 const _defaultShared = () => ({
   categories: [],
@@ -22,6 +22,7 @@ const _defaultShared = () => ({
 
 const _defaultPersonal = () => ({
   purchases: [],
+  watchedStores: [],
   settings: {
     rates: {
       JPY: { rate: 9.4537, manual: false, updAt: null },
